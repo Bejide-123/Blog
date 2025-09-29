@@ -3,6 +3,7 @@ import { GiHamburgerMenu } from "react-icons/gi";
 import { IoMdClose } from "react-icons/io";
 import { FiFeather } from "react-icons/fi";
 
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -27,7 +28,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="sticky top-0 left-0 w-full z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+      <nav className="fixed top-0 left-0 w-full z-50 bg-transparent ">
         <div className="flex items-center justify-between py-4 px-6 w-full max-w-7xl mx-auto">
           {/* Logo */}
           <a href="#home" className="group">
@@ -41,25 +42,25 @@ const Navbar = () => {
             <div className="flex items-center gap-10">
               <a 
                 href="#home" 
-                className="text-lg font-semibold text-slate-700 hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full"
+                className="text-lg font-semibold text-white hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full"
               >
                 Home
               </a>
               <a 
                 href="#posts" 
-                className="text-lg font-semibold text-slate-700 hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full"
+                className="text-lg font-semibold text-white hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full"
               >
-                Posts
+                Post
               </a>
               <a 
                 href="#about" 
-                className="text-lg font-semibold text-slate-700 hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full"
+                className="text-lg font-semibold text-white hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full"
               >
                 About
               </a>
               <a 
                 href="#contact" 
-                className="text-lg font-semibold text-slate-700 hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full"
+                className="text-lg font-semibold text-white hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full"
               >
                 Contact
               </a>
@@ -69,7 +70,7 @@ const Navbar = () => {
           {/* Auth Buttons - Desktop */}
           <div className="hidden lg:flex items-center gap-3">
             <a href="/login">
-              <button className="py-2.5 px-6 rounded-lg font-semibold text-base text-slate-700 hover:bg-gray-100 transition-all duration-200 active:scale-95">
+              <button className="py-2.5 px-6 rounded-lg font-semibold text-base text-white hover:bg-white hover:text-blue-600 transition-all duration-200 active:scale-95">
                 Login
               </button>
             </a>
