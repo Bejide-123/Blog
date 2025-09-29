@@ -32,7 +32,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between py-4 px-6 w-full max-w-7xl mx-auto">
           {/* Logo */}
           <a href="#home" className="group">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-2 group-hover:text-blue-600 transition-colors duration-200">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white flex items-center gap-2 group-hover:text-blue-600 transition-colors duration-200">
               Scribe <FiFeather className="w-7 h-7 md:w-8 md:h-8 text-blue-600" />
             </h1>
           </a>
@@ -70,13 +70,13 @@ const Navbar = () => {
           {/* Auth Buttons - Desktop */}
           <div className="hidden lg:flex items-center gap-3">
             <a href="/login">
-              <button className="py-2.5 px-6 rounded-lg font-semibold text-base text-white hover:bg-white hover:text-blue-600 transition-all duration-200 active:scale-95">
+              <button className="py-2.5 px-6 rounded-lg font-semibold text-base text-white hover:bg-white hover:text-blue-600 transition-all duration-200 active:scale-95 cursor-pointer">
                 Login
               </button>
             </a>
 
             <a href="/register">
-              <button className="py-2.5 px-6 rounded-lg font-semibold text-base text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95">
+              <button className="py-2.5 px-6 rounded-lg font-semibold text-base text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 cursor-pointer">
                 Sign Up
               </button>
             </a>
@@ -88,7 +88,7 @@ const Navbar = () => {
             className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 active:scale-95"
             aria-label="Toggle menu"
           >
-            <GiHamburgerMenu className="w-6 h-6 text-slate-700" />
+            <GiHamburgerMenu className="w-6 h-6 text-white" />
           </button>
         </div>
       </nav>
