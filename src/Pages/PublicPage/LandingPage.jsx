@@ -3,6 +3,8 @@ import Navbar from "../../Components/Public/Navbar";
 import { Link } from "react-router-dom";
 import backgroundImage from "../../assets/Hero.jpg";
 import FadeInSection from "../../Components/Public/FadeInSection"; 
+import About from "../../Components/Public/About";
+import Posts from "../../Components/Public/Posts";
 
 const LandingPage = () => {
   return (
@@ -12,6 +14,7 @@ const LandingPage = () => {
       <section
         className="relative min-h-screen bg-cover bg-center flex items-center justify-center"
         style={{ backgroundImage: `url(${backgroundImage})` }}
+        id="home"
       >
         <div className="text-center text-white px-6 bg-transparent rounded-xl p-6">
           <FadeInSection>
@@ -23,7 +26,7 @@ const LandingPage = () => {
           <FadeInSection>
             <p className="text-lg sm:text-xl mb-8">
               Write, publish, and connect with readers on{" "}
-              <span className="font-semibold">Scribe</span>.
+              <span className="font-bold">Scribe</span>.
             </p>
           </FadeInSection>
 
@@ -45,6 +48,12 @@ const LandingPage = () => {
           </FadeInSection>
         </div>
       </section>
+      <FadeInSection >
+            <About />   
+      </FadeInSection>,
+      <FadeInSection >
+            <Posts />
+      </FadeInSection>
     </>
   );
 };

@@ -3,9 +3,22 @@ import { GiHamburgerMenu } from "react-icons/gi";
 import { IoMdClose } from "react-icons/io";
 import { FiFeather } from "react-icons/fi";
 
-
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -28,11 +41,17 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 w-full z-50 bg-transparent ">
+      <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+        isScrolled 
+          ? "bg-white shadow-md" 
+          : "bg-transparent"
+      }`}>
         <div className="flex items-center justify-between py-4 px-6 w-full max-w-7xl mx-auto">
           {/* Logo */}
           <a href="#home" className="group">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white flex items-center gap-2 group-hover:text-blue-600 transition-colors duration-200">
+            <h1 className={`text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2 group-hover:text-blue-600 transition-colors duration-200 ${
+              isScrolled ? "text-slate-900" : "text-white"
+            }`}>
               Scribe <FiFeather className="w-7 h-7 md:w-8 md:h-8 text-blue-600" />
             </h1>
           </a>
@@ -42,25 +61,33 @@ const Navbar = () => {
             <div className="flex items-center gap-10">
               <a 
                 href="#home" 
-                className="text-lg font-semibold text-white hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full"
+                className={`text-lg font-semibold hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full ${
+                  isScrolled ? "text-slate-700" : "text-white"
+                }`}
               >
                 Home
               </a>
               <a 
-                href="#posts" 
-                className="text-lg font-semibold text-white hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full"
-              >
-                Post
-              </a>
-              <a 
                 href="#about" 
-                className="text-lg font-semibold text-white hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full"
+                className={`text-lg font-semibold hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full ${
+                  isScrolled ? "text-slate-700" : "text-white"
+                }`}
               >
                 About
               </a>
               <a 
+                href="#posts" 
+                className={`text-lg font-semibold hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full ${
+                  isScrolled ? "text-slate-700" : "text-white"
+                }`}
+              >
+                Posts
+              </a>
+              <a 
                 href="#contact" 
-                className="text-lg font-semibold text-white hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full"
+                className={`text-lg font-semibold hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full ${
+                  isScrolled ? "text-slate-700" : "text-white"
+                }`}
               >
                 Contact
               </a>
@@ -70,7 +97,11 @@ const Navbar = () => {
           {/* Auth Buttons - Desktop */}
           <div className="hidden lg:flex items-center gap-3">
             <a href="/login">
-              <button className="py-2.5 px-6 rounded-lg font-semibold text-base text-white hover:bg-white hover:text-blue-600 transition-all duration-200 active:scale-95 cursor-pointer">
+              <button className={`py-2.5 px-6 rounded-lg font-semibold text-base transition-all duration-200 active:scale-95 cursor-pointer ${
+                isScrolled 
+                  ? "text-slate-700 hover:bg-gray-100" 
+                  : "text-white hover:bg-white hover:text-blue-600"
+              }`}>
                 Login
               </button>
             </a>
@@ -85,10 +116,12 @@ const Navbar = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={toggleSidebar}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 active:scale-95"
+            className={`lg:hidden p-2 rounded-lg transition-colors duration-200 active:scale-95 ${
+              isScrolled ? "hover:bg-gray-100" : "hover:bg-white/20"
+            }`}
             aria-label="Toggle menu"
           >
-            <GiHamburgerMenu className="w-6 h-6 text-white" />
+            <GiHamburgerMenu className={`w-6 h-6 ${isScrolled ? "text-slate-700" : "text-white"}`} />
           </button>
         </div>
       </nav>
@@ -122,18 +155,18 @@ const Navbar = () => {
               Home
             </a>
             <a
-              href="#posts"
-              onClick={handleLinkClick}
-              className="text-lg font-semibold text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-lg transition-all duration-200"
-            >
-              Posts
-            </a>
-            <a
               href="#about"
               onClick={handleLinkClick}
               className="text-lg font-semibold text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-lg transition-all duration-200"
             >
               About
+            </a>
+            <a
+              href="#posts"
+              onClick={handleLinkClick}
+              className="text-lg font-semibold text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-lg transition-all duration-200"
+            >
+              Posts
             </a>
             <a
               href="#contact"
