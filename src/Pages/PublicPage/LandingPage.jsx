@@ -5,6 +5,8 @@ import backgroundImage from "../../assets/Hero.jpg";
 import FadeInSection from "../../Components/Public/FadeInSection"; 
 import About from "../../Components/Public/About";
 import Posts from "../../Components/Public/Posts";
+import ContactSection from "../../Components/Public/Contact";
+import Footer from "../../Components/Public/Footer";
 
 const LandingPage = () => {
   return (
@@ -53,6 +55,12 @@ const LandingPage = () => {
       </FadeInSection>,
       <FadeInSection >
             <Posts />
+      </FadeInSection>,
+      <FadeInSection >
+            <ContactSection />
+      </FadeInSection>
+      <FadeInSection>
+        <Footer />
       </FadeInSection>
     </>
   );
