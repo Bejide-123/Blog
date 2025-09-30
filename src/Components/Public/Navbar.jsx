@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { IoMdClose } from "react-icons/io";
 import { FiFeather } from "react-icons/fi";
+import {useNavigate} from "react-router-dom"
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const navigate = useNavigate()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -96,21 +98,21 @@ const Navbar = () => {
 
           {/* Auth Buttons - Desktop */}
           <div className="hidden lg:flex items-center gap-3">
-            <a href="/login">
-              <button className={`py-2.5 px-6 rounded-lg font-semibold text-base transition-all duration-200 active:scale-95 cursor-pointer ${
+            
+              <button onClick={() => navigate("/login?mode=login")} className={`py-2.5 px-6 rounded-lg font-semibold text-base transition-all duration-200 active:scale-95 cursor-pointer ${
                 isScrolled 
                   ? "text-slate-700 hover:bg-gray-100" 
                   : "text-white hover:bg-white hover:text-blue-600"
               }`}>
                 Login
               </button>
-            </a>
+           
 
-            <a href="/register">
-              <button className="py-2.5 px-6 rounded-lg font-semibold text-base text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 cursor-pointer">
+            
+              <button onClick={() => navigate("/login?mode=signup")} className="py-2.5 px-6 rounded-lg font-semibold text-base text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 cursor-pointer">
                 Sign Up
               </button>
-            </a>
+          
           </div>
 
           {/* Mobile Menu Button */}

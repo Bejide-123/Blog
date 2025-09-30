@@ -35,17 +35,17 @@ const LandingPage = () => {
           <FadeInSection>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                to="/register"
+                to="/login?mode=register"
                 className="px-6 py-3 rounded-lg bg-white text-blue-700 font-medium shadow hover:bg-gray-100 transition"
               >
                 Get Started
               </Link>
-              <Link
-                to="/blogs"
+              <a
+                href="#posts"
                 className="px-6 py-3 rounded-lg border border-white font-medium hover:bg-blue-600 hover:text-white hover:border-0 transition"
               >
                 Explore Posts
-              </Link>
+              </a>
             </div>
           </FadeInSection>
         </div>

@@ -128,12 +128,12 @@ const Posts = () => {
                 </div>
 
                 {/* Read More Button */}
-                <a href="/login">
-                  <button className="flex items-center gap-2 text-blue-600 font-semibold hover:gap-3 transition-all duration-200">
+                
+                  <button onClick={() => {Navigate("/login?mode=login")}} className="flex items-center gap-2 text-blue-600 font-semibold hover:gap-3 transition-all duration-200" >
                     Read More
                     <FiArrowRight className="w-4 h-4" />
+                  
                   </button>
-                </a>
               </div>
             </article>
           ))}
@@ -141,11 +141,11 @@ const Posts = () => {
 
         {/* View All Button */}
         <div className="text-center">
-          <a href="/login">
-            <button className="py-3 px-8 rounded-lg font-semibold text-base text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95">
+          
+            <button onClick={() => {Navigate("/login?mode=login")}} className="py-3 px-8 rounded-lg font-semibold text-base text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 cursor-pointer">
               View All Posts
             </button>
-          </a>
+          
         </div>
       </div>
     </section>

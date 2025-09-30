@@ -91,11 +91,11 @@ const About = () => {
           <p className="text-lg text-slate-600 mb-6 max-w-2xl mx-auto">
             Join our growing community of writers and readers. Your story matters.
           </p>
-          <a href="/register">
-            <button className="py-3 px-8 rounded-lg font-semibold text-base text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95">
+          
+            <button onClick={() => Navigate("/login?mode=login")} className="py-3 px-8 rounded-lg font-semibold text-base text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 cursor-pointer">
               Get Started for Free
             </button>
-          </a>
+          
         </div>
       </div>
     </section>
