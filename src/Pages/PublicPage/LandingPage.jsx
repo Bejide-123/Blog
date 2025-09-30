@@ -1,6 +1,6 @@
 import React from "react";
 import Navbar from "../../Components/Public/Navbar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import backgroundImage from "../../assets/Hero.jpg";
 import FadeInSection from "../../Components/Public/FadeInSection"; 
 import About from "../../Components/Public/About";
@@ -9,6 +9,16 @@ import ContactSection from "../../Components/Public/Contact";
 import Footer from "../../Components/Public/Footer";
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -40,25 +50,29 @@ const LandingPage = () => {
               >
                 Get Started
               </Link>
-              <a
-                href="#posts"
-                className="px-6 py-3 rounded-lg border border-white font-medium hover:bg-blue-600 hover:text-white hover:border-0 transition"
+              <button
+                onClick={() => scrollToSection("posts")}
+                className="px-6 py-3 cursor-pointer rounded-lg border border-white font-medium hover:bg-blue-600 hover:text-white hover:border-0 transition"
               >
                 Explore Posts
-              </a>
+              </button>
             </div>
           </FadeInSection>
         </div>
       </section>
-      <FadeInSection >
-            <About />   
-      </FadeInSection>,
-      <FadeInSection >
-            <Posts />
-      </FadeInSection>,
-      <FadeInSection >
-            <ContactSection />
+
+      <FadeInSection>
+        <About />   
       </FadeInSection>
+
+      <FadeInSection>
+        <Posts />
+      </FadeInSection>
+
+      <FadeInSection>
+        <ContactSection />
+      </FadeInSection>
+
       <FadeInSection>
         <Footer />
       </FadeInSection>

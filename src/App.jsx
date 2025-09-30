@@ -5,17 +5,13 @@ import Auth from "./Pages/PublicPage/Login";
 
 const App = () => {
   return (
-    <>
+    <Routes>
+      {/* Landing page with sections + navbar */}
+      <Route path="/" element={<LandingPage />} />
 
-      <LandingPage />
-      <Routes>
-        {/* Landing page */}
-        
-
-        {/* Auth page (Login + Signup) */}
-        <Route path="/login" element={<Auth />} />
-      </Routes>
-    </>
+      {/* Auth page */}
+      <Route path="/login" element={<Auth />} />
+    </Routes>
   );
 };
 

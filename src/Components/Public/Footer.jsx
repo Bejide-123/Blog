@@ -1,8 +1,31 @@
 import React from "react";
 import { FaTwitter, FaFacebookF, FaLinkedinIn, FaInstagram } from "react-icons/fa";
 import { FiFeather } from "react-icons/fi";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Footer = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const scrollToSection = (sectionId) => {
+    const isOnLandingPage = location.pathname === "/" || location.pathname === "";
+    
+    if (!isOnLandingPage) {
+      navigate("/");
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 300);
+    } else {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  };
+
   return (
     <footer className="bg-gradient-to-r from-gray-900 to-gray-800 text-gray-300 py-10">
       <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 text-center sm:text-left">
@@ -22,10 +45,26 @@ const Footer = () => {
           <div>
             <h4 className="text-xl font-semibold text-white mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              <li><a href="/blogs" className="hover:text-blue-500 transition-colors duration-200">Latest Stories</a></li>
-              <li><a href="/register" className="hover:text-blue-500 transition-colors duration-200">Get Started</a></li>
-              <li><a href="#about" className="hover:text-blue-500 transition-colors duration-200">About Us</a></li>
-              <li><a href="#contact" className="hover:text-blue-500 transition-colors duration-200">Contact</a></li>
+              <li>
+                <button onClick={() => scrollToSection("posts")} className="hover:text-blue-500 transition-colors duration-200">
+                  Latest Stories
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigate("/login?mode=register")} className="hover:text-blue-500 transition-colors duration-200">
+                  Get Started
+                </button>
+              </li>
+              <li>
+                <button onClick={() => scrollToSection("about")} className="hover:text-blue-500 transition-colors duration-200">
+                  About Us
+                </button>
+              </li>
+              <li>
+                <button onClick={() => scrollToSection("contact")} className="hover:text-blue-500 transition-colors duration-200">
+                  Contact
+                </button>
+              </li>
             </ul>
           </div>
 
@@ -43,15 +82,18 @@ const Footer = () => {
         <div className="mb-6 md:mb-0">
           <h4 className="text-xl font-semibold text-white mb-4">Follow Us</h4>
           <div className="flex justify-center sm:justify-start gap-4">
-            {[FaTwitter, FaFacebookF, FaLinkedinIn, FaInstagram].map((Icon, i) => (
-              <a
-                key={i}
-                href="#"
-                className="hover:text-blue-500 transition-colors duration-200 transform hover:scale-110"
-              >
-                <Icon size={22} />
-              </a>
-            ))}
+            <a href="#" className="hover:text-blue-500 transition-colors duration-200 transform hover:scale-110">
+              <FaTwitter size={22} />
+            </a>
+            <a href="#" className="hover:text-blue-500 transition-colors duration-200 transform hover:scale-110">
+              <FaFacebookF size={22} />
+            </a>
+            <a href="#" className="hover:text-blue-500 transition-colors duration-200 transform hover:scale-110">
+              <FaLinkedinIn size={22} />
+            </a>
+            <a href="#" className="hover:text-blue-500 transition-colors duration-200 transform hover:scale-110">
+              <FaInstagram size={22} />
+            </a>
           </div>
         </div>
       </div>

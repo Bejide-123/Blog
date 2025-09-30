@@ -6,8 +6,10 @@ import business from "../../Images/Business.jpg";
 import personalGrowth from "../../Images/PersonalGrowth.jpg";
 import education from "../../Images/Education.jpg";
 import web from "../../Images/Web.jpg"; 
+import { useNavigate } from "react-router-dom";
 
 const Posts = () => {
+  const Navigate = useNavigate();
   const posts = [
     {
       id: 1,

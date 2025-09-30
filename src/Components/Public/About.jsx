@@ -1,7 +1,10 @@
 import React from "react";
 import { FiEdit3, FiUsers, FiBookOpen, FiTrendingUp, FiHeart, FiStar } from "react-icons/fi";
+import { useNavigate } from "react-router-dom"; 
 
 const About = () => {
+  const Navigate = useNavigate();
+  
   const features = [
     {
       icon: <FiEdit3 className="w-7 h-7" />,

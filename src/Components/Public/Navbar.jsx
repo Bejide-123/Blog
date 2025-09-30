@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { IoMdClose } from "react-icons/io";
 import { FiFeather } from "react-icons/fi";
-import {useNavigate} from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,82 +38,113 @@ const Navbar = () => {
     setIsOpen(!isOpen);
   };
 
-  const handleLinkClick = () => {
+  const handleNavigate = (path) => {
+    navigate(path);
     setIsOpen(false);
+  };
+
+  // Handle scrolling to sections
+  const scrollToSection = (sectionId) => {
+    setIsOpen(false);
+    
+    // Check if we're on the landing page
+    const isOnLandingPage = location.pathname === "/" || location.pathname === "";
+    
+    if (!isOnLandingPage) {
+      // Navigate to home first
+      navigate("/");
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 300);
+    } else {
+      // Already on landing page, just scroll
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
   };
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-        isScrolled 
-          ? "bg-white shadow-md" 
-          : "bg-transparent"
-      }`}>
+      <nav
+        className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+          isScrolled ? "bg-white shadow-md" : "bg-transparent"
+        }`}
+      >
         <div className="flex items-center justify-between py-4 px-6 w-full max-w-7xl mx-auto">
           {/* Logo */}
-          <a href="#home" className="group">
-            <h1 className={`text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2 group-hover:text-blue-600 transition-colors duration-200 ${
-              isScrolled ? "text-slate-900" : "text-white"
-            }`}>
-              Scribe <FiFeather className="w-7 h-7 md:w-8 md:h-8 text-blue-600" />
+          <button onClick={() => scrollToSection("home")} className="group">
+            <h1
+              className={`text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2 group-hover:text-blue-600 transition-colors duration-200 ${
+                isScrolled ? "text-slate-900" : "text-white"
+              }`}
+            >
+              Scribe{" "}
+              <FiFeather className="w-7 h-7 md:w-8 md:h-8 text-blue-600" />
             </h1>
-          </a>
+          </button>
 
           {/* Center Links - Desktop */}
           <div className="hidden lg:flex flex-1 justify-center">
             <div className="flex items-center gap-10">
-              <a 
-                href="#home" 
-                className={`text-lg font-semibold hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full ${
+              <button
+                onClick={() => scrollToSection("home")}
+                className={`text-lg font-semibold hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 cursor-pointer after:transition-all after:duration-200 hover:after:w-full ${
                   isScrolled ? "text-slate-700" : "text-white"
                 }`}
               >
                 Home
-              </a>
-              <a 
-                href="#about" 
-                className={`text-lg font-semibold hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full ${
+              </button>
+              <button
+                onClick={() => scrollToSection("about")}
+                className={`text-lg font-semibold cursor-pointer hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full ${
                   isScrolled ? "text-slate-700" : "text-white"
                 }`}
               >
                 About
-              </a>
-              <a 
-                href="#posts" 
-                className={`text-lg font-semibold hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full ${
+              </button>
+              <button
+                onClick={() => scrollToSection("posts")}
+                className={`text-lg font-semibold cursor-pointer hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full ${
                   isScrolled ? "text-slate-700" : "text-white"
                 }`}
               >
                 Posts
-              </a>
-              <a 
-                href="#contact" 
-                className={`text-lg font-semibold hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full ${
+              </button>
+              <button
+                onClick={() => scrollToSection("contact")}
+                className={`text-lg font-semibold cursor-pointer hover:text-blue-600 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-200 hover:after:w-full ${
                   isScrolled ? "text-slate-700" : "text-white"
                 }`}
               >
                 Contact
-              </a>
+              </button>
             </div>
           </div>
 
           {/* Auth Buttons - Desktop */}
           <div className="hidden lg:flex items-center gap-3">
-            
-              <button onClick={() => navigate("/login?mode=login")} className={`py-2.5 px-6 rounded-lg font-semibold text-base transition-all duration-200 active:scale-95 cursor-pointer ${
-                isScrolled 
-                  ? "text-slate-700 hover:bg-gray-100" 
+            <button
+              onClick={() => navigate("/login?mode=login")}
+              className={`py-2.5 px-6 rounded-lg font-semibold text-base transition-all duration-200 active:scale-95 cursor-pointer ${
+                isScrolled
+                  ? "text-slate-700 hover:bg-gray-100"
                   : "text-white hover:bg-white hover:text-blue-600"
-              }`}>
-                Login
-              </button>
-           
+              }`}
+            >
+              Login
+            </button>
 
-            
-              <button onClick={() => navigate("/login?mode=signup")} className="py-2.5 px-6 rounded-lg font-semibold text-base text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 cursor-pointer">
-                Sign Up
-              </button>
-          
+            <button
+              onClick={() => navigate("/login?mode=signup")}
+              className="py-2.5 px-6 rounded-lg font-semibold text-base text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 cursor-pointer"
+            >
+              Sign Up
+            </button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -123,7 +155,11 @@ const Navbar = () => {
             }`}
             aria-label="Toggle menu"
           >
-            <GiHamburgerMenu className={`w-6 h-6 ${isScrolled ? "text-slate-700" : "text-white"}`} />
+            <GiHamburgerMenu
+              className={`w-6 h-6 ${
+                isScrolled ? "text-slate-700" : "text-white"
+              }`}
+            />
           </button>
         </div>
       </nav>
@@ -149,48 +185,47 @@ const Navbar = () => {
         {/* Sidebar Navigation */}
         <nav className="flex flex-col p-6">
           <div className="flex flex-col gap-2 mb-6">
-            <a
-              href="#home"
-              onClick={handleLinkClick}
-              className="text-lg font-semibold text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-lg transition-all duration-200"
+            <button
+              onClick={() => scrollToSection("home")}
+              className="text-lg font-semibold text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-lg transition-all duration-200 text-left"
             >
               Home
-            </a>
-            <a
-              href="#about"
-              onClick={handleLinkClick}
-              className="text-lg font-semibold text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-lg transition-all duration-200"
+            </button>
+            <button
+              onClick={() => scrollToSection("about")}
+              className="text-lg font-semibold text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-lg transition-all duration-200 text-left"
             >
               About
-            </a>
-            <a
-              href="#posts"
-              onClick={handleLinkClick}
-              className="text-lg font-semibold text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-lg transition-all duration-200"
+            </button>
+            <button
+              onClick={() => scrollToSection("posts")}
+              className="text-lg font-semibold text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-lg transition-all duration-200 text-left"
             >
               Posts
-            </a>
-            <a
-              href="#contact"
-              onClick={handleLinkClick}
-              className="text-lg font-semibold text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-lg transition-all duration-200"
+            </button>
+            <button
+              onClick={() => scrollToSection("contact")}
+              className="text-lg font-semibold text-slate-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-lg transition-all duration-200 text-left"
             >
               Contact
-            </a>
+            </button>
           </div>
 
           {/* Mobile Auth Buttons */}
           <div className="flex flex-col gap-3 pt-4 border-t border-gray-200">
-            <a href="/login" onClick={handleLinkClick}>
-              <button className="w-full py-3 px-5 rounded-lg font-semibold text-base text-slate-700 border-2 border-gray-300 hover:border-blue-600 hover:bg-blue-50 transition-all duration-200 active:scale-95">
-                Login
-              </button>
-            </a>
-            <a href="/register" onClick={handleLinkClick}>
-              <button className="w-full py-3 px-5 rounded-lg font-semibold text-base text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95">
-                Sign Up
-              </button>
-            </a>
+            <button
+              onClick={() => handleNavigate("/login?mode=login")}
+              className="w-full py-3 px-5 rounded-lg font-semibold text-base text-slate-700 border-2 border-gray-300 hover:border-blue-600 hover:bg-blue-50 transition-all duration-200 active:scale-95"
+            >
+              Login
+            </button>
+
+            <button
+              onClick={() => handleNavigate("/login?mode=signup")}
+              className="w-full py-3 px-5 rounded-lg font-semibold text-base text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
+            >
+              Sign Up
+            </button>
           </div>
         </nav>
       </div>
