@@ -8,10 +8,12 @@ import {
   FiEyeOff,
   FiFeather,
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
   const mode = searchParams.get("mode");
+  const nav = useNavigate();
 
   const [isLogin, setIsLogin] = useState(mode !== "signup");
   const [showPassword, setShowPassword] = useState(false);
@@ -76,6 +78,7 @@ const Auth = () => {
     e.preventDefault();
 
     if (validateForm()) {
+      nav("/home");
       console.log("Form submitted:", formData);
       console.log("Mode:", isLogin ? "Login" : "Register");
 
