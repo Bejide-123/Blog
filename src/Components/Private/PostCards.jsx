@@ -315,7 +315,7 @@ export default function FeedContent() {
         </div>
 
         {/* Load More */}
-        <div className="flex justify-center mt-8 mb-4">
+        <div className="flex justify-center mt-8 mb-20">
           <button className="px-6 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold rounded-lg border-2 border-gray-300 dark:border-slate-600 hover:border-blue-600 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-500 transition-all duration-200 shadow-sm hover:shadow-md">
             Load More Posts
           </button>
