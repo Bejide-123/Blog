@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Home, Bookmark, PlusCircle, Bell, User, Search, LogOut, LayoutDashboard, Settings, Moon, Sun, Feather } from 'lucide-react';
+import { useNavigate } from 'react-router';
 
 export default function NavbarPrivate() {
   const [currentPath, setCurrentPath] = useState('/feed');
@@ -8,6 +9,7 @@ export default function NavbarPrivate() {
   const [searchQuery, setSearchQuery] = useState('');
   const [notificationCount] = useState("");
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const nav = useNavigate()
 
   const user = {
     username: 'johndoe',
@@ -19,6 +21,7 @@ export default function NavbarPrivate() {
   const handleNavClick = (path) => {
     setCurrentPath(path);
     setShowAvatarMenu(false);
+    nav(path)
   };
 
   const handleLogout = () => {
@@ -40,7 +43,7 @@ export default function NavbarPrivate() {
   };
 
   const navItems = [
-    { path: '/feed', icon: Home, label: 'Home' },
+    { path: '/home', icon: Home, label: 'Home' },
     { path: '/saved', icon: Bookmark, label: 'Saved' },
     { path: '/create', icon: PlusCircle, label: 'Create', isCenter: true },
     { path: '/notifications', icon: Bell, label: 'Notifications', badge: notificationCount },
@@ -64,7 +67,7 @@ export default function NavbarPrivate() {
               </button>
               <div className="hidden lg:flex items-center gap-10">
                 <button 
-                  onClick={() => handleNavClick('/feed')}
+                  onClick={() => {handleNavClick('/feed'), nav("/home")}}
                   className={`text-lg font-semibold transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 dark:after:bg-blue-500 after:transition-all after:duration-200 hover:after:w-full ${
                     isActive('/feed') 
                       ? 'text-blue-600 dark:text-blue-500' 
@@ -74,7 +77,7 @@ export default function NavbarPrivate() {
                   Home
                 </button>
                 <button 
-                  onClick={() => handleNavClick('/saved')}
+                  onClick={() => {handleNavClick('/saved'), nav("/saved")}}
                   className={`text-lg font-semibold transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 dark:after:bg-blue-500 after:transition-all after:duration-200 hover:after:w-full ${
                     isActive('/saved') 
                       ? 'text-blue-600 dark:text-blue-500' 
@@ -112,7 +115,7 @@ export default function NavbarPrivate() {
               </button>
 
               {/* Notifications */}
-              <button onClick={() => handleNavClick('/notifications')} className="relative p-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+              <button onClick={() => {handleNavClick('/notifications')}} className="relative p-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
                 <Bell className="w-6 h-6" />
                 {notificationCount > 0 && (
                   <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
