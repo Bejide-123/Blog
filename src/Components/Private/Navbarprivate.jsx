@@ -177,7 +177,7 @@ export default function NavbarPrivate() {
               {/* Create Post Button */}
               <button
                 onClick={() => handleNavClick("/create")}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 bg-blue-600 dark:bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-700 active:bg-blue-800 dark:active:bg-blue-800 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 font-semibold"
+                className="hidden sm:flex cursor-pointer items-center gap-2 px-4 py-2 bg-blue-600 dark:bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-700 active:bg-blue-800 dark:active:bg-blue-800 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 font-semibold"
               >
                 <PlusCircle className="w-5 h-5" />
                 <span>Create</span>

@@ -204,7 +204,7 @@ export default function FeedContent() {
                         </p>
                       </div>
                     </div>
-                    <button className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+                    <button onClick={() => alert("clicked")} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
                       <MoreHorizontal className="w-5 h-5" />
                     </button>
                   </div>
