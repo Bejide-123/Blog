@@ -61,7 +61,12 @@ export default function NavbarPrivate() {
     { path: "/home", icon: Home, label: "Home" },
     { path: "/saved", icon: Bookmark, label: "Saved" },
     { path: "/create", icon: PlusCircle, label: "Create", isCenter: true },
-    { icon: Bell, label: "Notifications", badge: notificationCount },
+    {
+      icon: Bell,
+      label: "Notifications",
+      badge: notificationCount,
+      isNotification: true,
+    },
     { path: "/profile", icon: User, label: "Profile" },
   ];
 
@@ -141,7 +146,6 @@ export default function NavbarPrivate() {
                 )}
               </button>
 
-              {/* Notifications */}
               {/* Notifications */}
               <div className="relative">
                 <button
@@ -357,35 +361,44 @@ export default function NavbarPrivate() {
           </div>
         </div>
       )}
-
+      
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 shadow-lg dark:shadow-slate-900/50 z-50">
+        {/* Mobile Notifications Modal */}
         <div className="flex items-center justify-around px-2 py-2">
-          {navItems.map(({ path, icon: Icon, label, isCenter, badge }) => (
-            <button
-              key={path}
-              onClick={() => handleNavClick(path)}
-              className={`relative flex flex-col items-center justify-center transition-all ${
-                isCenter
-                  ? "w-14 h-14 -mt-6 bg-blue-600 dark:bg-blue-600 rounded-full text-white shadow-lg hover:bg-blue-700 dark:hover:bg-blue-700 active:scale-95"
-                  : "flex-1 py-2 hover:text-blue-600 dark:hover:text-blue-500"
-              } ${
-                isActive(path) && !isCenter
-                  ? "text-blue-600 dark:text-blue-500"
-                  : "text-slate-600 dark:text-slate-400"
-              }`}
-            >
-              <Icon className={isCenter ? "w-7 h-7" : "w-6 h-6"} />
-              {!isCenter && (
-                <span className="text-xs mt-1 font-medium">{label}</span>
-              )}
-              {badge > 0 && !isCenter && (
-                <span className="absolute top-1 right-1/4 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                  {badge}
-                </span>
-              )}
-            </button>
-          ))}
+          {navItems.map(
+            ({ path, icon: Icon, label, isCenter, badge, isNotification }) => (
+              <button
+                key={path || label}
+                onClick={() => {
+                  if (isNotification) {
+                    setIsNotificationModalOpen(!isNotificationModalOpen);
+                  } else {
+                    handleNavClick(path);
+                  }
+                }}
+                className={`relative flex flex-col items-center justify-center transition-all ${
+                  isCenter
+                    ? "w-14 h-14 -mt-6 bg-blue-600 dark:bg-blue-600 rounded-full text-white shadow-lg hover:bg-blue-700 dark:hover:bg-blue-700 active:scale-95"
+                    : "flex-1 py-2 hover:text-blue-600 dark:hover:text-blue-500"
+                } ${
+                  isActive(path) && !isCenter
+                    ? "text-blue-600 dark:text-blue-500"
+                    : "text-slate-600 dark:text-slate-400"
+                }`}
+              >
+                <Icon className={isCenter ? "w-7 h-7" : "w-6 h-6"} />
+                {!isCenter && (
+                  <span className="text-xs mt-1 font-medium">{label}</span>
+                )}
+                {badge > 0 && !isCenter && (
+                  <span className="absolute top-1 right-1/4 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    {badge}
+                  </span>
+                )}
+              </button>
+            )
+          )}
         </div>
       </nav>
     </div>

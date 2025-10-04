@@ -7,7 +7,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
     username: currentProfile?.username || '',
     bio: currentProfile?.bio || '',
     location: currentProfile?.location || '',
-    website: currentProfile?.website || '',
+    // website: currentProfile?.website || '',
     avatar: currentProfile?.avatar || '',
     coverImage: '' // You can add a default cover if needed
   });
@@ -55,7 +55,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Here you would send formData to your API
+    
     console.log('Saving profile:', formData);
     alert('Profile updated! (This would save to backend)');
     onClose();
@@ -88,7 +88,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
         </div>
 
         {/* Form Content - Scrollable */}
-        <div className="overflow-y-auto flex-1">
+        <form onSubmit={handleSubmit} className="overflow-y-auto flex-1">
           <div className="p-6">
             
             {/* Cover Image Upload */}
@@ -228,7 +228,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
             </div>
 
             {/* Website */}
-            <div className="mb-4">
+            {/* <div className="mb-4">
               <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-2">
                 Website
               </label>
@@ -243,10 +243,10 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 No need for https://
               </p>
-            </div>
+            </div> */}
 
           </div>
-        </div>
+        
 
         {/* Footer - Action Buttons */}
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900">
@@ -265,6 +265,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
             Save Changes
           </button>
         </div>
+        </form>
       </div>
     </div>
   );

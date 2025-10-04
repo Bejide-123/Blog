@@ -19,6 +19,7 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -50,10 +51,27 @@ const Auth = () => {
       newErrors.name = "Name is required";
     }
 
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email is invalid";
+    // Username validation for signup
+    if (!isLogin && !formData.username.trim()) {
+      newErrors.username = "Username is required";
+    } else if (!isLogin && formData.username.length < 3) {
+      newErrors.username = "Username must be at least 3 characters";
+    } else if (!isLogin && !/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+      newErrors.username = "Username can only contain letters, numbers, and underscores";
+    }
+
+    // For login, check if either email or username is provided
+    if (isLogin) {
+      if (!formData.email.trim()) {
+        newErrors.email = "Email or username is required";
+      }
+    } else {
+      // For signup, email is required and must be valid
+      if (!formData.email.trim()) {
+        newErrors.email = "Email is required";
+      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+        newErrors.email = "Email is invalid";
+      }
     }
 
     if (!formData.password) {
@@ -84,6 +102,7 @@ const Auth = () => {
 
       setFormData({
         name: "",
+        username: "",
         email: "",
         password: "",
         confirmPassword: "",
@@ -95,6 +114,7 @@ const Auth = () => {
     setIsLogin(!isLogin);
     setFormData({
       name: "",
+      username: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -148,6 +168,7 @@ const Auth = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Full Name - Signup only */}
             {!isLogin && (
               <div>
                 <label
@@ -178,23 +199,56 @@ const Auth = () => {
               </div>
             )}
 
-            {/* Email */}
+            {/* Username - Signup only */}
+            {!isLogin && (
+              <div>
+                <label
+                  htmlFor="username"
+                  className="block text-sm font-semibold text-slate-700 mb-2"
+                >
+                  Username
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-lg font-medium">
+                    @
+                  </span>
+                  <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    placeholder="johndoe"
+                    className={`w-full pl-9 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                      errors.username
+                        ? "border-red-300 focus:ring-red-200"
+                        : "border-gray-300 focus:ring-blue-200 focus:border-blue-500"
+                    }`}
+                  />
+                </div>
+                {errors.username && (
+                  <p className="mt-1.5 text-sm text-red-600">{errors.username}</p>
+                )}
+              </div>
+            )}
+
+            {/* Email or Username/Email */}
             <div>
               <label
                 htmlFor="email"
                 className="block text-sm font-semibold text-slate-700 mb-2"
               >
-                Email Address
+                {isLogin ? "Email or Username" : "Email Address"}
               </label>
               <div className="relative">
                 <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                 <input
-                  type="email"
+                  type={isLogin ? "text" : "email"}
                   id="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="you@example.com"
+                  placeholder={isLogin ? "email@example.com or @username" : "you@example.com"}
                   className={`w-full pl-11 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
                     errors.email
                       ? "border-red-300 focus:ring-red-200"
@@ -247,7 +301,7 @@ const Auth = () => {
               )}
             </div>
 
-            {/* Confirm Password */}
+            {/* Confirm Password - Signup only */}
             {!isLogin && (
               <div>
                 <label
@@ -280,7 +334,7 @@ const Auth = () => {
               </div>
             )}
 
-            {/* Forgot Password */}
+            {/* Forgot Password - Login only */}
             {isLogin && (
               <div className="flex items-center justify-end">
                 <a

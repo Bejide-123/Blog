@@ -184,7 +184,7 @@ export default function ProfilePage() {
                     <span>{profile.location}</span>
                   </div>
                 )}
-                {profile.website && (
+                {/* {profile.website && (
                   <a
                     href={`https://${profile.website}`}
                     target="_blank"
@@ -194,7 +194,7 @@ export default function ProfilePage() {
                     <Link2 className="w-4 h-4" />
                     <span>{profile.website}</span>
                   </a>
-                )}
+                )} */}
                 <div className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
                   <span>Joined {profile.joinedDate}</span>
