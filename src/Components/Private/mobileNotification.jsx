@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-export default function NotificationDropdown({ isOpen, onClose }) {
+export default function MobileNotificationModal({ isOpen, onClose }) {
   const sampleNotifications = [
     {
       id: 1,
@@ -32,30 +32,39 @@ export default function NotificationDropdown({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <>
-      {/* Click outside overlay */}
-      <div className="fixed inset-0 z-10" onClick={onClose} />
-
-      <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 z-20">
-        <div className="px-4 py-2 border-b border-gray-200 dark:border-slate-700">
-          <p className="text-sm font-semibold text-slate-900 dark:text-white">
+    <div
+      className="md:hidden fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md bg-white dark:bg-slate-800 rounded-t-2xl shadow-lg border-t border-gray-200 dark:border-slate-700 animate-slide-up"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-slate-700">
+          <p className="text-base font-semibold text-slate-900 dark:text-white">
             Notifications
           </p>
+          <button
+            onClick={onClose}
+            className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 text-lg"
+          >
+            ✕
+          </button>
         </div>
-        <div className="max-h-64 overflow-y-auto">
+
+        {/* Notification List */}
+        <div className="max-h-[70vh] overflow-y-auto p-2">
           {sampleNotifications.map((n) => (
             <div
               key={n.id}
-              className="flex items-start px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+              className="flex items-start px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors rounded-lg"
             >
-              {/* Avatar */}
               <img
                 src={n.avatar}
                 className="w-11 h-11 rounded-full border-2 border-gray-200 dark:border-slate-700 mr-3"
                 alt="avatar"
               />
-
-              {/* Message + Time stacked */}
               <div>
                 <p className="text-sm text-slate-800 dark:text-slate-200">
                   {n.message}
@@ -67,13 +76,14 @@ export default function NotificationDropdown({ isOpen, onClose }) {
             </div>
           ))}
         </div>
-        <div className="border-t border-gray-200 dark:border-slate-700 px-4 py-2 text-center">
+
+        {/* Footer */}
+        <div className="border-t border-gray-200 dark:border-slate-700 px-4 py-3 text-center">
           <button className="text-sm text-blue-600 dark:text-blue-500 hover:underline">
             View all
           </button>
         </div>
       </div>
-    </>
+    </div>
   );
 }
-

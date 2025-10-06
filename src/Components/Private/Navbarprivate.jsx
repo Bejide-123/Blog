@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import NotificationDropdown from "./Notification";
+import MobileNotificationModal from "./mobileNotification";
 
 export default function NavbarPrivate() {
   const [currentPath, setCurrentPath] = useState("/feed");
@@ -94,7 +95,7 @@ export default function NavbarPrivate() {
                   onClick={() => {
                     handleNavClick("/feed"), nav("/home");
                   }}
-                  className={`text-lg font-semibold transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 dark:after:bg-blue-500 after:transition-all after:duration-200 hover:after:w-full ${
+                  className={`text-lg cursor-pointer font-semibold transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 dark:after:bg-blue-500 after:transition-all after:duration-200 hover:after:w-full ${
                     isActive("/feed")
                       ? "text-blue-600 dark:text-blue-500"
                       : "text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-500"
@@ -106,7 +107,7 @@ export default function NavbarPrivate() {
                   onClick={() => {
                     handleNavClick("/saved"), nav("/saved");
                   }}
-                  className={`text-lg font-semibold transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 dark:after:bg-blue-500 after:transition-all after:duration-200 hover:after:w-full ${
+                  className={`text-lg cursor-pointer font-semibold transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 dark:after:bg-blue-500 after:transition-all after:duration-200 hover:after:w-full ${
                     isActive("/saved")
                       ? "text-blue-600 dark:text-blue-500"
                       : "text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-500"
@@ -361,7 +362,7 @@ export default function NavbarPrivate() {
           </div>
         </div>
       )}
-      
+
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 shadow-lg dark:shadow-slate-900/50 z-50">
         {/* Mobile Notifications Modal */}
@@ -401,6 +402,10 @@ export default function NavbarPrivate() {
           )}
         </div>
       </nav>
+      <MobileNotificationModal
+        isOpen={isNotificationModalOpen}
+        onClose={() => setIsNotificationModalOpen(false)}
+      />
     </div>
   );
 }

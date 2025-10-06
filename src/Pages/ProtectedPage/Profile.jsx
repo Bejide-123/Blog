@@ -396,7 +396,7 @@ export default function ProfilePage() {
                     <p>{profile.location}</p>
                   </div>
 
-                  <div>
+                  {/* <div>
                     <h4 className="font-semibold text-slate-900 dark:text-white mb-2">
                       Website
                     </h4>
@@ -408,7 +408,7 @@ export default function ProfilePage() {
                     >
                       {profile.website}
                     </a>
-                  </div>
+                  </div> */}
 
                   <div>
                     <h4 className="font-semibold text-slate-900 dark:text-white mb-2">
