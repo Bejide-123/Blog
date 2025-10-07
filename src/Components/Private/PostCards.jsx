@@ -285,7 +285,7 @@ export default function FeedContent() {
 
                       {/* Comment Button */}
                       <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200">
-                        <MessageCircle className="w-5 h-5" />
+                        <MessageCircle className="w-5 text-green-600 h-5" />
                         <span className="text-sm font-medium">
                           {post.comments}
                         </span>

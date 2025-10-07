@@ -6,6 +6,7 @@ import FullPostPage from "./Pages/ProtectedPage/FullPostPage";
 import SavedPage from "./Pages/ProtectedPage/SavedPage";
 import ProfilePage from "./Pages/ProtectedPage/Profile";
 import CreatePostPage from "./Pages/ProtectedPage/CreatePost";
+import DashboardPage from "./Pages/ProtectedPage/Dashboard";
 // import Notifications from "./Pages/ProtectedPage/Notifications";
 
 const App = () => {
@@ -20,6 +21,7 @@ const App = () => {
       <Route path="/saved" element={<SavedPage/>} />
       <Route path="/profile" element={<ProfilePage/>} />
       <Route path="/create" element={<CreatePostPage />} />
+      <Route path="/dashboard" element={<DashboardPage />} />
       {/* <Route path="/notifications" element={<Notifications/>} /> */}
     </Routes>
   );
