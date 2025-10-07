@@ -136,7 +136,7 @@ export default function NavbarPrivate() {
             {/* Right: Actions */}
             <div className="flex items-center gap-4">
               {/* Dark Mode Toggle */}
-              <button
+              {/* <button
                 onClick={toggleDarkMode}
                 className="p-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
               >
@@ -145,7 +145,7 @@ export default function NavbarPrivate() {
                 ) : (
                   <Moon className="w-6 h-6" />
                 )}
-              </button>
+              </button> */}
 
               {/* Notifications */}
               <div className="relative">
@@ -264,7 +264,7 @@ export default function NavbarPrivate() {
 
           {/* Right: Dark Mode, Search & Avatar */}
           <div className="flex items-center gap-2">
-            <button
+            {/* <button
               onClick={toggleDarkMode}
               className="p-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
             >
@@ -273,7 +273,7 @@ export default function NavbarPrivate() {
               ) : (
                 <Moon className="w-5 h-5" />
               )}
-            </button>
+            </button> */}
             <button
               onClick={() => setShowSearchModal(true)}
               className="p-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
