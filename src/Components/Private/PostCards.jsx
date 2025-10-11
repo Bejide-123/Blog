@@ -353,7 +353,7 @@ export default function FeedContent() {
                 {isCommentsOpen && (
                   <div className="border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900">
                     {/* Comments List */}
-                    <div className="p-5 space-y-4 max-h-96 overflow-y-auto">
+                    <div className="p-5 space-y-4 max-h-70 overflow-y-auto">
                       {comments[post.id]?.length > 0 ? (
                         comments[post.id].map((comment) => (
                           <div key={comment.id} className="flex gap-3">
@@ -400,7 +400,7 @@ export default function FeedContent() {
                             type="text"
                             value={newComment}
                             onChange={(e) => setNewComment(e.target.value)}
-                            onKeyPress={(e) => {
+                            onKeyDown={(e) => {
                               if (e.key === "Enter" && !e.shiftKey) {
                                 e.preventDefault();
                                 handleSendComment(post.id);
