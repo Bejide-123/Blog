@@ -395,7 +395,7 @@ export default function FeedContent() {
                           alt="You"
                           className="w-9 h-9 rounded-full border-2 border-gray-200 dark:border-slate-700 flex-shrink-0"
                         />
-                        <div className="flex-1 flex items-end gap-2 bg-white dark:bg-slate-800 rounded-2xl border-2 border-gray-200 dark:border-slate-700 focus-within:border-blue-600 dark:focus-within:border-blue-500 transition-colors px-4 py-2.5">
+                        <div className="flex-1 flex items-end gap-2 bg-white dark:bg-slate-800 rounded-2xl border-2 border-gray-200 dark:border-slate-700 focus-within:border-blue-600 dark:focus-within:border-blue-500 transition-colors px-4 py-1.5">
                           <input
                             type="text"
                             value={newComment}
@@ -407,7 +407,7 @@ export default function FeedContent() {
                               }
                             }}
                             placeholder="Write a comment..."
-                            className="flex-1 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none text-sm"
+                            className="flex-1 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none pb-2 text-sm"
                           />
                           <button
                             onClick={() => handleSendComment(post.id)}
