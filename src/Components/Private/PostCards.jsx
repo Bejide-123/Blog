@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { Heart, MessageCircle, Bookmark, MoreHorizontal } from "lucide-react";
+import { Heart, MessageCircle, Bookmark, MoreHorizontal, Send } from "lucide-react";
 
 export default function FeedContent() {
   const [activeTab, setActiveTab] = useState("forYou");
   const [likedPosts, setLikedPosts] = useState(new Set([2, 5]));
   const [bookmarkedPosts, setBookmarkedPosts] = useState(new Set([3, 5]));
   const [expandedPostId, setExpandedPostId] = useState(null);
+  const [activeCommentPost, setActiveCommentPost] = useState(null);
+  const [newComment, setNewComment] = useState("");
+  const [comments, setComments] = useState({});
 
   // Dummy posts data
   const posts = [
@@ -38,7 +41,7 @@ export default function FeedContent() {
       },
       title: "The Future of AI in Software Development",
       content:
-        "Artificial Intelligence is transforming how we build software. What used to take hours of manual coding can now be streamlined with the help of AI-driven tools. From intelligent code suggestions to automated testing, AI is reshaping the development process.\n\nOne major area where AI is making an impact is code generation. Tools like GitHub Copilot and ChatGPT help developers write boilerplate code faster, freeing up time to focus on solving higher-level problems. Instead of starting from scratch, engineers can leverage AI to provide a strong starting point.\n\nTesting and debugging have also seen huge improvements. Machine learning models can analyze codebases, detect patterns, and even predict where bugs are most likely to occur. Automated test case generation ensures better coverage with less manual effort.\n\nAI is also playing a role in project management. By analyzing historical data, AI can forecast timelines, predict resource needs, and highlight potential bottlenecks before they become critical issues.\n\nOf course, AI isn’t without its challenges. Concerns around ethics, bias, and over-reliance on machine-generated code continue to spark debate. Developers must balance efficiency gains with responsible usage.\n\nThe future of AI in software development looks promising. As AI systems become more sophisticated, we may see fully autonomous tools capable of building, testing, and deploying applications with minimal human intervention. While this won’t replace developers, it will significantly augment their capabilities, making teams more productive than ever before.",
+        "Artificial Intelligence is transforming how we build software. What used to take hours of manual coding can now be streamlined with the help of AI-driven tools. From intelligent code suggestions to automated testing, AI is reshaping the development process.\n\nOne major area where AI is making an impact is code generation. Tools like GitHub Copilot and ChatGPT help developers write boilerplate code faster, freeing up time to focus on solving higher-level problems. Instead of starting from scratch, engineers can leverage AI to provide a strong starting point.\n\nTesting and debugging have also seen huge improvements. Machine learning models can analyze codebases, detect patterns, and even predict where bugs are most likely to occur. Automated test case generation ensures better coverage with less manual effort.\n\nAI is also playing a role in project management. By analyzing historical data, AI can forecast timelines, predict resource needs, and highlight potential bottlenecks before they become critical issues.\n\nOf course, AI isn't without its challenges. Concerns around ethics, bias, and over-reliance on machine-generated code continue to spark debate. Developers must balance efficiency gains with responsible usage.\n\nThe future of AI in software development looks promising. As AI systems become more sophisticated, we may see fully autonomous tools capable of building, testing, and deploying applications with minimal human intervention. While this won't replace developers, it will significantly augment their capabilities, making teams more productive than ever before.",
       excerpt:
         "Artificial Intelligence is transforming how we build software—from code generation to automated testing and project management.",
       image: null,
@@ -57,7 +60,7 @@ export default function FeedContent() {
       },
       title: "Building Scalable REST APIs with Node.js",
       content:
-        "Learn how to build production-ready REST APIs using Node.js, Express, and MongoDB. This tutorial covers authentication, error handling, rate limiting, and best practices for API design that will help you create robust backend services.\n\nWhen building a REST API, one of the first steps is setting up the project structure. A well-organized folder layout ensures your code is easy to maintain and scale as your project grows. With Express, you can separate routes, controllers, and middleware into different modules to keep everything clean.\n\nAuthentication is another crucial piece. While many beginners start with simple session-based logins, production-ready APIs often use JSON Web Tokens (JWT) or OAuth for secure and scalable authentication. By combining JWT with middleware, you can easily protect routes and control access levels.\n\nError handling is often overlooked but it’s vital for creating reliable APIs. A consistent error response format helps frontend developers handle issues gracefully. With Express, you can set up global error-handling middleware that logs errors and returns structured JSON responses.\n\nPerformance also matters. Features like request validation, caching, and database indexing play a huge role in how your API scales. Rate limiting is an important security practice that prevents abuse of your endpoints. Libraries like `express-rate-limit` make it easy to implement.\n\nFinally, don’t forget documentation. Tools like Swagger (OpenAPI) or Postman Collections help teams and external developers understand and consume your API effectively.\n\nBy following these practices, you can design Node.js APIs that are not only functional but also maintainable, secure, and scalable for real-world production environments.",
+        "Learn how to build production-ready REST APIs using Node.js, Express, and MongoDB. This tutorial covers authentication, error handling, rate limiting, and best practices for API design that will help you create robust backend services.\n\nWhen building a REST API, one of the first steps is setting up the project structure. A well-organized folder layout ensures your code is easy to maintain and scale as your project grows. With Express, you can separate routes, controllers, and middleware into different modules to keep everything clean.\n\nAuthentication is another crucial piece. While many beginners start with simple session-based logins, production-ready APIs often use JSON Web Tokens (JWT) or OAuth for secure and scalable authentication. By combining JWT with middleware, you can easily protect routes and control access levels.\n\nError handling is often overlooked but it's vital for creating reliable APIs. A consistent error response format helps frontend developers handle issues gracefully. With Express, you can set up global error-handling middleware that logs errors and returns structured JSON responses.\n\nPerformance also matters. Features like request validation, caching, and database indexing play a huge role in how your API scales. Rate limiting is an important security practice that prevents abuse of your endpoints. Libraries like `express-rate-limit` make it easy to implement.\n\nFinally, don't forget documentation. Tools like Swagger (OpenAPI) or Postman Collections help teams and external developers understand and consume your API effectively.\n\nBy following these practices, you can design Node.js APIs that are not only functional but also maintainable, secure, and scalable for real-world production environments.",
       excerpt:
         "Learn how to build production-ready REST APIs using Node.js, Express, and MongoDB. This tutorial covers authentication, error handling, rate limiting...",
       image:
@@ -152,6 +155,35 @@ export default function FeedContent() {
     });
   };
 
+  const handleSendComment = (postId) => {
+    if (newComment.trim()) {
+      const comment = {
+        id: Date.now(),
+        author: {
+          name: "You",
+          username: "currentuser",
+          avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser",
+        },
+        content: newComment,
+        timestamp: "Just now",
+      };
+
+      setComments((prev) => ({
+        ...prev,
+        [postId]: [...(prev[postId] || []), comment],
+      }));
+      setNewComment("");
+    }
+  };
+
+  const toggleComments = (postId) => {
+    if (activeCommentPost === postId) {
+      setActiveCommentPost(null);
+    } else {
+      setActiveCommentPost(postId);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 pt-16 md:pt-20">
       <div className="max-w-4xl mx-auto px-4 py-6">
@@ -162,7 +194,7 @@ export default function FeedContent() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-6 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
+                className={`px-6 py-2.5 cursor-pointer rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
                   activeTab === tab.id
                     ? "bg-blue-600 dark:bg-blue-600 text-white shadow-sm"
                     : "text-slate-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700"
@@ -180,6 +212,7 @@ export default function FeedContent() {
             const isLiked = likedPosts.has(post.id);
             const isBookmarked = bookmarkedPosts.has(post.id);
             const showExcerpt = post.content.length > 100;
+            const isCommentsOpen = activeCommentPost === post.id;
 
             return (
               <article
@@ -284,10 +317,16 @@ export default function FeedContent() {
                       </button>
 
                       {/* Comment Button */}
-                      <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200">
-                        <MessageCircle className="w-5 text-green-600 h-5" />
+                      <button 
+                        onClick={() => toggleComments(post.id)}
+                        className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 ${
+                          isCommentsOpen
+                            ? "text-blue-600 dark:text-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                            : "text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                        }`}>
+                        <MessageCircle className="w-5 h-5 text-green-600" />
                         <span className="text-sm font-medium">
-                          {post.comments}
+                          {post.comments + (comments[post.id]?.length || 0)}
                         </span>
                       </button>
 
@@ -309,6 +348,83 @@ export default function FeedContent() {
                     </div>
                   </div>
                 </div>
+
+                {/* Expandable Comments Section */}
+                {isCommentsOpen && (
+                  <div className="border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900">
+                    {/* Comments List */}
+                    <div className="p-5 space-y-4 max-h-96 overflow-y-auto">
+                      {comments[post.id]?.length > 0 ? (
+                        comments[post.id].map((comment) => (
+                          <div key={comment.id} className="flex gap-3">
+                            <img
+                              src={comment.author.avatar}
+                              alt={comment.author.name}
+                              className="w-9 h-9 rounded-full border-2 border-gray-200 dark:border-slate-700 flex-shrink-0"
+                            />
+                            <div className="flex-1">
+                              <div className="bg-white dark:bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm">
+                                <p className="font-semibold text-sm text-slate-900 dark:text-white mb-0.5">
+                                  {comment.author.name}
+                                </p>
+                                <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
+                                  {comment.content}
+                                </p>
+                              </div>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 ml-4">
+                                {comment.timestamp}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-8">
+                          <MessageCircle className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                          <p className="text-slate-500 dark:text-slate-400 text-sm">
+                            No comments yet. Be the first to comment!
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Input Area */}
+                    <div className="p-4 border-t border-gray-200 dark:border-slate-700">
+                      <div className="flex items-end gap-3">
+                        <img
+                          src="https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser"
+                          alt="You"
+                          className="w-9 h-9 rounded-full border-2 border-gray-200 dark:border-slate-700 flex-shrink-0"
+                        />
+                        <div className="flex-1 flex items-end gap-2 bg-white dark:bg-slate-800 rounded-2xl border-2 border-gray-200 dark:border-slate-700 focus-within:border-blue-600 dark:focus-within:border-blue-500 transition-colors px-4 py-2.5">
+                          <input
+                            type="text"
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                            onKeyPress={(e) => {
+                              if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSendComment(post.id);
+                              }
+                            }}
+                            placeholder="Write a comment..."
+                            className="flex-1 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none text-sm"
+                          />
+                          <button
+                            onClick={() => handleSendComment(post.id)}
+                            disabled={!newComment.trim()}
+                            className={`p-2 rounded-lg transition-all duration-200 ${
+                              newComment.trim()
+                                ? "text-blue-600 dark:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                : "text-slate-300 dark:text-slate-600 cursor-not-allowed"
+                            }`}
+                          >
+                            <Send className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </article>
             );
           })}
@@ -316,7 +432,7 @@ export default function FeedContent() {
 
         {/* Load More */}
         <div className="flex justify-center mt-8 mb-20">
-          <button className="px-6 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold rounded-lg border-2 border-gray-300 dark:border-slate-600 hover:border-blue-600 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-500 transition-all duration-200 shadow-sm hover:shadow-md">
+          <button className="px-6 cursor-pointer py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold rounded-lg border-2 border-gray-300 dark:border-slate-600 hover:border-blue-600 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-500 transition-all duration-200 shadow-sm hover:shadow-md">
             Load More Posts
           </button>
         </div>

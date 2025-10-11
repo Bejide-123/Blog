@@ -9,6 +9,7 @@ import {
   FiFeather,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { ButtonLoader } from "../../Components/Private/Loader";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -17,6 +18,8 @@ const Auth = () => {
 
   const [isLogin, setIsLogin] = useState(mode !== "signup");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     username: "",
@@ -49,42 +52,54 @@ const Auth = () => {
 
     if (!isLogin && !formData.name.trim()) {
       newErrors.name = "Name is required";
+      setIsLoading(false)
     }
 
     // Username validation for signup
     if (!isLogin && !formData.username.trim()) {
       newErrors.username = "Username is required";
+      setIsLoading(false)
     } else if (!isLogin && formData.username.length < 3) {
       newErrors.username = "Username must be at least 3 characters";
+      setIsLoading(false)
     } else if (!isLogin && !/^[a-zA-Z0-9_]+$/.test(formData.username)) {
-      newErrors.username = "Username can only contain letters, numbers, and underscores";
+      newErrors.username =
+        "Username can only contain letters, numbers, and underscores";
+        setIsLoading(false)
     }
 
     // For login, check if either email or username is provided
     if (isLogin) {
       if (!formData.email.trim()) {
         newErrors.email = "Email or username is required";
+        setIsLoading(false)
       }
     } else {
       // For signup, email is required and must be valid
       if (!formData.email.trim()) {
         newErrors.email = "Email is required";
+        setIsLoading(false)
       } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
         newErrors.email = "Email is invalid";
+        setIsLoading(false)
       }
     }
 
     if (!formData.password) {
       newErrors.password = "Password is required";
+      setIsLoading(false)
     } else if (formData.password.length < 6) {
       newErrors.password = "Password must be at least 6 characters";
+      setIsLoading(false)
     }
 
     if (!isLogin) {
       if (!formData.confirmPassword) {
         newErrors.confirmPassword = "Please confirm your password";
+        setIsLoading(false)
       } else if (formData.password !== formData.confirmPassword) {
         newErrors.confirmPassword = "Passwords do not match";
+        setIsLoading(false)
       }
     }
 
@@ -93,10 +108,16 @@ const Auth = () => {
   };
 
   const handleSubmit = (e) => {
+    setIsLoading(true);
     e.preventDefault();
 
     if (validateForm()) {
-      nav("/home");
+      setTimeout(() => {
+        nav("/home");
+        setIsLoading(false);
+      }, 5000);
+      // nav("/home")
+
       console.log("Form submitted:", formData);
       console.log("Mode:", isLogin ? "Login" : "Register");
 
@@ -227,7 +248,9 @@ const Auth = () => {
                   />
                 </div>
                 {errors.username && (
-                  <p className="mt-1.5 text-sm text-red-600">{errors.username}</p>
+                  <p className="mt-1.5 text-sm text-red-600">
+                    {errors.username}
+                  </p>
                 )}
               </div>
             )}
@@ -248,7 +271,11 @@ const Auth = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder={isLogin ? "email@example.com or @username" : "you@example.com"}
+                  placeholder={
+                    isLogin
+                      ? "email@example.com or @username"
+                      : "you@example.com"
+                  }
                   className={`w-full pl-11 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
                     errors.email
                       ? "border-red-300 focus:ring-red-200"
@@ -349,9 +376,20 @@ const Auth = () => {
             {/* Submit */}
             <button
               type="submit"
-              className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 cursor-pointer"
+              onClick={handleSubmit}
+              disabled={isLoading}
+              className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {isLogin ? "Login" : "Create Account"}
+              {isLoading ? (
+                <>
+                  <ButtonLoader />
+                  {isLogin ? "Logging in..." : "Creating account..."}
+                </>
+              ) : isLogin ? (
+                "Login"
+              ) : (
+                "Create Account"
+              )}
             </button>
           </form>
 

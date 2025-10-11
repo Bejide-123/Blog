@@ -1,4 +1,5 @@
 import React from "react";
+import { UserProvider } from "./Context/userContext";
 import { Routes, Route } from "react-router-dom";
 import LandingPage from "./Pages/PublicPage/LandingPage";
 import Auth from "./Pages/PublicPage/Login";
@@ -12,20 +13,22 @@ import SettingsPage from "./Pages/ProtectedPage/Settings";
 
 const App = () => {
   return (
-    <Routes>
-      {/* Landing page with sections + navbar */}
-      <Route path="/" element={<LandingPage />} />
+    <UserProvider>
+      <Routes>
+        {/* Landing page with sections + navbar */}
+        <Route path="/" element={<LandingPage />} />
 
-      {/* Auth page */}
-      <Route path="/login" element={<Auth />} />
-      <Route path="/home" element={<FullPostPage/>} />
-      <Route path="/saved" element={<SavedPage/>} />
-      <Route path="/profile" element={<ProfilePage/>} />
-      <Route path="/create" element={<CreatePostPage />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
-      <Route path="/settings" element={<SettingsPage />} />
-      {/* <Route path="/notifications" element={<Notifications/>} /> */}
-    </Routes>
+        {/* Auth page */}
+        <Route path="/login" element={<Auth />} />
+        <Route path="/home" element={<FullPostPage/>} />
+        <Route path="/saved" element={<SavedPage/>} />
+        <Route path="/profile" element={<ProfilePage/>} />
+        <Route path="/create" element={<CreatePostPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        {/* <Route path="/notifications" element={<Notifications/>} /> */}
+      </Routes>
+    </UserProvider>
   );
 };
 

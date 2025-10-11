@@ -21,3 +21,18 @@ html {
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
 }
+
+.active-link {
+  color: #2563eb; /* blue-600 */
+  position: relative;
+}
+
+.active-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 2px;
+  background-color: #2563eb; /* underline */
+}
