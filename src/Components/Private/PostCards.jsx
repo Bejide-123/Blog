@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, MessageCircle, Bookmark, MoreHorizontal, Send } from "lucide-react";
+import { Heart, MessageCircle, Bookmark, MoreHorizontal, Send, Link2, UserPlus, UserMinus, EyeOff, Repeat2 } from "lucide-react";
 
 export default function FeedContent() {
   const [activeTab, setActiveTab] = useState("forYou");
@@ -9,6 +9,10 @@ export default function FeedContent() {
   const [activeCommentPost, setActiveCommentPost] = useState(null);
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState({});
+  const [activeMenuPost, setActiveMenuPost] = useState(null);
+  const [followedUsers, setFollowedUsers] = useState(new Set(["mchen", "lisaa"]));
+  const [hiddenPosts, setHiddenPosts] = useState(new Set());
+  const [repostedPosts, setRepostedPosts] = useState(new Set());
 
   // Dummy posts data
   const posts = [
@@ -184,6 +188,55 @@ export default function FeedContent() {
     }
   };
 
+  const toggleMenu = (postId) => {
+    if (activeMenuPost === postId) {
+      setActiveMenuPost(null);
+    } else {
+      setActiveMenuPost(postId);
+    }
+  };
+
+  const copyLink = (postId) => {
+    const link = `https://example.com/post/${postId}`;
+    navigator.clipboard.writeText(link);
+    alert("Link copied to clipboard!");
+    setActiveMenuPost(null);
+  };
+
+  const toggleFollow = (username) => {
+    setFollowedUsers((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(username)) {
+        newSet.delete(username);
+      } else {
+        newSet.add(username);
+      }
+      return newSet;
+    });
+    setActiveMenuPost(null);
+  };
+
+  const hidePost = (postId) => {
+    setHiddenPosts((prev) => new Set([...prev, postId]));
+    setActiveMenuPost(null);
+  };
+
+  const toggleRepost = (postId) => {
+    setRepostedPosts((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(postId)) {
+        newSet.delete(postId);
+      } else {
+        newSet.add(postId);
+      }
+      return newSet;
+    });
+    setActiveMenuPost(null);
+  };
+
+  // Filter out hidden posts
+  const visiblePosts = posts.filter(post => !hiddenPosts.has(post.id));
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 pt-16 md:pt-20">
       <div className="max-w-4xl mx-auto px-4 py-6">
@@ -208,17 +261,28 @@ export default function FeedContent() {
 
         {/* Posts Feed */}
         <div className="space-y-6">
-          {posts.map((post) => {
+          {visiblePosts.map((post) => {
             const isLiked = likedPosts.has(post.id);
             const isBookmarked = bookmarkedPosts.has(post.id);
             const showExcerpt = post.content.length > 100;
             const isCommentsOpen = activeCommentPost === post.id;
+            const isMenuOpen = activeMenuPost === post.id;
+            const isFollowing = followedUsers.has(post.author.username);
+            const isReposted = repostedPosts.has(post.id);
 
             return (
               <article
                 key={post.id}
                 className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden hover:shadow-md dark:hover:shadow-slate-900/50 transition-all duration-200"
               >
+                {/* Repost indicator */}
+                {isReposted && (
+                  <div className="px-5 pt-3 pb-1 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                    <Repeat2 className="w-4 h-4" />
+                    <span>You reposted</span>
+                  </div>
+                )}
+
                 {/* Post Header */}
                 <div className="p-5 pb-3">
                   <div className="flex items-center justify-between mb-4">
@@ -237,9 +301,62 @@ export default function FeedContent() {
                         </p>
                       </div>
                     </div>
-                    <button onClick={() => alert("clicked")} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
-                      <MoreHorizontal className="w-5 h-5" />
-                    </button>
+                    <div className="relative">
+                      <button 
+                        onClick={() => toggleMenu(post.id)} 
+                        className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                      >
+                        <MoreHorizontal className="w-5 h-5" />
+                      </button>
+
+                      {/* Dropdown Menu */}
+                      {isMenuOpen && (
+                        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 py-2 z-50">
+                          <button
+                            onClick={() => copyLink(post.id)}
+                            className="w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-slate-300 text-sm"
+                          >
+                            <Link2 className="w-4 h-4" />
+                            <span>Copy link</span>
+                          </button>
+                          
+                          <button
+                            onClick={() => toggleFollow(post.author.username)}
+                            className="w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-slate-300 text-sm"
+                          >
+                            {isFollowing ? (
+                              <>
+                                <UserMinus className="w-4 h-4" />
+                                <span>Unfollow @{post.author.username}</span>
+                              </>
+                            ) : (
+                              <>
+                                <UserPlus className="w-4 h-4" />
+                                <span>Follow @{post.author.username}</span>
+                              </>
+                            )}
+                          </button>
+
+                          <button
+                            onClick={() => toggleRepost(post.id)}
+                            className="w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-slate-300 text-sm"
+                          >
+                            <Repeat2 className="w-4 h-4" />
+                            <span>{isReposted ? "Undo repost" : "Repost"}</span>
+                          </button>
+
+                          <div className="border-t border-gray-200 dark:border-slate-700 my-1"></div>
+
+                          <button
+                            onClick={() => hidePost(post.id)}
+                            className="w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-red-600 dark:text-red-500 text-sm"
+                          >
+                            <EyeOff className="w-4 h-4" />
+                            <span>Not interested</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Post Title */}
@@ -324,7 +441,7 @@ export default function FeedContent() {
                             ? "text-blue-600 dark:text-blue-500 bg-blue-50 dark:bg-blue-900/20"
                             : "text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                         }`}>
-                        <MessageCircle className="w-5 h-5 text-green-600" />
+                        <MessageCircle className="w-5 h-5" />
                         <span className="text-sm font-medium">
                           {post.comments + (comments[post.id]?.length || 0)}
                         </span>
@@ -437,6 +554,14 @@ export default function FeedContent() {
           </button>
         </div>
       </div>
+
+      {/* Click outside to close menu */}
+      {activeMenuPost && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={() => setActiveMenuPost(null)}
+        ></div>
+      )}
     </div>
   );
 }
