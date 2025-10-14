@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import {
   Home,
   Bookmark,
@@ -16,8 +16,11 @@ import {
 import { useNavigate } from "react-router";
 import NotificationDropdown from "./Notification";
 import MobileNotificationModal from "./mobileNotification";
+import { UserContext } from "../../Context/userContext";
 
 export default function NavbarPrivate() {
+  const { user, setUser} = useContext(UserContext)
+  const [username, setUsername] = useState(user?.username || "")
   const [currentPath, setCurrentPath] = useState("/feed");
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -27,10 +30,10 @@ export default function NavbarPrivate() {
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const nav = useNavigate();
 
-  const user = {
-    username: "johndoe",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=johndoe",
-  };
+  // const user = {
+  //   username: "johndoe",
+  //   avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=johndoe",
+  // };
 
   const isActive = (path) => currentPath === path;
 
@@ -192,7 +195,7 @@ export default function NavbarPrivate() {
                 >
                   <img
                     src={user.avatar}
-                    alt={user.username}
+                    alt={username}
                     className="w-full h-full object-cover"
                   />
                 </button>
@@ -207,7 +210,7 @@ export default function NavbarPrivate() {
                     <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-lg dark:shadow-slate-900/50 border border-gray-200 dark:border-slate-700 py-2 z-20">
                       <div className="px-4 py-2 border-b border-gray-200 dark:border-slate-700">
                         <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                          @{user.username}
+                          @{user?.username}
                         </p>
                       </div>
                       <button

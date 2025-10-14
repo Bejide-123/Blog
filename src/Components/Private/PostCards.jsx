@@ -21,7 +21,7 @@ export default function FeedContent() {
       author: {
         name: "Sarah Johnson",
         username: "sarahj",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sarah",
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sarahj",
       },
       title: "Getting Started with React Hooks",
       content:
@@ -426,7 +426,7 @@ export default function FeedContent() {
                         }`}
                       >
                         <Heart
-                          className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`}
+                          className={`w-5 h-5 text-red-500 ${isLiked ? "fill-current" : ""}`}
                         />
                         <span className="text-sm font-medium">
                           {post.likes + (isLiked ? 1 : 0)}
@@ -441,7 +441,7 @@ export default function FeedContent() {
                             ? "text-blue-600 dark:text-blue-500 bg-blue-50 dark:bg-blue-900/20"
                             : "text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                         }`}>
-                        <MessageCircle className="w-5 h-5" />
+                        <MessageCircle className="w-5 h-5 text-green-600" />
                         <span className="text-sm font-medium">
                           {post.comments + (comments[post.id]?.length || 0)}
                         </span>
@@ -477,7 +477,7 @@ export default function FeedContent() {
                             <img
                               src={comment.author.avatar}
                               alt={comment.author.name}
-                              className="w-9 h-9 rounded-full border-2 border-gray-200 dark:border-slate-700 flex-shrink-0"
+                              className="w-11 h-11 rounded-full border-2 pb-5 border-gray-200 dark:border-slate-700 flex-shrink-0"
                             />
                             <div className="flex-1">
                               <div className="bg-white dark:bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm">

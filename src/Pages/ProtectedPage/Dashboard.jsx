@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import NavbarPrivate from "../../Components/Private/Navbarprivate";
 import { useNavigate } from "react-router-dom";
+import { PageLoader } from "../../Components/Private/Loader"
 
 export default function DashboardPage() {
   const [isPageLoading, setIsPageLoading] = useState(true);

@@ -7,6 +7,7 @@ export function UserProvider({ children }) {
     name: "John Doe",
     email: "johndoe@example.com",
     username: "johndoe",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=johndoe",
     preferences: {
       darkMode: false,
       emailNotifications: true,
