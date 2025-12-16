@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   FiMail,
   FiLock,
@@ -8,18 +8,20 @@ import {
   FiEyeOff,
   FiFeather,
 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
 import { ButtonLoader } from "../../Components/Private/Loader";
+import { signUp, signIn } from "../../Services/api";
+import { useUser } from "../../Context/userContext";
+import { supabase } from "../../lib/supabase";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
   const mode = searchParams.get("mode");
   const nav = useNavigate();
+  const { setUser } = useUser();
 
   const [isLogin, setIsLogin] = useState(mode !== "signup");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
   const [formData, setFormData] = useState({
     name: "",
     username: "",
@@ -35,101 +37,95 @@ const Auth = () => {
   }, [mode]);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    if (errors[e.target.name]) {
-      setErrors({
-        ...errors,
-        [e.target.name]: "",
-      });
-    }
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: "" });
   };
 
   const validateForm = () => {
     const newErrors = {};
 
-    if (!isLogin && !formData.name.trim()) {
-      newErrors.name = "Name is required";
-      setIsLoading(false)
-    }
+    if (!isLogin && !formData.name.trim())
+      newErrors.name = "Full Name is required";
 
-    // Username validation for signup
-    if (!isLogin && !formData.username.trim()) {
+    if (!isLogin && !formData.username.trim())
       newErrors.username = "Username is required";
-      setIsLoading(false)
-    } else if (!isLogin && formData.username.length < 3) {
+    else if (!isLogin && formData.username.length < 3)
       newErrors.username = "Username must be at least 3 characters";
-      setIsLoading(false)
-    } else if (!isLogin && !/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+    else if (!isLogin && !/^[a-zA-Z0-9_]+$/.test(formData.username))
       newErrors.username =
         "Username can only contain letters, numbers, and underscores";
-        setIsLoading(false)
-    }
 
-    // For login, check if either email or username is provided
-    if (isLogin) {
-      if (!formData.email.trim()) {
-        newErrors.email = "Email or username is required";
-        setIsLoading(false)
-      }
-    } else {
-      // For signup, email is required and must be valid
-      if (!formData.email.trim()) {
-        newErrors.email = "Email is required";
-        setIsLoading(false)
-      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-        newErrors.email = "Email is invalid";
-        setIsLoading(false)
-      }
-    }
+    if (!formData.email.trim()) newErrors.email = "Email is required";
+    else if (!isLogin && !/\S+@\S+\.\S+/.test(formData.email))
+      newErrors.email = "Email is invalid";
 
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-      setIsLoading(false)
-    } else if (formData.password.length < 6) {
+    if (!formData.password) newErrors.password = "Password is required";
+    else if (formData.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
-      setIsLoading(false)
-    }
 
     if (!isLogin) {
-      if (!formData.confirmPassword) {
+      if (!formData.confirmPassword)
         newErrors.confirmPassword = "Please confirm your password";
-        setIsLoading(false)
-      } else if (formData.password !== formData.confirmPassword) {
+      else if (formData.password !== formData.confirmPassword)
         newErrors.confirmPassword = "Passwords do not match";
-        setIsLoading(false)
-      }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
-    setIsLoading(true);
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validateForm()) return;
+  setIsLoading(true);
 
-    if (validateForm()) {
-      setTimeout(() => {
-        nav("/home");
-        setIsLoading(false);
-      }, 5000);
-      // nav("/home")
+  try {
+    let loggedInUser;
 
-      console.log("Form submitted:", formData);
-      console.log("Mode:", isLogin ? "Login" : "Register");
-
-      setFormData({
-        name: "",
-        username: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
+    if (isLogin) {
+      // Login existing user
+      const data = await signIn({
+        email: formData.email,
+        password: formData.password,
       });
+      if (!data?.user) throw new Error("Login failed: No user returned");
+
+      loggedInUser = data.user;
+    } else {
+      // Sign up new user
+      const data = await signUp({
+        email: formData.email,
+        password: formData.password,
+        username: formData.username,
+        fullName: formData.name,
+      });
+
+      if (!data?.user) throw new Error("Signup failed: No user returned");
+
+      loggedInUser = data.user;
     }
-  };
+
+    // Fetch profile to ensure we get correct data
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", loggedInUser.id)
+      .single();
+
+    setUser({
+      name: profileData?.full_name || "",
+      email: loggedInUser.email,
+      username: profileData?.username || "",
+    });
+
+    nav("/home");
+  } catch (err) {
+    alert(err?.message || "Something went wrong");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const toggleMode = () => {
     setIsLogin(!isLogin);
@@ -147,7 +143,7 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
-        {/* Logo/Header */}
+        {/* Header */}
         <div className="text-center mb-8">
           <a href="/" className="inline-block">
             <h1 className="flex items-center gap-2 text-4xl font-bold text-slate-900 mb-2">
@@ -155,7 +151,6 @@ const Auth = () => {
               <FiFeather className="w-7 h-7 md:w-8 md:h-8 text-blue-600" />
             </h1>
           </a>
-
           <p className="text-slate-600 text-lg">
             {isLogin ? "Welcome back!" : "Create your account"}
           </p>
@@ -189,7 +184,7 @@ const Auth = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Full Name - Signup only */}
+            {/* Full Name */}
             {!isLogin && (
               <div>
                 <label
@@ -220,7 +215,7 @@ const Auth = () => {
               </div>
             )}
 
-            {/* Username - Signup only */}
+            {/* Username */}
             {!isLogin && (
               <div>
                 <label
@@ -255,7 +250,7 @@ const Auth = () => {
               </div>
             )}
 
-            {/* Email or Username/Email */}
+            {/* Email */}
             <div>
               <label
                 htmlFor="email"
@@ -328,7 +323,7 @@ const Auth = () => {
               )}
             </div>
 
-            {/* Confirm Password - Signup only */}
+            {/* Confirm Password */}
             {!isLogin && (
               <div>
                 <label
@@ -361,30 +356,14 @@ const Auth = () => {
               </div>
             )}
 
-            {/* Forgot Password - Login only */}
-            {isLogin && (
-              <div className="flex items-center justify-end">
-                <a
-                  href="#"
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  Forgot password?
-                </a>
-              </div>
-            )}
-
             {/* Submit */}
             <button
               type="submit"
-              onClick={handleSubmit}
               disabled={isLoading}
               className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isLoading ? (
-                <>
-                  <ButtonLoader />
-                  {isLogin ? "Logging in..." : "Creating account..."}
-                </>
+                <ButtonLoader />
               ) : isLogin ? (
                 "Login"
               ) : (
@@ -393,7 +372,7 @@ const Auth = () => {
             </button>
           </form>
 
-          {/* Divider */}
+          {/* Divider & Social Login */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-300"></div>
@@ -405,9 +384,9 @@ const Auth = () => {
             </div>
           </div>
 
-          {/* Social Login */}
           <div className="grid grid-cols-2 gap-3">
             <button className="flex items-center justify-center gap-2 py-2.5 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-slate-700 cursor-pointer">
+              {/* Google Icon */}
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
@@ -428,25 +407,27 @@ const Auth = () => {
               </svg>
               Google
             </button>
+
             <button className="flex items-center justify-center gap-2 py-2.5 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-slate-700 cursor-pointer">
+              {/* GitHub Icon */}
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
               </svg>
               GitHub
             </button>
           </div>
-        </div>
 
-        {/* Footer Text */}
-        <p className="mt-6 text-center text-sm text-slate-600">
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <button
-            onClick={toggleMode}
-            className="text-blue-600 hover:text-blue-700 font-semibold cursor-pointer"
-          >
-            {isLogin ? "Sign up" : "Login"}
-          </button>
-        </p>
+          {/* Footer */}
+          <p className="mt-6 text-center text-sm text-slate-600">
+            {isLogin ? "Don't have an account? " : "Already have an account? "}
+            <button
+              onClick={toggleMode}
+              className="text-blue-600 hover:text-blue-700 font-semibold cursor-pointer"
+            >
+              {isLogin ? "Sign up" : "Login"}
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );

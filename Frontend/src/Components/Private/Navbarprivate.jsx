@@ -17,6 +17,7 @@ import { useNavigate } from "react-router";
 import NotificationDropdown from "./Notification";
 import MobileNotificationModal from "./mobileNotification";
 import { UserContext } from "../../Context/userContext";
+import { signOut } from "../../Services/api";
 
 export default function NavbarPrivate() {
   const { user, setUser} = useContext(UserContext)
@@ -43,8 +44,15 @@ export default function NavbarPrivate() {
     nav(path);
   };
 
-  const handleLogout = () => {
-    alert("Logging out... (Clear localStorage and redirect to /login)");
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      setUser(null);
+      nav("/");
+    } catch (error) {
+      console.error("Error logging out:", error);
+      alert("Failed to log out. Please try again.");
+    }
   };
 
   const handleSearch = (e) => {
