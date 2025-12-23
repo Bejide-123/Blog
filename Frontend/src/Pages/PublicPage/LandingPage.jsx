@@ -54,7 +54,7 @@ const LandingPage = () => {
         {/* Background overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/10 to-pink-900/20" />
         
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container mt-8 mx-auto px-4 relative z-10">
           <div className="text-center text-white max-w-4xl mx-auto">
             <SlideUp delay={0.2} duration={1}>
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
@@ -125,7 +125,7 @@ const LandingPage = () => {
         </div>
         
         {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+        <div className="absolute bottom-8 mt-2 left-1/2 transform -translate-x-1/2">
           <button
             onClick={handleExploreClick}
             className="group flex flex-col items-center text-white hover:text-blue-300 
@@ -160,54 +160,7 @@ const LandingPage = () => {
       </SlideUp>
 
       {/* Floating CTA Button - Bottom Right */}
-      <div className="fixed bottom-8 right-8 z-50">
-        <Link
-          to="/login?mode=register"
-          className="group relative flex items-center gap-3 px-6 py-4 rounded-full 
-                   bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 
-                   text-white font-semibold shadow-2xl shadow-blue-500/30 
-                   hover:shadow-blue-500/50 hover:scale-105 active:scale-95 
-                   transition-all duration-300 overflow-hidden"
-          aria-label="Quick start writing"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        >
-          {/* Animated background */}
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          
-          {/* Main content */}
-          <div className="relative flex items-center gap-2">
-            <div className="relative">
-              <FiFeather className="w-6 h-6 transform group-hover:rotate-12 transition-transform duration-300" />
-              {/* Animated sparkles */}
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-300 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping"></div>
-              <div className="absolute -bottom-1 -left-1 w-1.5 h-1.5 bg-blue-300 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping animation-delay-300"></div>
-            </div>
-            
-            <div className="flex flex-col items-start">
-              <span className={`hidden sm:inline transition-all duration-300 ${isHovered ? 'text-white' : 'text-white/90'}`}>
-                Start Writing
-              </span>
-              <span className="sm:hidden">Write</span>
-              <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform group-hover:translate-y-0 translate-y-2">
-                It's free! ✨
-              </span>
-            </div>
-            
-            <FiArrowUpRight className="w-5 h-5 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
-          </div>
-        </Link>
-
-        {/* Optional: Scroll to Top Button - appears when scrolling down */}
-        {/* <button
-          onClick={scrollToTop}
-          className="mt-3 w-full px-4 py-2 rounded-full bg-gray-800/80 backdrop-blur-sm 
-                   text-gray-300 text-sm font-medium hover:text-white hover:bg-gray-700/80 
-                   transition-all duration-300 opacity-0 hover:opacity-100 border border-gray-700/50"
-        >
-          ↑ Back to top
-        </button> */}
-      </div>
+      
 
       {/* Optional: Progress indicator */}
       <div className="fixed bottom-0 left-0 right-0 h-1 bg-gray-800 z-40">
