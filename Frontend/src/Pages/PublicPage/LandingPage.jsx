@@ -176,7 +176,7 @@ const LandingPage = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           
           {/* Main content */}
-          <div className="relative flex items-center gap-3">
+          <div className="relative flex items-center gap-2">
             <div className="relative">
               <FiFeather className="w-6 h-6 transform group-hover:rotate-12 transition-transform duration-300" />
               {/* Animated sparkles */}
