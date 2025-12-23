@@ -20,8 +20,7 @@ import { UserContext } from "../../Context/userContext";
 import { signOut } from "../../Services/api";
 
 export default function NavbarPrivate() {
-  const { user, setUser} = useContext(UserContext)
-  const [username, setUsername] = useState(user?.username || "")
+  const { user, setUser } = useContext(UserContext);
   const [currentPath, setCurrentPath] = useState("/feed");
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -31,10 +30,17 @@ export default function NavbarPrivate() {
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const nav = useNavigate();
 
-  // const user = {
-  //   username: "johndoe",
-  //   avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=johndoe",
-  // };
+  // Generate avatar URL fallback
+  const getAvatarUrl = () => {
+    if (!user) return "https://api.dicebear.com/7.x/avataaars/svg?seed=default";
+    return user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || user?.email || "user"}`;
+  };
+
+  // Get display username
+  const getDisplayUsername = () => {
+    if (!user) return "User";
+    return user?.username || user?.email?.split('@')[0] || "User";
+  };
 
   const isActive = (path) => currentPath === path;
 
@@ -48,7 +54,7 @@ export default function NavbarPrivate() {
     try {
       await signOut();
       setUser(null);
-      nav("/");
+      nav("/login");
     } catch (error) {
       console.error("Error logging out:", error);
       alert("Failed to log out. Please try again.");
@@ -64,10 +70,10 @@ export default function NavbarPrivate() {
     }
   };
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle("dark");
-  };
+  // const toggleDarkMode = () => {
+  //   setIsDarkMode(!isDarkMode);
+  //   document.documentElement.classList.toggle("dark");
+  // };
 
   const navItems = [
     { path: "/home", icon: Home, label: "Home" },
@@ -82,10 +88,9 @@ export default function NavbarPrivate() {
     { path: "/profile", icon: User, label: "Profile" },
   ];
 
+  // Simple return - no login button, no complex changes
   return (
-    <div
-      className={` bg-gray-50 dark:bg-slate-900 ${isDarkMode ? "dark" : ""}`}
-    >
+    <div className={`bg-gray-50 dark:bg-slate-900 ${isDarkMode ? "dark" : ""}`}>
       {/* Desktop/Tablet Top Navbar */}
       <nav className="hidden md:block fixed top-0 left-0 right-0 bg-white dark:bg-slate-800 shadow-md dark:shadow-slate-900/50 border-b border-gray-200 dark:border-slate-700 z-50">
         <div className="max-w-7xl mx-auto px-6">
@@ -202,8 +207,8 @@ export default function NavbarPrivate() {
                   className="w-10 h-10 rounded-full border-2 border-blue-600 dark:border-blue-500 overflow-hidden hover:border-blue-700 dark:hover:border-blue-400 transition-colors"
                 >
                   <img
-                    src={user.avatar}
-                    alt={username}
+                    src={getAvatarUrl()}
+                    alt={getDisplayUsername()}
                     className="w-full h-full object-cover"
                   />
                 </button>
@@ -218,7 +223,7 @@ export default function NavbarPrivate() {
                     <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-lg dark:shadow-slate-900/50 border border-gray-200 dark:border-slate-700 py-2 z-20">
                       <div className="px-4 py-2 border-b border-gray-200 dark:border-slate-700">
                         <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                          @{user?.username}
+                          @{getDisplayUsername()}
                         </p>
                       </div>
                       <button
@@ -296,8 +301,8 @@ export default function NavbarPrivate() {
               className="w-8 h-8 rounded-full border-2 border-blue-600 dark:border-blue-500 overflow-hidden"
             >
               <img
-                src={user.avatar}
-                alt={user.username}
+                src={getAvatarUrl()}
+                alt={getDisplayUsername()}
                 className="w-full h-full object-cover"
               />
             </button>
@@ -314,7 +319,7 @@ export default function NavbarPrivate() {
             <div className="absolute right-4 top-16 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-lg dark:shadow-slate-900/50 border border-gray-200 dark:border-slate-700 py-2 z-50">
               <div className="px-4 py-2 border-b border-gray-200 dark:border-slate-700">
                 <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                  @{user.username}
+                  @{getDisplayUsername()}
                 </p>
               </div>
               <button

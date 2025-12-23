@@ -1,11 +1,38 @@
-import React from "react";
-import { FaTwitter, FaFacebookF, FaLinkedinIn, FaInstagram } from "react-icons/fa";
-import { FiFeather } from "react-icons/fi";
+import React, { useState } from "react";
+import { 
+  FaTwitter, 
+  FaFacebookF, 
+  FaLinkedinIn, 
+  FaInstagram,
+  FaGithub,
+  FaYoutube,
+  FaHeart,
+  FaArrowUp
+} from "react-icons/fa";
+import { 
+  FiFeather, 
+  FiMail, 
+  FiChevronRight,
+  FiExternalLink 
+} from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const Footer = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [email, setEmail] = useState("");
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [hoveredLink, setHoveredLink] = useState(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  // Check scroll position for scroll-to-top button
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const scrollToSection = (sectionId) => {
     const isOnLandingPage = location.pathname === "/" || location.pathname === "";
@@ -26,84 +53,286 @@ const Footer = () => {
     }
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleSubscribe = (e) => {
+    e.preventDefault();
+    if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      console.log("Subscribed:", email);
+      setIsSubscribed(true);
+      setEmail("");
+      setTimeout(() => setIsSubscribed(false), 3000);
+    }
+  };
+
+  const socialLinks = [
+    { icon: <FaTwitter />, label: "Twitter", url: "#", color: "hover:text-blue-400" },
+    { icon: <FaFacebookF />, label: "Facebook", url: "#", color: "hover:text-blue-600" },
+    { icon: <FaLinkedinIn />, label: "LinkedIn", url: "#", color: "hover:text-blue-700" },
+    { icon: <FaInstagram />, label: "Instagram", url: "#", color: "hover:text-pink-500" },
+    { icon: <FaGithub />, label: "GitHub", url: "#", color: "hover:text-gray-300" },
+    { icon: <FaYoutube />, label: "YouTube", url: "#", color: "hover:text-red-500" },
+  ];
+
+  const quickLinks = [
+    { label: "Latest Stories", action: () => scrollToSection("posts") },
+    { label: "Get Started", action: () => navigate("/login?mode=register") },
+    { label: "About Us", action: () => scrollToSection("about") },
+    { label: "Contact", action: () => scrollToSection("contact") },
+  ];
+
+  const resources = [
+    { label: "Terms of Service", url: "#" },
+    { label: "Privacy Policy", url: "#" },
+    { label: "Help Center", url: "#" },
+    { label: "Community Guidelines", url: "#" },
+  ];
+
+  const platformLinks = [
+    { label: "For Writers", url: "#" },
+    { label: "For Readers", url: "#" },
+    { label: "Success Stories", url: "#" },
+    { label: "Blog", url: "#" },
+  ];
+
   return (
-    <footer className="bg-gradient-to-r from-gray-900 to-gray-800 text-gray-300 py-10">
-      <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 text-center sm:text-left">
+    <>
+      {/* Scroll to Top Button */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 z-50 w-12 h-12 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-2xl shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 transform hover:-translate-y-1 active:scale-95 flex items-center justify-center group"
+          aria-label="Scroll to top"
+        >
+          <FaArrowUp className="w-5 h-5 transform group-hover:-translate-y-1 transition-transform" />
+        </button>
+      )}
+
+      <footer className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-300 pt-16 pb-8">
+        {/* Background Elements */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl" />
         
-        {/* Brand / About */}
-        <div className="mb-6 md:mb-0">
-          <h3 className="text-2xl font-bold text-white mb-4 flex items-center justify-center sm:justify-start gap-2">
-            Scribe <FiFeather className="w-6 h-6 text-blue-500" />
-          </h3>
-          <p className="text-gray-400 leading-relaxed">
-            Share your stories, insights, and experiences with a community of passionate writers.
-          </p>
-        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+            {/* Brand Column */}
+            <div className="lg:col-span-4">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center shadow-lg">
+                    <FiFeather className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl opacity-20 blur-sm" />
+                </div>
+                <div>
+                  <h3 className="text-3xl font-bold text-white">Scribe</h3>
+                  <p className="text-sm text-gray-400">Share Your Story</p>
+                </div>
+              </div>
+              
+              <p className="text-gray-400 leading-relaxed mb-8 max-w-md">
+                A community-driven platform where writers and readers connect through authentic storytelling. 
+                Share your voice, discover new perspectives, and grow together.
+              </p>
 
-        {/* Quick Links + Resources combined */}
-        <div className="grid grid-cols-2 gap-6 sm:col-span-1 md:col-span-2 justify-center sm:justify-start">
-          <div>
-            <h4 className="text-xl font-semibold text-white mb-4">Quick Links</h4>
-            <ul className="space-y-2">
-              <li>
-                <button onClick={() => scrollToSection("posts")} className="hover:text-blue-500 transition-colors duration-200">
-                  Latest Stories
-                </button>
-              </li>
-              <li>
-                <button onClick={() => navigate("/login?mode=register")} className="hover:text-blue-500 transition-colors duration-200">
-                  Get Started
-                </button>
-              </li>
-              <li>
-                <button onClick={() => scrollToSection("about")} className="hover:text-blue-500 transition-colors duration-200">
-                  About Us
-                </button>
-              </li>
-              <li>
-                <button onClick={() => scrollToSection("contact")} className="hover:text-blue-500 transition-colors duration-200">
-                  Contact
-                </button>
-              </li>
-            </ul>
+              {/* Newsletter Subscription */}
+              <div className="mb-8">
+                <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <FiMail className="w-5 h-5" />
+                  Stay Updated
+                </h4>
+                <form onSubmit={handleSubscribe} className="relative">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Your email address"
+                    className="w-full px-4 py-3 pr-12 rounded-xl bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all"
+                  />
+                  <button
+                    type="submit"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:shadow-lg transition-all duration-300"
+                  >
+                    <FiChevronRight className="w-5 h-5" />
+                  </button>
+                </form>
+                {isSubscribed && (
+                  <p className="mt-2 text-sm text-green-400 animate-fade-in">
+                    🎉 Thanks for subscribing!
+                  </p>
+                )}
+              </div>
+
+              {/* Social Links */}
+              <div>
+                <h4 className="text-lg font-semibold text-white mb-4">
+                  Connect With Us
+                </h4>
+                <div className="flex flex-wrap gap-3">
+                  {socialLinks.map((social, index) => (
+                    <a
+                      key={index}
+                      href={social.url}
+                      className={`w-10 h-10 rounded-lg bg-gray-800/50 border border-gray-700 flex items-center justify-center 
+                                ${social.color} hover:bg-gray-700/50 hover:scale-110 
+                                transition-all duration-300 group relative`}
+                      aria-label={social.label}
+                      onMouseEnter={() => setHoveredLink(social.label)}
+                      onMouseLeave={() => setHoveredLink(null)}
+                    >
+                      {social.icon}
+                      {hoveredLink === social.label && (
+                        <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap">
+                          {social.label}
+                        </span>
+                      )}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Links Columns */}
+            <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-8">
+              {/* Quick Links */}
+              <div>
+                <h4 className="text-xl font-bold text-white mb-6 pb-2 border-b border-gray-700/50">
+                  Quick Links
+                </h4>
+                <ul className="space-y-3">
+                  {quickLinks.map((link, index) => (
+                    <li key={index}>
+                      <button
+                        onClick={link.action}
+                        className="group flex items-center gap-2 text-gray-400 hover:text-white transition-all duration-300 hover:translate-x-1"
+                      >
+                        <FiChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        {link.label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Resources */}
+              <div>
+                <h4 className="text-xl font-bold text-white mb-6 pb-2 border-b border-gray-700/50">
+                  Resources
+                </h4>
+                <ul className="space-y-3">
+                  {resources.map((link, index) => (
+                    <li key={index}>
+                      <a
+                        href={link.url}
+                        className="group flex items-center gap-2 text-gray-400 hover:text-white transition-all duration-300 hover:translate-x-1"
+                      >
+                        <FiExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        {link.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Platform */}
+              <div>
+                <h4 className="text-xl font-bold text-white mb-6 pb-2 border-b border-gray-700/50">
+                  Platform
+                </h4>
+                <ul className="space-y-3">
+                  {platformLinks.map((link, index) => (
+                    <li key={index}>
+                      <a
+                        href={link.url}
+                        className="group flex items-center gap-2 text-gray-400 hover:text-white transition-all duration-300 hover:translate-x-1"
+                      >
+                        <FiChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        {link.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Contact Info */}
+              <div>
+                <h4 className="text-xl font-bold text-white mb-6 pb-2 border-b border-gray-700/50">
+                  Contact Info
+                </h4>
+                <ul className="space-y-4">
+                  <li className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-gray-800/50 flex items-center justify-center flex-shrink-0">
+                      <FiMail className="w-4 h-4 text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400">Email</p>
+                      <a href="mailto:hello@scribe.com" className="text-white hover:text-blue-400 transition-colors">
+                        hello@scribe.com
+                      </a>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-gray-800/50 flex items-center justify-center flex-shrink-0">
+                      <FiFeather className="w-4 h-4 text-purple-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400">Office</p>
+                      <p className="text-white">123 Story Street<br />Creative City, CC 10001</p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <h4 className="text-xl font-semibold text-white mb-4">Resources</h4>
-            <ul className="space-y-2">
-              <li><a href="#" className="hover:text-blue-500 transition-colors duration-200">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-blue-500 transition-colors duration-200">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-blue-500 transition-colors duration-200">Help Center</a></li>
-            </ul>
+          {/* Bottom Bar */}
+          <div className="mt-12 pt-8 border-t border-gray-700/50">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-2 text-gray-400 text-sm">
+                <p>
+                  © {new Date().getFullYear()} Scribe. All rights reserved.
+                </p>
+                <span className="hidden md:inline">•</span>
+                <p className="flex items-center gap-1">
+                  Made with <FaHeart className="w-3 h-3 text-red-400 animate-pulse" /> for storytellers
+                </p>
+              </div>
+              
+              <div className="flex flex-wrap gap-4 justify-center text-sm text-gray-500">
+                <a href="#" className="hover:text-white transition-colors">Cookies Policy</a>
+                <span className="hidden md:inline">•</span>
+                <a href="#" className="hover:text-white transition-colors">Accessibility</a>
+                <span className="hidden md:inline">•</span>
+                <a href="#" className="hover:text-white transition-colors">Sitemap</a>
+                <span className="hidden md:inline">•</span>
+                <span>v2.1.0</span>
+              </div>
+            </div>
+            
+            {/* Stats */}
+            <div className="mt-6 pt-6 border-t border-gray-700/30">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                {[
+                  { label: "Active Writers", value: "10K+" },
+                  { label: "Stories Published", value: "50K+" },
+                  { label: "Countries", value: "150+" },
+                  { label: "Monthly Readers", value: "1M+" },
+                ].map((stat, index) => (
+                  <div key={index} className="text-center">
+                    <div className="text-2xl font-bold text-white mb-1">{stat.value}</div>
+                    <div className="text-xs text-gray-400 uppercase tracking-wider">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* Social Media */}
-        <div className="mb-6 md:mb-0">
-          <h4 className="text-xl font-semibold text-white mb-4">Follow Us</h4>
-          <div className="flex justify-center sm:justify-start gap-4">
-            <a href="#" className="hover:text-blue-500 transition-colors duration-200 transform hover:scale-110">
-              <FaTwitter size={22} />
-            </a>
-            <a href="#" className="hover:text-blue-500 transition-colors duration-200 transform hover:scale-110">
-              <FaFacebookF size={22} />
-            </a>
-            <a href="#" className="hover:text-blue-500 transition-colors duration-200 transform hover:scale-110">
-              <FaLinkedinIn size={22} />
-            </a>
-            <a href="#" className="hover:text-blue-500 transition-colors duration-200 transform hover:scale-110">
-              <FaInstagram size={22} />
-            </a>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Bar */}
-      <div className="mt-8 border-t border-gray-700 pt-4 text-center text-gray-500 text-sm">
-        © {new Date().getFullYear()} Scribe. All rights reserved.
-      </div>
-    </footer>
+      </footer>
+    </>
   );
 };
 
-export default Footer;
+export default React.memo(Footer);
