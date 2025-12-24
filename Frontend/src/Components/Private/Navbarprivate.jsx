@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import {
   Home,
   Bookmark,
@@ -12,8 +12,13 @@ import {
   Moon,
   Sun,
   Feather,
+  X,
+  Sparkles,
+  TrendingUp,
+  BookOpen,
+  Hash,
 } from "lucide-react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import NotificationDropdown from "./Notification";
 import MobileNotificationModal from "./mobileNotification";
 import { UserContext } from "../../Context/userContext";
@@ -21,14 +26,49 @@ import { signOut } from "../../Services/api";
 
 export default function NavbarPrivate() {
   const { user, setUser } = useContext(UserContext);
-  const [currentPath, setCurrentPath] = useState("/feed");
+  const location = useLocation();
+  const [currentPath, setCurrentPath] = useState(location.pathname);
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [notificationCount] = useState("");
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [notificationCount] = useState(3); // Example count
+  const [isDarkMode, setIsDarkMode] = useState(
+    localStorage.getItem("theme") === "dark" ||
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+  );
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
+  const [activeTab, setActiveTab] = useState("feed");
   const nav = useNavigate();
+
+  // Initialize dark mode
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDarkMode]);
+
+  // Update current path on location change
+  useEffect(() => {
+    setCurrentPath(location.pathname);
+  }, [location.pathname]);
+
+  // Close dropdowns on escape key
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape") {
+        setShowAvatarMenu(false);
+        setShowSearchModal(false);
+        setShowSearchSuggestions(false);
+      }
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, []);
 
   // Generate avatar URL fallback
   const getAvatarUrl = () => {
@@ -41,8 +81,6 @@ export default function NavbarPrivate() {
     if (!user) return "User";
     return user?.username || user?.email?.split('@')[0] || "User";
   };
-
-  const isActive = (path) => currentPath === path;
 
   const handleNavClick = (path) => {
     setCurrentPath(path);
@@ -64,19 +102,34 @@ export default function NavbarPrivate() {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      alert(`Searching for: ${searchQuery}`);
+      nav(`/search?q=${encodeURIComponent(searchQuery)}`);
       setShowSearchModal(false);
       setSearchQuery("");
     }
   };
 
-  // const toggleDarkMode = () => {
-  //   setIsDarkMode(!isDarkMode);
-  //   document.documentElement.classList.toggle("dark");
-  // };
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
 
-  const navItems = [
-    { path: "/home", icon: Home, label: "Home" },
+  // Search suggestions (example)
+  const searchSuggestions = [
+    { icon: <Hash className="w-4 h-4" />, text: "#react", type: "tag" },
+    { icon: <TrendingUp className="w-4 h-4" />, text: "Trending posts", type: "trending" },
+    { icon: <BookOpen className="w-4 h-4" />, text: "Tutorials", type: "category" },
+    { icon: <User className="w-4 h-4" />, text: "Popular authors", type: "authors" },
+  ];
+
+  // Desktop navigation items
+  const desktopNavItems = [
+    { path: "/feed", label: "Feed", active: currentPath === "/feed" },
+    { path: "/explore", label: "Explore", active: currentPath === "/explore" },
+    { path: "/saved", label: "Saved", active: currentPath === "/saved" },
+  ];
+
+  // Mobile navigation items
+  const mobileNavItems = [
+    { path: "/feed", icon: Home, label: "Home" },
     { path: "/saved", icon: Bookmark, label: "Saved" },
     { path: "/create", icon: PlusCircle, label: "Create", isCenter: true },
     {
@@ -88,173 +141,226 @@ export default function NavbarPrivate() {
     { path: "/profile", icon: User, label: "Profile" },
   ];
 
-  // Simple return - no login button, no complex changes
   return (
-    <div className={`bg-gray-50 dark:bg-slate-900 ${isDarkMode ? "dark" : ""}`}>
+    <div className="bg-gray-50 dark:bg-slate-900">
       {/* Desktop/Tablet Top Navbar */}
-      <nav className="hidden md:block fixed top-0 left-0 right-0 bg-white dark:bg-slate-800 shadow-md dark:shadow-slate-900/50 border-b border-gray-200 dark:border-slate-700 z-50">
-        <div className="max-w-7xl mx-auto px-6">
+      <nav className="hidden md:block fixed top-0 left-0 right-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg border-b border-gray-200/50 dark:border-slate-700/50 shadow-sm dark:shadow-slate-900/30 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Left: Logo & Links */}
-            <div className="flex items-center gap-10">
+            {/* Left: Logo */}
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => handleNavClick("/feed")}
-                className="group flex items-center gap-2"
+                className="group flex items-center gap-2 transition-transform hover:scale-105 active:scale-95"
               >
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-500 transition-colors duration-200">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg blur opacity-30 group-hover:opacity-50 transition-opacity" />
+                  <Feather className="relative w-8 h-8 text-blue-600 dark:text-blue-500" />
+                </div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 bg-clip-text text-transparent">
                   Scribe
                 </h1>
-                <Feather className="w-7 h-7 md:w-8 md:h-8 text-blue-600 dark:text-blue-500" />
+                <Sparkles className="w-4 h-4 text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
-              <div className="hidden lg:flex items-center gap-10">
-                <button
-                  onClick={() => {
-                    handleNavClick("/feed"), nav("/home");
-                  }}
-                  className={`text-lg cursor-pointer font-semibold transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 dark:after:bg-blue-500 after:transition-all after:duration-200 hover:after:w-full ${
-                    isActive("/feed")
-                      ? "text-blue-600 dark:text-blue-500"
-                      : "text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-500"
-                  }`}
-                >
-                  Home
-                </button>
-                <button
-                  onClick={() => {
-                    handleNavClick("/saved"), nav("/saved");
-                  }}
-                  className={`text-lg cursor-pointer font-semibold transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 dark:after:bg-blue-500 after:transition-all after:duration-200 hover:after:w-full ${
-                    isActive("/saved")
-                      ? "text-blue-600 dark:text-blue-500"
-                      : "text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-500"
-                  }`}
-                >
-                  Saved
-                </button>
+
+              {/* Desktop Navigation Links */}
+              <div className="hidden lg:flex items-center gap-1 ml-8">
+                {desktopNavItems.map((item) => (
+                  <button
+                    key={item.path}
+                    onClick={() => handleNavClick(item.path)}
+                    className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      item.active
+                        ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20"
+                        : "text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-slate-700/50"
+                    }`}
+                  >
+                    {item.label}
+                    {item.active && (
+                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full" />
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
 
             {/* Center: Search Bar */}
-            <div className="flex-1 max-w-md mx-8">
+            <div className="flex-1 max-w-xl mx-8">
               <div className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
-                  placeholder="Search posts..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-full bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 focus:border-transparent transition-colors"
-                />
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
+                <div className="relative group">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setShowSearchSuggestions(e.target.value.length > 0);
+                    }}
+                    onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
+                    onFocus={() => searchQuery.length > 0 && setShowSearchSuggestions(true)}
+                    placeholder="Search stories, topics, authors..."
+                    className="w-full pl-12 pr-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-full bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200 group-hover:bg-white dark:group-hover:bg-slate-600"
+                  />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-slate-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors" />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Search Suggestions */}
+                {showSearchSuggestions && searchQuery && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 border border-gray-200 dark:border-slate-700 py-2 z-20">
+                    <div className="px-4 py-2 border-b border-gray-100 dark:border-slate-700">
+                      <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+                        Quick Search
+                      </p>
+                    </div>
+                    {searchSuggestions.map((suggestion, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSearchQuery(suggestion.text)}
+                        className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-left"
+                      >
+                        {suggestion.icon}
+                        <span>{suggestion.text}</span>
+                        <span className="ml-auto text-xs px-2 py-1 bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400 rounded-full">
+                          {suggestion.type}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Right: Actions */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               {/* Dark Mode Toggle */}
-              {/* <button
+              <button
                 onClick={toggleDarkMode}
-                className="p-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                className="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-slate-700/50 transition-colors relative group"
+                title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
               >
                 {isDarkMode ? (
-                  <Sun className="w-6 h-6" />
+                  <Sun className="w-5 h-5" />
                 ) : (
-                  <Moon className="w-6 h-6" />
+                  <Moon className="w-5 h-5" />
                 )}
-              </button> */}
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-900 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                  {isDarkMode ? "Light mode" : "Dark mode"}
+                </div>
+              </button>
+
+              {/* Create Post Button */}
+              <button
+                onClick={() => handleNavClick("/create")}
+                className="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 dark:hover:from-blue-600 dark:hover:to-purple-600 active:scale-95 transition-all duration-200 font-semibold shadow-md hover:shadow-lg"
+              >
+                <PlusCircle className="w-5 h-5" />
+                <span>Create Story</span>
+              </button>
 
               {/* Notifications */}
               <div className="relative">
                 <button
-                  onClick={() =>
-                    setIsNotificationModalOpen(!isNotificationModalOpen)
-                  }
-                  className="relative p-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 
-               dark:hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-slate-700 
-               rounded-lg transition-colors"
+                  onClick={() => setIsNotificationModalOpen(!isNotificationModalOpen)}
+                  className="relative p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-slate-700/50 transition-colors group"
+                  title="Notifications"
                 >
-                  <Bell className="w-6 h-6" />
+                  <Bell className="w-5 h-5" />
                   {notificationCount > 0 && (
-                    <span
-                      className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white 
-                       text-xs font-bold rounded-full flex items-center justify-center"
-                    >
+                    <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
                       {notificationCount}
                     </span>
                   )}
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-900 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                    Notifications
+                  </div>
                 </button>
-
-                {/* Dropdown injected here */}
                 <NotificationDropdown
                   isOpen={isNotificationModalOpen}
                   onClose={() => setIsNotificationModalOpen(false)}
                 />
               </div>
 
-              {/* Create Post Button */}
-              <button
-                onClick={() => handleNavClick("/create")}
-                className="hidden sm:flex cursor-pointer items-center gap-2 px-4 py-2 bg-blue-600 dark:bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-700 active:bg-blue-800 dark:active:bg-blue-800 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 font-semibold"
-              >
-                <PlusCircle className="w-5 h-5" />
-                <span>Create</span>
-              </button>
-
               {/* User Avatar & Dropdown */}
               <div className="relative">
                 <button
                   onClick={() => setShowAvatarMenu(!showAvatarMenu)}
-                  className="w-10 h-10 rounded-full border-2 border-blue-600 dark:border-blue-500 overflow-hidden hover:border-blue-700 dark:hover:border-blue-400 transition-colors"
+                  className="w-10 h-10 rounded-full border-2 border-transparent hover:border-blue-500 dark:hover:border-blue-400 overflow-hidden transition-all duration-200 hover:scale-105 active:scale-95 group"
+                  title="Profile menu"
                 >
                   <img
                     src={getAvatarUrl()}
                     alt={getDisplayUsername()}
                     className="w-full h-full object-cover"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 </button>
 
-                {/* Dropdown Menu */}
+                {/* Avatar Dropdown Menu */}
                 {showAvatarMenu && (
                   <>
                     <div
                       className="fixed inset-0 z-10"
                       onClick={() => setShowAvatarMenu(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-lg dark:shadow-slate-900/50 border border-gray-200 dark:border-slate-700 py-2 z-20">
-                      <div className="px-4 py-2 border-b border-gray-200 dark:border-slate-700">
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                    <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl dark:shadow-slate-900/50 border border-gray-200 dark:border-slate-700 py-2 z-20 animate-in slide-in-from-top-2">
+                      <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
                           @{getDisplayUsername()}
                         </p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                          {user?.email || "Welcome to Scribe!"}
+                        </p>
                       </div>
-                      <button
-                        onClick={() => handleNavClick("/profile")}
-                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-500 transition-colors text-left cursor-pointer"
-                      >
-                        <User className="w-4 h-4" />
-                        My Profile
-                      </button>
-                      <button
-                        onClick={() => handleNavClick("/dashboard")}
-                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-500 transition-colors text-left cursor-pointer"
-                      >
-                        <LayoutDashboard className="w-4 h-4" />
-                        Dashboard
-                      </button>
-                      <button
-                        onClick={() => handleNavClick("/settings")}
-                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-500 transition-colors text-left cursor-pointer"
-                      >
-                        <Settings className="w-4 h-4" />
-                        Settings
-                      </button>
-                      <div className="border-t border-gray-200 dark:border-slate-700 my-1" />
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left cursor-pointer"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Logout
-                      </button>
+                      
+                      <div className="py-2">
+                        <button
+                          onClick={() => {
+                            handleNavClick("/profile");
+                            setShowAvatarMenu(false);
+                          }}
+                          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-left"
+                        >
+                          <User className="w-4 h-4" />
+                          <span>My Profile</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            handleNavClick("/dashboard");
+                            setShowAvatarMenu(false);
+                          }}
+                          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-left"
+                        >
+                          <LayoutDashboard className="w-4 h-4" />
+                          <span>Dashboard</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            handleNavClick("/settings");
+                            setShowAvatarMenu(false);
+                          }}
+                          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-left"
+                        >
+                          <Settings className="w-4 h-4" />
+                          <span>Settings</span>
+                        </button>
+                      </div>
+                      
+                      <div className="border-t border-gray-100 dark:border-slate-700 pt-2">
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Log Out</span>
+                        </button>
+                      </div>
                     </div>
                   </>
                 )}
@@ -265,40 +371,31 @@ export default function NavbarPrivate() {
       </nav>
 
       {/* Mobile Top Bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 shadow-md dark:shadow-slate-900/50 z-50">
+      <div className="md:hidden fixed top-0 left-0 right-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg border-b border-gray-200/50 dark:border-slate-700/50 shadow-sm dark:shadow-slate-900/30 z-50">
         <div className="flex items-center justify-between px-4 h-14">
           {/* Logo */}
           <button
             onClick={() => handleNavClick("/feed")}
             className="group flex items-center gap-2"
           >
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-500 transition-colors duration-200">
+            <Feather className="w-6 h-6 text-blue-600 dark:text-blue-500" />
+            <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 bg-clip-text text-transparent">
               Scribe
             </h1>
-            <Feather className="w-6 h-6 text-blue-600 dark:text-blue-500" />
           </button>
 
-          {/* Right: Dark Mode, Search & Avatar */}
+          {/* Right: Actions */}
           <div className="flex items-center gap-2">
-            {/* <button
-              onClick={toggleDarkMode}
-              className="p-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
-            >
-              {isDarkMode ? (
-                <Sun className="w-5 h-5" />
-              ) : (
-                <Moon className="w-5 h-5" />
-              )}
-            </button> */}
             <button
               onClick={() => setShowSearchModal(true)}
-              className="p-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              className="p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
+              title="Search"
             >
               <Search className="w-5 h-5" />
             </button>
             <button
               onClick={() => setShowAvatarMenu(!showAvatarMenu)}
-              className="w-8 h-8 rounded-full border-2 border-blue-600 dark:border-blue-500 overflow-hidden"
+              className="w-8 h-8 rounded-full border-2 border-transparent hover:border-blue-500 dark:hover:border-blue-400 overflow-hidden transition-colors"
             >
               <img
                 src={getAvatarUrl()}
@@ -313,44 +410,56 @@ export default function NavbarPrivate() {
         {showAvatarMenu && (
           <>
             <div
-              className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm z-40"
+              className="fixed inset-0 bg-black/30 dark:bg-black/50 backdrop-blur-sm z-40"
               onClick={() => setShowAvatarMenu(false)}
             />
-            <div className="absolute right-4 top-16 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-lg dark:shadow-slate-900/50 border border-gray-200 dark:border-slate-700 py-2 z-50">
-              <div className="px-4 py-2 border-b border-gray-200 dark:border-slate-700">
-                <p className="text-sm font-semibold text-slate-900 dark:text-white">
+            <div className="absolute right-4 top-14 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl dark:shadow-slate-900/50 border border-gray-200 dark:border-slate-700 py-2 z-50 animate-in slide-in-from-top-2">
+              <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">
                   @{getDisplayUsername()}
                 </p>
               </div>
-              <button
-                onClick={() => handleNavClick("/profile")}
-                className="flex items-center gap-3 w-full px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-500 transition-colors text-left"
-              >
-                <User className="w-4 h-4" />
-                My Profile
-              </button>
-              <button
-                onClick={() => handleNavClick("/dashboard")}
-                className="flex items-center gap-3 w-full px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-500 transition-colors text-left"
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                Dashboard
-              </button>
-              <button
-                onClick={() => handleNavClick("/settings")}
-                className="flex items-center gap-3 w-full px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-500 transition-colors text-left"
-              >
-                <Settings className="w-4 h-4" />
-                Settings
-              </button>
-              <div className="border-t border-gray-200 dark:border-slate-700 my-1" />
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
+              <div className="py-2">
+                <button
+                  onClick={() => {
+                    handleNavClick("/profile");
+                    setShowAvatarMenu(false);
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-left"
+                >
+                  <User className="w-4 h-4" />
+                  My Profile
+                </button>
+                <button
+                  onClick={() => {
+                    handleNavClick("/dashboard");
+                    setShowAvatarMenu(false);
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-left"
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  Dashboard
+                </button>
+                <button
+                  onClick={() => {
+                    handleNavClick("/settings");
+                    setShowAvatarMenu(false);
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-left"
+                >
+                  <Settings className="w-4 h-4" />
+                  Settings
+                </button>
+              </div>
+              <div className="border-t border-gray-100 dark:border-slate-700 pt-2">
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
+              </div>
             </div>
           </>
         )}
@@ -358,66 +467,91 @@ export default function NavbarPrivate() {
 
       {/* Mobile Search Modal */}
       {showSearchModal && (
-        <div className="md:hidden fixed inset-0 bg-white dark:bg-slate-900 z-50 flex flex-col">
+        <div className="md:hidden fixed inset-0 bg-white dark:bg-slate-900 z-50 flex flex-col animate-in slide-in-from-top">
           <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800">
             <button
               onClick={() => setShowSearchModal(false)}
-              className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium"
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium transition-colors"
             >
-              ← Back
+              Cancel
             </button>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
-              placeholder="Search posts..."
-              autoFocus
-              className="flex-1 px-4 py-2 bg-gray-100 dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
-            />
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
+                placeholder="Search stories, topics, authors..."
+                autoFocus
+                className="w-full px-4 py-3 bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              />
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-slate-500" />
+            </div>
+          </div>
+          {/* Search Suggestions */}
+          <div className="flex-1 overflow-y-auto p-4">
+            <p className="text-sm font-semibold text-gray-500 dark:text-slate-400 mb-3">
+              Trending Searches
+            </p>
+            <div className="space-y-2">
+              {searchSuggestions.map((suggestion, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setSearchQuery(suggestion.text);
+                    handleSearch({ preventDefault: () => {} });
+                  }}
+                  className="flex items-center gap-3 w-full p-3 rounded-lg bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-left"
+                >
+                  {suggestion.icon}
+                  <span className="text-gray-700 dark:text-gray-300">{suggestion.text}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 shadow-lg dark:shadow-slate-900/50 z-50">
-        {/* Mobile Notifications Modal */}
-        <div className="flex items-center justify-around px-2 py-2">
-          {navItems.map(
-            ({ path, icon: Icon, label, isCenter, badge, isNotification }) => (
-              <button
-                key={path || label}
-                onClick={() => {
-                  if (isNotification) {
-                    setIsNotificationModalOpen(!isNotificationModalOpen);
-                  } else {
-                    handleNavClick(path);
-                  }
-                }}
-                className={`relative flex flex-col items-center justify-center transition-all ${
-                  isCenter
-                    ? "w-14 h-14 -mt-6 bg-blue-600 dark:bg-blue-600 rounded-full text-white shadow-lg hover:bg-blue-700 dark:hover:bg-blue-700 active:scale-95"
-                    : "flex-1 py-2 hover:text-blue-600 dark:hover:text-blue-500"
-                } ${
-                  isActive(path) && !isCenter
-                    ? "text-blue-600 dark:text-blue-500"
-                    : "text-slate-600 dark:text-slate-400"
-                }`}
-              >
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg border-t border-gray-200/50 dark:border-slate-700/50 shadow-lg dark:shadow-slate-900/30 z-50">
+        <div className="flex items-center justify-around px-2 py-3">
+          {mobileNavItems.map(({ path, icon: Icon, label, isCenter, badge, isNotification }) => (
+            <button
+              key={path || label}
+              onClick={() => {
+                if (isNotification) {
+                  setIsNotificationModalOpen(!isNotificationModalOpen);
+                } else if (path) {
+                  handleNavClick(path);
+                }
+              }}
+              className={`relative flex flex-col items-center justify-center transition-all duration-200 ${
+                isCenter
+                  ? "w-16 h-16 -mt-6 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+                  : "flex-1 py-2 hover:text-blue-600 dark:hover:text-blue-400"
+              } ${
+                currentPath === path && !isCenter
+                  ? "text-blue-600 dark:text-blue-400"
+                  : "text-gray-600 dark:text-gray-400"
+              }`}
+            >
+              <div className="relative">
                 <Icon className={isCenter ? "w-7 h-7" : "w-6 h-6"} />
-                {!isCenter && (
-                  <span className="text-xs mt-1 font-medium">{label}</span>
-                )}
                 {badge > 0 && !isCenter && (
-                  <span className="absolute top-1 right-1/4 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
                     {badge}
                   </span>
                 )}
-              </button>
-            )
-          )}
+              </div>
+              {!isCenter && (
+                <span className="text-xs mt-1 font-medium">{label}</span>
+              )}
+            </button>
+          ))}
         </div>
       </nav>
+
+      {/* Mobile Notifications Modal */}
       <MobileNotificationModal
         isOpen={isNotificationModalOpen}
         onClose={() => setIsNotificationModalOpen(false)}

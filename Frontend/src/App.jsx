@@ -9,7 +9,7 @@ import ProfilePage from "./Pages/ProtectedPage/Profile";
 import CreatePostPage from "./Pages/ProtectedPage/CreatePost";
 import DashboardPage from "./Pages/ProtectedPage/Dashboard";
 import SettingsPage from "./Pages/ProtectedPage/Settings";
-// import Notifications from "./Pages/ProtectedPage/Notifications";
+import Notifications from "./Pages/ProtectedPage/Notifications";
 
 const App = () => {
   return (
@@ -26,7 +26,7 @@ const App = () => {
         <Route path="/create" element={<CreatePostPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/settings" element={<SettingsPage />} />
-        {/* <Route path="/notifications" element={<Notifications/>} /> */}
+        <Route path="/notifications" element={<Notifications/>} />
       </Routes>
     </UserProvider>
   );

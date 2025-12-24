@@ -1,6 +1,8 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router";
 
 export default function MobileNotificationModal({ isOpen, onClose }) {
+  const navigate = useNavigate();
   const sampleNotifications = [
     {
       id: 1,
@@ -78,7 +80,7 @@ export default function MobileNotificationModal({ isOpen, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 dark:border-slate-700 px-4 py-3 text-center">
+        <div onClick={() => navigate("/notifications")} className="border-t border-gray-200 dark:border-slate-700 px-4 py-3 text-center">
           <button className="text-sm text-blue-600 dark:text-blue-500 hover:underline">
             View all
           </button>

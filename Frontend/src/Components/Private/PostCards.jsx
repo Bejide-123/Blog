@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { Heart, MessageCircle, Bookmark, MoreHorizontal, Send, Link2, UserPlus, UserMinus, EyeOff, Repeat2 } from "lucide-react";
+import { 
+  Heart, MessageCircle, Bookmark, MoreHorizontal, Send, 
+  Link2, UserPlus, UserMinus, EyeOff, Repeat2, 
+  TrendingUp, Share2, BookOpen, Clock, Zap, 
+  Sparkles, Filter, Eye, ExternalLink, Hash, 
+  ThumbsUp, BookmarkCheck, Users, Target, Star
+} from "lucide-react";
 
 export default function FeedContent() {
   const [activeTab, setActiveTab] = useState("forYou");
@@ -13,8 +19,9 @@ export default function FeedContent() {
   const [followedUsers, setFollowedUsers] = useState(new Set(["mchen", "lisaa"]));
   const [hiddenPosts, setHiddenPosts] = useState(new Set());
   const [repostedPosts, setRepostedPosts] = useState(new Set());
+  const [showTrendingSidebar, setShowTrendingSidebar] = useState(true);
 
-  // Dummy posts data
+  // Enhanced posts data
   const posts = [
     {
       id: 1,
@@ -22,6 +29,8 @@ export default function FeedContent() {
         name: "Sarah Johnson",
         username: "sarahj",
         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sarahj",
+        verified: true,
+        followers: "12.4K",
       },
       title: "Getting Started with React Hooks",
       content:
@@ -35,6 +44,10 @@ export default function FeedContent() {
       date: "2 days ago",
       likes: 124,
       comments: 18,
+      shares: 45,
+      views: "2.3K",
+      trending: true,
+      isSponsored: false,
     },
     {
       id: 2,
@@ -42,18 +55,24 @@ export default function FeedContent() {
         name: "Michael Chen",
         username: "mchen",
         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=michael",
+        verified: true,
+        followers: "8.7K",
       },
       title: "The Future of AI in Software Development",
       content:
-        "Artificial Intelligence is transforming how we build software. What used to take hours of manual coding can now be streamlined with the help of AI-driven tools. From intelligent code suggestions to automated testing, AI is reshaping the development process.\n\nOne major area where AI is making an impact is code generation. Tools like GitHub Copilot and ChatGPT help developers write boilerplate code faster, freeing up time to focus on solving higher-level problems. Instead of starting from scratch, engineers can leverage AI to provide a strong starting point.\n\nTesting and debugging have also seen huge improvements. Machine learning models can analyze codebases, detect patterns, and even predict where bugs are most likely to occur. Automated test case generation ensures better coverage with less manual effort.\n\nAI is also playing a role in project management. By analyzing historical data, AI can forecast timelines, predict resource needs, and highlight potential bottlenecks before they become critical issues.\n\nOf course, AI isn't without its challenges. Concerns around ethics, bias, and over-reliance on machine-generated code continue to spark debate. Developers must balance efficiency gains with responsible usage.\n\nThe future of AI in software development looks promising. As AI systems become more sophisticated, we may see fully autonomous tools capable of building, testing, and deploying applications with minimal human intervention. While this won't replace developers, it will significantly augment their capabilities, making teams more productive than ever before.",
+        "Artificial Intelligence is transforming how we build software. What used to take hours of manual coding can now be streamlined with the help of AI-driven tools. From intelligent code suggestions to automated testing, AI is reshaping the development process.",
       excerpt:
         "Artificial Intelligence is transforming how we build software—from code generation to automated testing and project management.",
       image: null,
-      tags: ["AI", "Technology"],
+      tags: ["AI", "Technology", "Machine Learning"],
       readTime: "3 min read",
       date: "1 day ago",
       likes: 89,
       comments: 12,
+      shares: 23,
+      views: "1.8K",
+      trending: false,
+      isSponsored: true,
     },
     {
       id: 3,
@@ -61,10 +80,12 @@ export default function FeedContent() {
         name: "Emma Williams",
         username: "emmaw",
         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=emma",
+        verified: false,
+        followers: "5.2K",
       },
       title: "Building Scalable REST APIs with Node.js",
       content:
-        "Learn how to build production-ready REST APIs using Node.js, Express, and MongoDB. This tutorial covers authentication, error handling, rate limiting, and best practices for API design that will help you create robust backend services.\n\nWhen building a REST API, one of the first steps is setting up the project structure. A well-organized folder layout ensures your code is easy to maintain and scale as your project grows. With Express, you can separate routes, controllers, and middleware into different modules to keep everything clean.\n\nAuthentication is another crucial piece. While many beginners start with simple session-based logins, production-ready APIs often use JSON Web Tokens (JWT) or OAuth for secure and scalable authentication. By combining JWT with middleware, you can easily protect routes and control access levels.\n\nError handling is often overlooked but it's vital for creating reliable APIs. A consistent error response format helps frontend developers handle issues gracefully. With Express, you can set up global error-handling middleware that logs errors and returns structured JSON responses.\n\nPerformance also matters. Features like request validation, caching, and database indexing play a huge role in how your API scales. Rate limiting is an important security practice that prevents abuse of your endpoints. Libraries like `express-rate-limit` make it easy to implement.\n\nFinally, don't forget documentation. Tools like Swagger (OpenAPI) or Postman Collections help teams and external developers understand and consume your API effectively.\n\nBy following these practices, you can design Node.js APIs that are not only functional but also maintainable, secure, and scalable for real-world production environments.",
+        "Learn how to build production-ready REST APIs using Node.js, Express, and MongoDB. This tutorial covers authentication, error handling, rate limiting, and best practices for API design that will help you create robust backend services.",
       excerpt:
         "Learn how to build production-ready REST APIs using Node.js, Express, and MongoDB. This tutorial covers authentication, error handling, rate limiting...",
       image:
@@ -74,6 +95,10 @@ export default function FeedContent() {
       date: "3 days ago",
       likes: 256,
       comments: 34,
+      shares: 89,
+      views: "5.6K",
+      trending: true,
+      isSponsored: false,
     },
     {
       id: 4,
@@ -81,15 +106,22 @@ export default function FeedContent() {
         name: "David Brown",
         username: "dbrown",
         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=david",
+        verified: true,
+        followers: "15.1K",
       },
       title: "CSS Grid vs Flexbox: When to Use What",
-      content: `Understanding the differences between CSS Grid and Flexbox.\n\nCSS Grid and Flexbox are two powerful layout systems in modern CSS.\n\n**CSS Grid** is best for two-dimensional layouts, allowing you to control both rows and columns. It is perfect for complex page layouts, dashboards, and magazine-style designs.\n\n**Flexbox** is ideal for one-dimensional layouts, either a row or a column. It excels at distributing space and aligning items within a container, such as navigation bars, card layouts, and form controls.\n\n**When to use Grid:**\n- Complex layouts with both rows and columns\n- Overlapping content\n- Responsive page sections\n\n**When to use Flexbox:**\n- Simple row or column layouts\n- Aligning items\n- Distributing space\n\n**Tip:** You can combine Grid and Flexbox for maximum flexibility. For example, use Grid for the main page structure and Flexbox for components inside grid cells.\n\nExperiment with both to find what works best for your design!`,
+      content: `Understanding the differences between CSS Grid and Flexbox. CSS Grid and Flexbox are two powerful layout systems in modern CSS.`,
+      excerpt: `Understanding the differences between CSS Grid and Flexbox.`,
       image: null,
-      tags: ["CSS", "Frontend"],
+      tags: ["CSS", "Frontend", "Web Design"],
       readTime: "4 min read",
       date: "5 days ago",
       likes: 178,
       comments: 23,
+      shares: 67,
+      views: "3.2K",
+      trending: false,
+      isSponsored: false,
     },
     {
       id: 5,
@@ -97,42 +129,49 @@ export default function FeedContent() {
         name: "Lisa Anderson",
         username: "lisaa",
         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=lisa",
+        verified: true,
+        followers: "22.3K",
       },
       title: "My Journey Learning TypeScript",
       content:
-        "After years of writing JavaScript, I decided to dive deep into TypeScript. Here is what I learned along the way and why I think every JavaScript developer should consider making the switch to TypeScript for better code quality and developer experience. \n\nThis reduced hours of debugging and gave me more confidence in my code.\n\nTypeScript also improved collaboration with my team. When working on large codebases, having explicit types made it easier to understand function signatures and object structures without guessing. It acted as living documentation.\n\nBeyond safety, TypeScript integrates seamlessly with modern frameworks like React, Next.js, and Node. Features like generics, enums, and interfaces opened new ways of structuring my applications that felt both scalable and maintainable. Plus, tooling support in editors like VS Code made refactoring a breeze.",
+        "After years of writing JavaScript, I decided to dive deep into TypeScript. Here is what I learned along the way and why I think every JavaScript developer should consider making the switch to TypeScript for better code quality and developer experience.",
       excerpt:
         "After years of writing JavaScript, I decided to dive deep into TypeScript. Here is what I learned along the way and why I think every JavaScript developer should...",
       image:
         "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=800&h=400&fit=crop",
-      tags: ["TypeScript", "Learning"],
+      tags: ["TypeScript", "Learning", "JavaScript"],
       readTime: "6 min read",
       date: "1 week ago",
       likes: 312,
       comments: 45,
-    },
-    {
-      id: 6,
-      author: {
-        name: "James Wilson",
-        username: "jwilson",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=james",
-      },
-      title: "Dark Mode Best Practices",
-      content: "Implementing dark mode the right way.",
-      image: null,
-      tags: ["UI/UX", "Design"],
-      readTime: "3 min read",
-      date: "2 weeks ago",
-      likes: 145,
-      comments: 19,
+      shares: 124,
+      views: "8.9K",
+      trending: true,
+      isSponsored: false,
     },
   ];
 
   const tabs = [
-    { id: "forYou", label: "For You" },
-    { id: "following", label: "Following" },
-    { id: "latest", label: "Latest" },
+    { id: "forYou", label: "For You", icon: <Sparkles className="w-4 h-4" /> },
+    { id: "following", label: "Following", icon: <Users className="w-4 h-4" /> },
+    { id: "latest", label: "Latest", icon: <Zap className="w-4 h-4" /> },
+    { id: "trending", label: "Trending", icon: <TrendingUp className="w-4 h-4" /> },
+  ];
+
+  const trendingTopics = [
+    { tag: "#React", posts: "2.4K", trending: true },
+    { tag: "#WebDev", posts: "1.8K", trending: true },
+    { tag: "#AI", posts: "3.2K", trending: true },
+    { tag: "#JavaScript", posts: "4.7K", trending: false },
+    { tag: "#TypeScript", posts: "1.2K", trending: true },
+    { tag: "#CSS", posts: "890", trending: false },
+  ];
+
+  const recommendedAuthors = [
+    { name: "Alex Turner", followers: "45K", category: "React Expert" },
+    { name: "Maria Garcia", followers: "32K", category: "AI Researcher" },
+    { name: "James Wilson", followers: "28K", category: "Backend Wizard" },
+    { name: "Sophie Chen", followers: "51K", category: "DevOps Guru" },
   ];
 
   const toggleLike = (postId) => {
@@ -197,7 +236,7 @@ export default function FeedContent() {
   };
 
   const copyLink = (postId) => {
-    const link = `https://example.com/post/${postId}`;
+    const link = `https://scribe.com/post/${postId}`;
     navigator.clipboard.writeText(link);
     alert("Link copied to clipboard!");
     setActiveMenuPost(null);
@@ -238,330 +277,462 @@ export default function FeedContent() {
   const visiblePosts = posts.filter(post => !hiddenPosts.has(post.id));
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 pt-16 md:pt-20">
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* Filter Tabs */}
-        <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 z-40 -mx-4 px-4 mb-6">
-          <div className="flex items-center gap-1 overflow-x-auto py-4">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-6 py-2.5 cursor-pointer rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 ${
-                  activeTab === tab.id
-                    ? "bg-blue-600 dark:bg-blue-600 text-white shadow-sm"
-                    : "text-slate-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 pt-16 md:pt-20">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex flex-col lg:grid lg:grid-cols-4 gap-8">
+          {/* Main Feed */}
+          <div className="lg:col-span-3">
+            {/* Enhanced Header */}
+            <div className="sticky top-16 z-30 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg border-b border-gray-200/50 dark:border-slate-700/50 rounded-2xl p-4 mb-8 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 bg-clip-text text-transparent">
+                    Your Feed
+                  </h1>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+                    Personalized stories from topics you follow
+                  </p>
+                </div>
 
-        {/* Posts Feed */}
-        <div className="space-y-6">
-          {visiblePosts.map((post) => {
-            const isLiked = likedPosts.has(post.id);
-            const isBookmarked = bookmarkedPosts.has(post.id);
-            const showExcerpt = post.content.length > 100;
-            const isCommentsOpen = activeCommentPost === post.id;
-            const isMenuOpen = activeMenuPost === post.id;
-            const isFollowing = followedUsers.has(post.author.username);
-            const isReposted = repostedPosts.has(post.id);
+                <div className="flex items-center gap-3">
+                  <button className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-700 transition-all">
+                    <Filter className="w-4 h-4" />
+                    <span className="font-medium">Filters</span>
+                  </button>
+                  <button className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl">
+                    New Story
+                  </button>
+                </div>
+              </div>
 
-            return (
-              <article
-                key={post.id}
-                className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden hover:shadow-md dark:hover:shadow-slate-900/50 transition-all duration-200"
-              >
-                {/* Repost indicator */}
-                {isReposted && (
-                  <div className="px-5 pt-3 pb-1 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                    <Repeat2 className="w-4 h-4" />
-                    <span>You reposted</span>
-                  </div>
-                )}
+              {/* Enhanced Tabs */}
+              <div className="flex items-center gap-1 overflow-x-auto mt-6 pb-2">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold whitespace-nowrap transition-all duration-300 ${
+                      activeTab === tab.id
+                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                  >
+                    {tab.icon}
+                    {tab.label}
+                    {tab.id === "trending" && (
+                      <span className="ml-1 animate-pulse w-2 h-2 bg-yellow-500 rounded-full" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-                {/* Post Header */}
-                <div className="p-5 pb-3">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={post.author.avatar}
-                        alt={post.author.name}
-                        className="w-11 h-11 rounded-full border-2 border-gray-200 dark:border-slate-700"
-                      />
-                      <div>
-                        <h3 className="font-semibold text-slate-900 dark:text-white text-sm">
-                          {post.author.name}
-                        </h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          @{post.author.username} · {post.date}
-                        </p>
+            {/* Enhanced Posts Feed */}
+            <div className="space-y-8">
+              {visiblePosts.map((post) => {
+                const isLiked = likedPosts.has(post.id);
+                const isBookmarked = bookmarkedPosts.has(post.id);
+                const showExcerpt = post.content.length > 100;
+                const isCommentsOpen = activeCommentPost === post.id;
+                const isMenuOpen = activeMenuPost === post.id;
+                const isFollowing = followedUsers.has(post.author.username);
+                const isReposted = repostedPosts.has(post.id);
+
+                return (
+                  <article
+                    key={post.id}
+                    className="group relative bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-lg hover:shadow-2xl dark:hover:shadow-slate-900/50 transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                  >
+                    {/* Badge Container - Fixed Alignment */}
+                    <div className="absolute top-4 left-4 right-4 z-10 flex justify-between items-start pointer-events-none">
+                      {/* Left side badges */}
+                      <div className="flex flex-col gap-2 items-start">
+                        {/* Trending Badge */}
+                        {post.trending && (
+                          <span className="px-3 py-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full flex items-center gap-1 shadow-lg pointer-events-auto">
+                            <TrendingUp className="w-3 h-3" />
+                            Trending
+                          </span>
+                        )}
+                        
+                        {/* Repost indicator - moved here to align properly */}
+                        {isReposted && (
+                          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-lg pointer-events-auto">
+                            <Repeat2 className="w-3 h-3 text-green-500" />
+                            <span className="font-medium text-green-600 dark:text-green-400">You reposted</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Right side badges */}
+                      <div className="flex flex-col gap-2 items-end">
+                        {/* Sponsored Badge */}
+                        {post.isSponsored && (
+                          <span className="px-3 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full flex items-center gap-1 shadow-lg pointer-events-auto">
+                            <Star className="w-3 h-3" />
+                            Sponsored
+                          </span>
+                        )}
                       </div>
                     </div>
-                    <div className="relative">
-                      <button 
-                        onClick={() => toggleMenu(post.id)} 
-                        className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
-                      >
-                        <MoreHorizontal className="w-5 h-5" />
-                      </button>
 
-                      {/* Dropdown Menu */}
-                      {isMenuOpen && (
-                        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 py-2 z-50">
-                          <button
-                            onClick={() => copyLink(post.id)}
-                            className="w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-slate-300 text-sm"
-                          >
-                            <Link2 className="w-4 h-4" />
-                            <span>Copy link</span>
-                          </button>
-                          
-                          <button
-                            onClick={() => toggleFollow(post.author.username)}
-                            className="w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-slate-300 text-sm"
-                          >
-                            {isFollowing ? (
-                              <>
-                                <UserMinus className="w-4 h-4" />
-                                <span>Unfollow @{post.author.username}</span>
-                              </>
-                            ) : (
-                              <>
-                                <UserPlus className="w-4 h-4" />
-                                <span>Follow @{post.author.username}</span>
-                              </>
-                            )}
-                          </button>
-
-                          <button
-                            onClick={() => toggleRepost(post.id)}
-                            className="w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-slate-300 text-sm"
-                          >
-                            <Repeat2 className="w-4 h-4" />
-                            <span>{isReposted ? "Undo repost" : "Repost"}</span>
-                          </button>
-
-                          <div className="border-t border-gray-200 dark:border-slate-700 my-1"></div>
-
-                          <button
-                            onClick={() => hidePost(post.id)}
-                            className="w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-red-600 dark:text-red-500 text-sm"
-                          >
-                            <EyeOff className="w-4 h-4" />
-                            <span>Not interested</span>
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Post Title */}
-                  <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-2 hover:text-blue-600 dark:hover:text-blue-500 transition-colors cursor-pointer leading-tight">
-                    {post.title}
-                  </h2>
-
-                  {/* Post Excerpt or Full Content */}
-                  {expandedPostId === post.id ? (
-                    <p className="text-slate-600 dark:text-slate-400 mb-3 leading-relaxed">
-                      {post.content}
-                    </p>
-                  ) : (
-                    post.excerpt && (
-                      <p
-                        className="text-slate-600 dark:text-slate-400 mb-3 line-clamp-2 leading-relaxed cursor-pointer"
-                        onClick={() => setExpandedPostId(post.id)}
-                      >
-                        {post.excerpt}{" "}
-                        <span className="text-blue-600 hover:underline">
-                          Read more
-                        </span>
-                      </p>
-                    )
-                  )}
-                </div>
-
-                {/* Featured Image (if exists) */}
-                {post.image && (
-                  <div className="w-full h-64 md:h-80 overflow-hidden">
-                    <img
-                      src={post.image}
-                      alt={post.title}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
-                    />
-                  </div>
-                )}
-
-                {/* Post Footer */}
-                <div className="p-5 pt-4">
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {post.tags.slice(0, 3).map((tag, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Read Time & Actions */}
-                  <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-slate-700">
-                    <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                      {post.readTime}
-                    </span>
-
-                    <div className="flex items-center gap-1">
-                      {/* Like Button */}
-                      <button
-                        onClick={() => toggleLike(post.id)}
-                        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-200 ${
-                          isLiked
-                            ? "text-red-500 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30"
-                            : "text-slate-600 dark:text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-                        }`}
-                      >
-                        <Heart
-                          className={`w-5 h-5 text-red-500 ${isLiked ? "fill-current" : ""}`}
-                        />
-                        <span className="text-sm font-medium">
-                          {post.likes + (isLiked ? 1 : 0)}
-                        </span>
-                      </button>
-
-                      {/* Comment Button */}
-                      <button 
-                        onClick={() => toggleComments(post.id)}
-                        className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 ${
-                          isCommentsOpen
-                            ? "text-blue-600 dark:text-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                            : "text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                        }`}>
-                        <MessageCircle className="w-5 h-5 text-green-600" />
-                        <span className="text-sm font-medium">
-                          {post.comments + (comments[post.id]?.length || 0)}
-                        </span>
-                      </button>
-
-                      {/* Bookmark Button */}
-                      <button
-                        onClick={() => toggleBookmark(post.id)}
-                        className={`p-2 rounded-lg transition-all duration-200 ${
-                          isBookmarked
-                            ? "text-blue-600 dark:text-blue-500 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30"
-                            : "text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                        }`}
-                      >
-                        <Bookmark
-                          className={`w-5 h-5 ${
-                            isBookmarked ? "fill-current" : ""
-                          }`}
-                        />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Expandable Comments Section */}
-                {isCommentsOpen && (
-                  <div className="border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900">
-                    {/* Comments List */}
-                    <div className="p-5 space-y-4 max-h-70 overflow-y-auto">
-                      {comments[post.id]?.length > 0 ? (
-                        comments[post.id].map((comment) => (
-                          <div key={comment.id} className="flex gap-3">
+                    {/* Post Header */}
+                    <div className="p-6 pb-4">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="relative">
                             <img
-                              src={comment.author.avatar}
-                              alt={comment.author.name}
-                              className="w-11 h-11 rounded-full border-2 pb-5 border-gray-200 dark:border-slate-700 flex-shrink-0"
+                              src={post.author.avatar}
+                              alt={post.author.name}
+                              className="w-12 h-12 rounded-xl border-2 border-white dark:border-slate-800 shadow-sm"
                             />
-                            <div className="flex-1">
-                              <div className="bg-white dark:bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm">
-                                <p className="font-semibold text-sm text-slate-900 dark:text-white mb-0.5">
-                                  {comment.author.name}
-                                </p>
-                                <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
-                                  {comment.content}
-                                </p>
+                            {post.author.verified && (
+                              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-blue-500 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center">
+                                <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                                </svg>
                               </div>
-                              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 ml-4">
-                                {comment.timestamp}
+                            )}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-bold text-gray-900 dark:text-white text-sm">
+                                {post.author.name}
+                              </h3>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">•</span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">{post.date}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                @{post.author.username}
                               </p>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">•</span>
+                              <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                <Users className="w-3 h-3" />
+                                <span>{post.author.followers}</span>
+                              </div>
                             </div>
                           </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-8">
-                          <MessageCircle className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-                          <p className="text-slate-500 dark:text-slate-400 text-sm">
-                            No comments yet. Be the first to comment!
+                        </div>
+                        
+                        {/* Enhanced Follow Button */}
+                        <button 
+                          onClick={() => toggleFollow(post.author.username)}
+                          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                            isFollowing
+                              ? 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600'
+                              : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-sm'
+                          }`}
+                        >
+                          {isFollowing ? 'Following' : 'Follow'}
+                        </button>
+                      </div>
+
+                      {/* Post Title */}
+                      <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3 hover:text-blue-600 dark:hover:text-blue-500 transition-colors cursor-pointer leading-tight">
+                        {post.title}
+                      </h2>
+
+                      {/* Post Content */}
+                      {expandedPostId === post.id ? (
+                        <div className="prose dark:prose-invert max-w-none">
+                          <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
+                            {post.content}
                           </p>
+                          <button
+                            onClick={() => setExpandedPostId(null)}
+                            className="text-blue-600 dark:text-blue-500 hover:underline font-medium text-sm"
+                          >
+                            Show less
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          <div className="relative mb-3">
+                            <p className="text-gray-700 dark:text-gray-300 line-clamp-2 leading-relaxed pr-4">
+                              {post.excerpt || post.content}
+                            </p>
+                            {(post.excerpt || post.content.length > 150) && (
+                              <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white dark:from-slate-800 to-transparent flex items-end justify-center">
+                                <button
+                                  onClick={() => setExpandedPostId(post.id)}
+                                  className="relative -bottom-2 px-4 py-1.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-blue-600 dark:text-blue-500 hover:text-blue-700 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-slate-700 font-medium text-sm rounded-full shadow-sm transition-colors"
+                                >
+                                  Read full story
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
 
-                    {/* Input Area */}
-                    <div className="p-4 border-t border-gray-200 dark:border-slate-700">
-                      <div className="flex items-end gap-3">
+                    {/* Featured Image */}
+                    {post.image && (
+                      <div className="w-full h-72 md:h-80 overflow-hidden">
                         <img
-                          src="https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser"
-                          alt="You"
-                          className="w-9 h-9 rounded-full border-2 border-gray-200 dark:border-slate-700 flex-shrink-0"
+                          src={post.image}
+                          alt={post.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
                         />
-                        <div className="flex-1 flex items-end gap-2 bg-white dark:bg-slate-800 rounded-2xl border-2 border-gray-200 dark:border-slate-700 focus-within:border-blue-600 dark:focus-within:border-blue-500 transition-colors px-4 py-1.5">
-                          <input
-                            type="text"
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" && !e.shiftKey) {
-                                e.preventDefault();
-                                handleSendComment(post.id);
-                              }
-                            }}
-                            placeholder="Write a comment..."
-                            className="flex-1 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none pb-2 text-sm"
-                          />
+                      </div>
+                    )}
+
+                    {/* Post Footer */}
+                    <div className="p-6 pt-4">
+                      {/* Tags */}
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {post.tags.map((tag, index) => (
+                          <span
+                            key={index}
+                            className="px-3 py-1.5 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 text-blue-700 dark:text-blue-400 text-sm font-medium rounded-full hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-900/30 dark:hover:to-purple-900/30 transition-all cursor-pointer"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* Stats & Actions */}
+                      <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-slate-700">
+                        {/* Stats */}
+                        <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-4 h-4" />
+                            <span>{post.readTime}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Eye className="w-4 h-4" />
+                            <span>{post.views}</span>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex items-center gap-1">
+                          {/* Like */}
                           <button
-                            onClick={() => handleSendComment(post.id)}
-                            disabled={!newComment.trim()}
-                            className={`p-2 rounded-lg transition-all duration-200 ${
-                              newComment.trim()
-                                ? "text-blue-600 dark:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                                : "text-slate-300 dark:text-slate-600 cursor-not-allowed"
+                            onClick={() => toggleLike(post.id)}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 ${
+                              isLiked
+                                ? "bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 text-red-600 dark:text-red-400 shadow-sm"
+                                : "text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                             }`}
                           >
-                            <Send className="w-5 h-5" />
+                            <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
+                            <span className="font-medium">{post.likes + (isLiked ? 1 : 0)}</span>
+                          </button>
+
+                          {/* Comment */}
+                          <button 
+                            onClick={() => toggleComments(post.id)}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 ${
+                              isCommentsOpen
+                                ? "bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 text-blue-600 dark:text-blue-400 shadow-sm"
+                                : "text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                            }`}
+                          >
+                            <MessageCircle className="w-5 h-5" />
+                            <span className="font-medium">
+                              {post.comments + (comments[post.id]?.length || 0)}
+                            </span>
+                          </button>
+
+                          {/* Share */}
+                          <button
+                            onClick={() => toggleMenu(post.id)}
+                            className="p-2.5 text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-300"
+                          >
+                            <Share2 className="w-5 h-5" />
+                          </button>
+
+                          {/* Bookmark */}
+                          <button
+                            onClick={() => toggleBookmark(post.id)}
+                            className={`p-2.5 rounded-xl transition-all duration-300 ${
+                              isBookmarked
+                                ? "bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 text-yellow-600 dark:text-yellow-400 shadow-sm"
+                                : "text-gray-600 dark:text-gray-400 hover:text-yellow-500 dark:hover:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                            }`}
+                          >
+                            <Bookmark className={`w-5 h-5 ${isBookmarked ? "fill-current" : ""}`} />
                           </button>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </article>
-            );
-          })}
-        </div>
 
-        {/* Load More */}
-        <div className="flex justify-center mt-8 mb-20">
-          <button className="px-6 cursor-pointer py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold rounded-lg border-2 border-gray-300 dark:border-slate-600 hover:border-blue-600 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-500 transition-all duration-200 shadow-sm hover:shadow-md">
-            Load More Posts
-          </button>
+                    {/* Comments Section */}
+                    {isCommentsOpen && (
+                      <div className="border-t border-gray-200 dark:border-slate-700 bg-gradient-to-b from-gray-50/50 to-transparent dark:from-slate-900/50 dark:to-transparent">
+                        <div className="p-6 space-y-6 max-h-80 overflow-y-auto">
+                          {/* Existing Comments */}
+                          {comments[post.id]?.map((comment) => (
+                            <div key={comment.id} className="flex gap-4">
+                              <img
+                                src={comment.author.avatar}
+                                alt={comment.author.name}
+                                className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-800 flex-shrink-0"
+                              />
+                              <div className="flex-1">
+                                <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="font-semibold text-gray-900 dark:text-white text-sm">
+                                      {comment.author.name}
+                                    </span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">{comment.timestamp}</span>
+                                  </div>
+                                  <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                                    {comment.content}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+
+                          {/* New Comment Input */}
+                          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-4">
+                            <div className="flex items-end gap-4">
+                              <img
+                                src="https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser"
+                                alt="You"
+                                className="w-10 h-10 rounded-full border-2 border-gray-200 dark:border-slate-700 flex-shrink-0"
+                              />
+                              <div className="flex-1">
+                                <textarea
+                                  value={newComment}
+                                  onChange={(e) => setNewComment(e.target.value)}
+                                  placeholder="Share your thoughts..."
+                                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                                  rows="2"
+                                />
+                                <div className="flex items-center justify-between mt-3">
+                                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    Press Enter to post • Shift+Enter for new line
+                                  </div>
+                                  <button
+                                    onClick={() => handleSendComment(post.id)}
+                                    disabled={!newComment.trim()}
+                                    className={`px-6 py-2 rounded-xl font-medium transition-all ${
+                                      newComment.trim()
+                                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl'
+                                        : 'bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-slate-500 cursor-not-allowed'
+                                    }`}
+                                  >
+                                    Post Comment
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+
+            {/* Load More */}
+            <div className="flex justify-center mt-12">
+              <button className="px-8 py-3.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2">
+                <Zap className="w-5 h-5" />
+                Load More Stories
+              </button>
+            </div>
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="lg:col-span-1 space-y-8">
+            {/* Trending Topics */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-orange-500" />
+                  Trending Topics
+                </h3>
+                <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
+                  See all
+                </button>
+              </div>
+              <div className="space-y-3">
+                {trendingTopics.map((topic, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Hash className="w-4 h-4 text-blue-500" />
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">{topic.tag}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{topic.posts} posts</p>
+                      </div>
+                    </div>
+                    {topic.trending && (
+                      <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium rounded-full">
+                        Trending
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recommended Authors */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-6 shadow-sm">
+              <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4">
+                <Users className="w-5 h-5 text-blue-500" />
+                Recommended Authors
+              </h3>
+              <div className="space-y-4">
+                {recommendedAuthors.map((author, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full" />
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">{author.name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{author.category}</p>
+                      </div>
+                    </div>
+                    <button className="px-3 py-1.5 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors">
+                      Follow
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl p-6 text-white">
+              <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+                <Sparkles className="w-5 h-5" />
+                Your Stats
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm opacity-90">Stories Read</span>
+                  <span className="font-bold">1,247</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm opacity-90">Minutes Read</span>
+                  <span className="font-bold">8,543</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm opacity-90">Topics Followed</span>
+                  <span className="font-bold">12</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm opacity-90">Following</span>
+                  <span className="font-bold">89</span>
+                </div>
+              </div>
+              <button className="w-full mt-6 px-4 py-2.5 bg-white/20 hover:bg-white/30 text-white font-medium rounded-lg transition-colors text-sm">
+                View Full Dashboard
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Click outside to close menu */}
-      {activeMenuPost && (
-        <div 
-          className="fixed inset-0 z-40" 
-          onClick={() => setActiveMenuPost(null)}
-        ></div>
-      )}
     </div>
   );
 }
