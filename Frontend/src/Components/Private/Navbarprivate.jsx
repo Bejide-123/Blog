@@ -122,14 +122,13 @@ export default function NavbarPrivate() {
 
   // Desktop navigation items
   const desktopNavItems = [
-    { path: "/feed", label: "Feed", active: currentPath === "/feed" },
-    { path: "/explore", label: "Explore", active: currentPath === "/explore" },
+    { path: "/home", label: "Feed", active: currentPath === "/login/home" },
     { path: "/saved", label: "Saved", active: currentPath === "/saved" },
   ];
 
   // Mobile navigation items
   const mobileNavItems = [
-    { path: "/feed", icon: Home, label: "Home" },
+    { path: "/home", icon: Home, label: "Home" },
     { path: "/saved", icon: Bookmark, label: "Saved" },
     { path: "/create", icon: PlusCircle, label: "Create", isCenter: true },
     {
@@ -150,7 +149,7 @@ export default function NavbarPrivate() {
             {/* Left: Logo */}
             <div className="flex items-center gap-2">
               <button
-                onClick={() => handleNavClick("/feed")}
+                onClick={() => handleNavClick("/home")}
                 className="group flex items-center gap-2 transition-transform hover:scale-105 active:scale-95"
               >
                 <div className="relative">
