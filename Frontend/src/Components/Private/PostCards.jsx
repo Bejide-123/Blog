@@ -1,14 +1,36 @@
 import { useState } from "react";
-import { 
-  Heart, MessageCircle, Bookmark, MoreHorizontal, Send, 
-  Link2, UserPlus, UserMinus, EyeOff, Repeat2, 
-  TrendingUp, Share2, BookOpen, Clock, Zap, 
-  Sparkles, Filter, Eye, ExternalLink, Hash, 
-  ThumbsUp, BookmarkCheck, Users, Target, Star
+import {
+  Heart,
+  MessageCircle,
+  Bookmark,
+  MoreHorizontal,
+  Send,
+  Link2,
+  UserPlus,
+  UserMinus,
+  EyeOff,
+  Repeat2,
+  TrendingUp,
+  Share2,
+  BookOpen,
+  Clock,
+  Zap,
+  Sparkles,
+  Filter,
+  Eye,
+  ExternalLink,
+  Hash,
+  ThumbsUp,
+  BookmarkCheck,
+  Users,
+  Target,
+  Star,
 } from "lucide-react";
+import { useNavigate } from "react-router";
 
 export default function FeedContent() {
   const [activeTab, setActiveTab] = useState("forYou");
+  const navigate = useNavigate();
   const [likedPosts, setLikedPosts] = useState(new Set([2, 5]));
   const [bookmarkedPosts, setBookmarkedPosts] = useState(new Set([3, 5]));
   const [expandedPostId, setExpandedPostId] = useState(null);
@@ -16,10 +38,13 @@ export default function FeedContent() {
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState({});
   const [activeMenuPost, setActiveMenuPost] = useState(null);
-  const [followedUsers, setFollowedUsers] = useState(new Set(["mchen", "lisaa"]));
+  const [followedUsers, setFollowedUsers] = useState(
+    new Set(["mchen", "lisaa"])
+  );
   const [hiddenPosts, setHiddenPosts] = useState(new Set());
   const [repostedPosts, setRepostedPosts] = useState(new Set());
   const [showTrendingSidebar, setShowTrendingSidebar] = useState(true);
+  const [likedComments, setLikedComments] = useState(new Set());
 
   // Enhanced posts data
   const posts = [
@@ -153,9 +178,17 @@ export default function FeedContent() {
 
   const tabs = [
     { id: "forYou", label: "For You", icon: <Sparkles className="w-4 h-4" /> },
-    { id: "following", label: "Following", icon: <Users className="w-4 h-4" /> },
+    {
+      id: "following",
+      label: "Following",
+      icon: <Users className="w-4 h-4" />,
+    },
     { id: "latest", label: "Latest", icon: <Zap className="w-4 h-4" /> },
-    { id: "trending", label: "Trending", icon: <TrendingUp className="w-4 h-4" /> },
+    {
+      id: "trending",
+      label: "Trending",
+      icon: <TrendingUp className="w-4 h-4" />,
+    },
   ];
 
   const trendingTopics = [
@@ -209,6 +242,8 @@ export default function FeedContent() {
         },
         content: newComment,
         timestamp: "Just now",
+        likes: 0,
+        isLiked: false,
       };
 
       setComments((prev) => ({
@@ -217,6 +252,27 @@ export default function FeedContent() {
       }));
       setNewComment("");
     }
+  };
+
+  const toggleCommentLike = (postId, commentId) => {
+    setComments((prev) => {
+      const postComments = prev[postId] || [];
+      const updatedComments = postComments.map((comment) => {
+        if (comment.id === commentId) {
+          return {
+            ...comment,
+            likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
+            isLiked: !comment.isLiked,
+          };
+        }
+        return comment;
+      });
+
+      return {
+        ...prev,
+        [postId]: updatedComments,
+      };
+    });
   };
 
   const toggleComments = (postId) => {
@@ -274,7 +330,7 @@ export default function FeedContent() {
   };
 
   // Filter out hidden posts
-  const visiblePosts = posts.filter(post => !hiddenPosts.has(post.id));
+  const visiblePosts = posts.filter((post) => !hiddenPosts.has(post.id));
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 pt-16 md:pt-20">
@@ -283,7 +339,7 @@ export default function FeedContent() {
           {/* Main Feed */}
           <div className="lg:col-span-3">
             {/* Enhanced Header */}
-            <div className="sticky top-16 z-30 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg border-b border-gray-200/50 dark:border-slate-700/50 rounded-2xl p-4 mb-8 shadow-sm">
+            <div className="relative bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg border border-gray-200/50 dark:border-slate-700/50 rounded-2xl p-4 mb-8 shadow-sm">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 bg-clip-text text-transparent">
@@ -299,7 +355,10 @@ export default function FeedContent() {
                     <Filter className="w-4 h-4" />
                     <span className="font-medium">Filters</span>
                   </button>
-                  <button className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl">
+                  <button
+                    onClick={() => navigate("/create")}
+                    className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+                  >
                     New Story
                   </button>
                 </div>
@@ -343,39 +402,6 @@ export default function FeedContent() {
                     key={post.id}
                     className="group relative bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-lg hover:shadow-2xl dark:hover:shadow-slate-900/50 transition-all duration-300 hover:-translate-y-1 overflow-hidden"
                   >
-                    {/* Badge Container - Fixed Alignment */}
-                    <div className="absolute top-4 left-4 right-4 z-10 flex justify-between items-start pointer-events-none">
-                      {/* Left side badges */}
-                      <div className="flex flex-col gap-2 items-start">
-                        {/* Trending Badge */}
-                        {post.trending && (
-                          <span className="px-3 py-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full flex items-center gap-1 shadow-lg pointer-events-auto">
-                            <TrendingUp className="w-3 h-3" />
-                            Trending
-                          </span>
-                        )}
-                        
-                        {/* Repost indicator - moved here to align properly */}
-                        {isReposted && (
-                          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-lg pointer-events-auto">
-                            <Repeat2 className="w-3 h-3 text-green-500" />
-                            <span className="font-medium text-green-600 dark:text-green-400">You reposted</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Right side badges */}
-                      <div className="flex flex-col gap-2 items-end">
-                        {/* Sponsored Badge */}
-                        {post.isSponsored && (
-                          <span className="px-3 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full flex items-center gap-1 shadow-lg pointer-events-auto">
-                            <Star className="w-3 h-3" />
-                            Sponsored
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
                     {/* Post Header */}
                     <div className="p-6 pb-4">
                       <div className="flex items-start justify-between mb-4">
@@ -388,8 +414,12 @@ export default function FeedContent() {
                             />
                             {post.author.verified && (
                               <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-blue-500 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center">
-                                <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                                <svg
+                                  className="w-2 h-2 text-white"
+                                  fill="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                                 </svg>
                               </div>
                             )}
@@ -399,14 +429,20 @@ export default function FeedContent() {
                               <h3 className="font-bold text-gray-900 dark:text-white text-sm">
                                 {post.author.name}
                               </h3>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">•</span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">{post.date}</span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                •
+                              </span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                {post.date}
+                              </span>
                             </div>
                             <div className="flex items-center gap-2">
                               <p className="text-xs text-gray-500 dark:text-gray-400">
                                 @{post.author.username}
                               </p>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">•</span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                •
+                              </span>
                               <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                                 <Users className="w-3 h-3" />
                                 <span>{post.author.followers}</span>
@@ -414,18 +450,47 @@ export default function FeedContent() {
                             </div>
                           </div>
                         </div>
-                        
-                        {/* Enhanced Follow Button */}
-                        <button 
-                          onClick={() => toggleFollow(post.author.username)}
-                          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                            isFollowing
-                              ? 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600'
-                              : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-sm'
-                          }`}
-                        >
-                          {isFollowing ? 'Following' : 'Follow'}
-                        </button>
+
+                        {/* Right side container for badges and follow button */}
+                        <div className="flex items-center gap-2">
+                          {/* Badges container */}
+                          <div className="flex flex-wrap justify-end gap-1">
+                            {post.trending && (
+                              <span className="px-2 py-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full flex items-center gap-1 shadow-lg">
+                                <TrendingUp className="w-3 h-3" />
+                                Trending
+                              </span>
+                            )}
+
+                            {post.isSponsored && (
+                              <span className="px-2 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full flex items-center gap-1 shadow-lg">
+                                <Star className="w-3 h-3" />
+                                Sponsored
+                              </span>
+                            )}
+
+                            {isReposted && (
+                              <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-lg">
+                                <Repeat2 className="w-3 h-3 text-green-500" />
+                                <span className="font-medium text-green-600 dark:text-green-400">
+                                  You reposted
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Enhanced Follow Button */}
+                          <button
+                            onClick={() => toggleFollow(post.author.username)}
+                            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                              isFollowing
+                                ? "bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600"
+                                : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-sm"
+                            }`}
+                          >
+                            {isFollowing ? "Following" : "Follow"}
+                          </button>
+                        </div>
                       </div>
 
                       {/* Post Title */}
@@ -517,12 +582,18 @@ export default function FeedContent() {
                                 : "text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                             }`}
                           >
-                            <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
-                            <span className="font-medium">{post.likes + (isLiked ? 1 : 0)}</span>
+                            <Heart
+                              className={`w-5 h-5 ${
+                                isLiked ? "fill-current" : ""
+                              }`}
+                            />
+                            <span className="font-medium">
+                              {post.likes + (isLiked ? 1 : 0)}
+                            </span>
                           </button>
 
                           {/* Comment */}
-                          <button 
+                          <button
                             onClick={() => toggleComments(post.id)}
                             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 ${
                               isCommentsOpen
@@ -553,7 +624,11 @@ export default function FeedContent() {
                                 : "text-gray-600 dark:text-gray-400 hover:text-yellow-500 dark:hover:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
                             }`}
                           >
-                            <Bookmark className={`w-5 h-5 ${isBookmarked ? "fill-current" : ""}`} />
+                            <Bookmark
+                              className={`w-5 h-5 ${
+                                isBookmarked ? "fill-current" : ""
+                              }`}
+                            />
                           </button>
                         </div>
                       </div>
@@ -573,11 +648,34 @@ export default function FeedContent() {
                               />
                               <div className="flex-1">
                                 <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <span className="font-semibold text-gray-900 dark:text-white text-sm">
-                                      {comment.author.name}
-                                    </span>
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">{comment.timestamp}</span>
+                                  <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-semibold text-gray-900 dark:text-white text-sm">
+                                        {comment.author.name}
+                                      </span>
+                                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                                        {comment.timestamp}
+                                      </span>
+                                    </div>
+                                    <button
+                                      onClick={() =>
+                                        toggleCommentLike(post.id, comment.id)
+                                      }
+                                      className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors ${
+                                        comment.isLiked
+                                          ? "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20"
+                                          : "text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-slate-700"
+                                      }`}
+                                    >
+                                      <Heart
+                                        className={`w-3.5 h-3.5 ${
+                                          comment.isLiked ? "fill-current" : ""
+                                        }`}
+                                      />
+                                      <span className="text-xs font-medium">
+                                        {comment.likes}
+                                      </span>
+                                    </button>
                                   </div>
                                   <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
                                     {comment.content}
@@ -598,22 +696,25 @@ export default function FeedContent() {
                               <div className="flex-1">
                                 <textarea
                                   value={newComment}
-                                  onChange={(e) => setNewComment(e.target.value)}
+                                  onChange={(e) =>
+                                    setNewComment(e.target.value)
+                                  }
                                   placeholder="Share your thoughts..."
                                   className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                                   rows="2"
                                 />
                                 <div className="flex items-center justify-between mt-3">
                                   <div className="text-xs text-gray-500 dark:text-gray-400">
-                                    Press Enter to post • Shift+Enter for new line
+                                    Press Enter to post • Shift+Enter for new
+                                    line
                                   </div>
                                   <button
                                     onClick={() => handleSendComment(post.id)}
                                     disabled={!newComment.trim()}
                                     className={`px-6 py-2 rounded-xl font-medium transition-all ${
                                       newComment.trim()
-                                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl'
-                                        : 'bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-slate-500 cursor-not-allowed'
+                                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl"
+                                        : "bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-slate-500 cursor-not-allowed"
                                     }`}
                                   >
                                     Post Comment
@@ -640,95 +741,190 @@ export default function FeedContent() {
           </div>
 
           {/* Right Sidebar */}
-          <div className="lg:col-span-1 space-y-8">
-            {/* Trending Topics */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-orange-500" />
-                  Trending Topics
-                </h3>
+          <div
+            className={`lg:col-span-1 space-y-6 md:space-y-8 ${
+              showTrendingSidebar ? "block" : "hidden"
+            } lg:block`}
+          >
+            {/* Trending Topics - Simplified */}
+            <div className="relative bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5 shadow-lg transition-all duration-300">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-lg">
+                    <TrendingUp className="w-5 h-5 text-orange-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 dark:text-white text-base">
+                      Trending Topics
+                    </h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      What's hot now
+                    </p>
+                  </div>
+                </div>
                 <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
-                  See all
+                  See all →
                 </button>
               </div>
-              <div className="space-y-3">
+
+              <div className="space-y-2">
                 {trendingTopics.map((topic, index) => (
-                  <div
+                  <button
                     key={index}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
+                    className="w-full flex items-center justify-between p-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors group"
                   >
-                    <div className="flex items-center gap-3">
-                      <Hash className="w-4 h-4 text-blue-500" />
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{topic.tag}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{topic.posts} posts</p>
+                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                      <div className="relative">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/10 to-purple-500/10 flex items-center justify-center">
+                          <Hash className="w-3.5 h-3.5 text-blue-500" />
+                        </div>
+                        {topic.trending && (
+                          <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white dark:border-slate-800" />
+                        )}
+                      </div>
+                      <div className="text-left flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">
+                          {topic.tag}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {topic.posts} posts
+                        </p>
                       </div>
                     </div>
                     {topic.trending && (
-                      <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium rounded-full">
-                        Trending
+                      <span className="px-2 py-0.5 bg-gradient-to-r from-red-500/10 to-pink-500/10 text-red-600 dark:text-red-400 text-xs font-medium rounded-full">
+                        🔥
                       </span>
                     )}
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
 
-            {/* Recommended Authors */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-6 shadow-sm">
-              <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4">
-                <Users className="w-5 h-5 text-blue-500" />
-                Recommended Authors
-              </h3>
-              <div className="space-y-4">
+            {/* Recommended Authors - Stacked layout */}
+            <div className="relative bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5 shadow-lg transition-all duration-300">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="p-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg">
+                  <Users className="w-5 h-5 text-blue-500" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 dark:text-white text-base">
+                    Top Authors
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Recommended for you
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
                 {recommendedAuthors.map((author, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
+                    className="flex flex-col p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full" />
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{author.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{author.category}</p>
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="relative">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 p-0.5">
+                          <div className="w-full h-full rounded-full bg-white dark:bg-slate-800 flex items-center justify-center">
+                            <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500 text-sm">
+                              {author.name.charAt(0)}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border border-white dark:border-slate-800" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">
+                          {author.name}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {author.followers} followers
+                        </p>
                       </div>
                     </div>
-                    <button className="px-3 py-1.5 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors">
+                    <button className="w-full px-3 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-xs font-semibold rounded-md transition-colors">
                       Follow
                     </button>
                   </div>
                 ))}
               </div>
+
+              <div className="mt-5 pt-4 border-t border-gray-100 dark:border-slate-700/50">
+                <button className="w-full text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-center">
+                  View all recommendations →
+                </button>
+              </div>
             </div>
 
-            {/* Quick Stats */}
-            <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl p-6 text-white">
-              <h3 className="font-bold text-white mb-4 flex items-center gap-2">
-                <Sparkles className="w-5 h-5" />
-                Your Stats
-              </h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm opacity-90">Stories Read</span>
-                  <span className="font-bold">1,247</span>
+            {/* Quick Stats - Compact */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-500 to-purple-600 rounded-2xl p-5 text-white shadow-xl">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20" />
+
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white text-base">
+                      Your Stats
+                    </h3>
+                    <p className="text-xs text-white/70">This week</p>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm opacity-90">Minutes Read</span>
-                  <span className="font-bold">8,543</span>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/10">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center">
+                        <BookOpen className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="text-sm opacity-90">Read</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold">1,247</span>
+                      <span className="text-xs px-1.5 py-0.5 bg-green-500/30 text-green-300 rounded-full">
+                        +12%
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/10">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center">
+                        <Clock className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="text-sm opacity-90">Minutes</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold">8,543</span>
+                      <span className="text-xs px-1.5 py-0.5 bg-blue-500/30 text-blue-300 rounded-full">
+                        +8%
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/10">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center">
+                        <Users className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="text-sm opacity-90">Following</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold">89</span>
+                      <span className="text-xs px-1.5 py-0.5 bg-pink-500/30 text-pink-300 rounded-full">
+                        +5
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm opacity-90">Topics Followed</span>
-                  <span className="font-bold">12</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm opacity-90">Following</span>
-                  <span className="font-bold">89</span>
-                </div>
+
+                <button className="w-full mt-5 px-4 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-medium rounded-lg transition-colors text-sm">
+                  View Dashboard
+                </button>
               </div>
-              <button className="w-full mt-6 px-4 py-2.5 bg-white/20 hover:bg-white/30 text-white font-medium rounded-lg transition-colors text-sm">
-                View Full Dashboard
-              </button>
             </div>
           </div>
         </div>

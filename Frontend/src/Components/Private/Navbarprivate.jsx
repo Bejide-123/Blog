@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Home,
   Bookmark,
@@ -21,11 +21,11 @@ import {
 import { useNavigate, useLocation } from "react-router";
 import NotificationDropdown from "./Notification";
 import MobileNotificationModal from "./mobileNotification";
-import { UserContext } from "../../Context/userContext";
+import { useUser } from "../../Context/userContext";
 import { signOut } from "../../Services/api";
 
 export default function NavbarPrivate() {
-  const { user, setUser } = useContext(UserContext);
+  const { user, logout } = useUser();
   const location = useLocation();
   const [currentPath, setCurrentPath] = useState(location.pathname);
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
@@ -33,7 +33,7 @@ export default function NavbarPrivate() {
   const [searchQuery, setSearchQuery] = useState("");
   const [notificationCount] = useState(3); // Example count
   const [isDarkMode, setIsDarkMode] = useState(
-    localStorage.getItem("theme") === "dark" ||
+    localStorage.getItem("theme") === "light" ||
       window.matchMedia("(prefers-color-scheme: dark)").matches
   );
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
@@ -91,7 +91,7 @@ export default function NavbarPrivate() {
   const handleLogout = async () => {
     try {
       await signOut();
-      setUser(null);
+      logout();
       nav("/login");
     } catch (error) {
       console.error("Error logging out:", error);
