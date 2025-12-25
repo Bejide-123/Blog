@@ -7,10 +7,14 @@ const FullPostPage = () => {
   const [isPageLoading, setIsPageLoading] = useState(true)
   
   useEffect(() => {
-    setTimeout(() => {
+    // You can fetch initial data here if needed
+    const timer = setTimeout(() => {
       setIsPageLoading(false)
-    }, 3000);
-  })
+    }, 1000); // Reduced loading time since posts will load separately
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
   return (
     <>
       {isPageLoading ? <PageLoader /> : (

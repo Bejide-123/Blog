@@ -374,3 +374,53 @@ export const getPopularTags = async (limit = 10) => {
     throw error
   }
 }
+
+// In src/services/auth.js - Add this function if not already there:
+
+// --------------------- GET POSTS WITH PROFILES ---------------------
+export const getPostsWithProfiles = async (options = {}) => {
+  const {
+    status = 'published',
+    limit = 20,
+    offset = 0,
+    authorId = null,
+    tag = null,
+  } = options
+
+  try {
+    let query = supabase
+      .from('posts')
+      .select(`
+        *,
+        profiles:authorid (
+          username,
+          full_name,
+          avatar_url
+        )
+      `)
+      .order('createdat', { ascending: false })
+      .limit(limit)
+      .range(offset, offset + limit - 1)
+
+    if (status) {
+      query = query.eq('status', status)
+    }
+
+    if (authorId) {
+      query = query.eq('authorid', authorId)
+    }
+
+    if (tag) {
+      query = query.contains('tags', [tag])
+    }
+
+    const { data, error } = await query
+
+    if (error) throw error
+
+    return data
+  } catch (error) {
+    console.error('Error fetching posts:', error)
+    throw error
+  }
+}

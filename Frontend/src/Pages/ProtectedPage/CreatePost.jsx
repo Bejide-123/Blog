@@ -240,7 +240,7 @@ export default function CreatePostPage() {
         alert("Post published successfully!");
         // Clear session draft
         sessionStorage.removeItem('postDraft');
-        window.location.href = "/feed/home";
+        window.location.href = "/home";
       } else {
         alert(result.error || "Failed to publish post");
       }
