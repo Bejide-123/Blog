@@ -13,7 +13,6 @@ export const getPublicPosts = async (options = {}) => {
   } = options
 
   try {
-    // Fetch posts first
     let query = supabase
       .from('posts')
       .select('*')
@@ -21,49 +20,23 @@ export const getPublicPosts = async (options = {}) => {
       .limit(limit)
       .range(offset, offset + limit - 1)
 
-    // Apply filters
-    if (status) {
-      query = query.eq('status', status)
-    }
-
-    if (authorId) {
-      query = query.eq('authorid', authorId)
-    }
-
-    if (tag) {
-      query = query.contains('tags', [tag])
-    }
+    if (status) query = query.eq('status', status)
+    if (authorId) query = query.eq('authorid', authorId)
+    if (tag) query = query.contains('tags', [tag])
 
     const { data: posts, error: postsError, count } = await query
 
-    if (postsError) {
-      console.error('Error fetching posts:', postsError)
-      throw postsError
-    }
-
+    if (postsError) throw postsError
     if (!posts || posts.length === 0) {
-      return {
-        posts: [],
-        total: 0,
-        hasMore: false
-      }
+      return { posts: [], total: 0, hasMore: false }
     }
 
-    // Get unique author IDs
     const authorIds = [...new Set(posts.map(post => post.authorid).filter(Boolean))]
-
-    // Fetch author profiles
-    const { data: profiles, error: profilesError } = await supabase
+    const { data: profiles } = await supabase
       .from('profiles')
       .select('id, username, full_name, avatar_url')
       .in('id', authorIds)
 
-    if (profilesError) {
-      console.error('Error fetching profiles:', profilesError)
-      // Continue with posts even if profiles fail
-    }
-
-    // Create a map of profiles
     const profileMap = {}
     if (profiles) {
       profiles.forEach(profile => {
@@ -71,7 +44,6 @@ export const getPublicPosts = async (options = {}) => {
       })
     }
 
-    // Combine posts with author data
     const postsWithAuthors = posts.map(post => ({
       ...post,
       author: profileMap[post.authorid] || {
@@ -96,7 +68,6 @@ export const getPublicPosts = async (options = {}) => {
 // --------------------- GET SINGLE POST WITH AUTHOR ---------------------
 export const getPostWithAuthor = async (postId) => {
   try {
-    // Fetch the post
     const { data: post, error: postError } = await supabase
       .from('posts')
       .select('*')
@@ -104,13 +75,10 @@ export const getPostWithAuthor = async (postId) => {
       .single()
 
     if (postError) {
-      if (postError.code === 'PGRST116') {
-        throw new Error('Post not found')
-      }
+      if (postError.code === 'PGRST116') throw new Error('Post not found')
       throw postError
     }
 
-    // If no author ID, return post without author
     if (!post.authorid) {
       return {
         ...post,
@@ -122,14 +90,12 @@ export const getPostWithAuthor = async (postId) => {
       }
     }
 
-    // Fetch author profile
-    const { data: author, error: authorError } = await supabase
+    const { data: author } = await supabase
       .from('profiles')
       .select('id, username, full_name, avatar_url, bio')
       .eq('id', post.authorid)
       .single()
 
-    // Return post with author (even if author fetch fails)
     return {
       ...post,
       author: author || {
@@ -145,60 +111,152 @@ export const getPostWithAuthor = async (postId) => {
   }
 }
 
-// --------------------- GET TRENDING POSTS ---------------------
-export const getTrendingPosts = async (limit = 10) => {
+// --------------------- LIKE/UNLIKE POST ---------------------
+export const togglePostLike = async (postId, userId) => {
   try {
-    // This assumes you have a views_count column
-    // If not, just get latest posts
-    const { data, error } = await supabase
-      .from('posts')
-      .select('*')
-      .eq('status', 'published')
-      .order('createdat', { ascending: false })
-      .limit(limit)
+    // Check if already liked
+    const { data: existingLike } = await supabase
+      .from('likes')
+      .select('id')
+      .eq('post_id', postId)
+      .eq('user_id', userId)
+      .single()
 
-    if (error) throw error
+    if (existingLike) {
+      // Unlike
+      await supabase.from('likes').delete().eq('id', existingLike.id)
+      
+      // Get current count and decrement
+      const { data: post } = await supabase
+        .from('posts')
+        .select('likescount')
+        .eq('id', postId)
+        .single()
 
-    return data
+      const newCount = Math.max(0, (post?.likescount || 0) - 1)
+      
+      await supabase
+        .from('posts')
+        .update({ likescount: newCount })
+        .eq('id', postId)
+
+      return { liked: false, count: newCount }
+    } else {
+      // Like
+      await supabase.from('likes').insert({
+        post_id: postId,
+        user_id: userId
+      })
+
+      // Get current count and increment
+      const { data: post } = await supabase
+        .from('posts')
+        .select('likescount')
+        .eq('id', postId)
+        .single()
+
+      const newCount = (post?.likescount || 0) + 1
+      
+      await supabase
+        .from('posts')
+        .update({ likescount: newCount })
+        .eq('id', postId)
+
+      return { liked: true, count: newCount }
+    }
   } catch (error) {
-    console.error('Error in getTrendingPosts:', error)
+    console.error('Error toggling post like:', error)
     throw error
   }
 }
 
-// --------------------- GET POSTS BY TAG ---------------------
-export const getPostsByTag = async (tag, limit = 20) => {
+// --------------------- GET USER'S LIKED POSTS ---------------------
+export const getUserLikedPosts = async (userId) => {
   try {
-    const { data, error } = await supabase
+    const { data } = await supabase
+      .from('likes')
+      .select('post_id')
+      .eq('user_id', userId)
+
+    return data?.map(like => like.post_id) || []
+  } catch (error) {
+    console.error('Error getting user liked posts:', error)
+    return []
+  }
+}
+
+// --------------------- SAVE/UNSAVE POST ---------------------
+export const toggleSavePost = async (postId, userId) => {
+  try {
+    // Check if already saved
+    const { data: existingSave } = await supabase
+      .from('saved_posts')
+      .select('id')
+      .eq('post_id', postId)
+      .eq('user_id', userId)
+      .single()
+
+    if (existingSave) {
+      // Unsave
+      await supabase.from('saved_posts').delete().eq('id', existingSave.id)
+      return { saved: false }
+    } else {
+      // Save
+      await supabase.from('saved_posts').insert({
+        post_id: postId,
+        user_id: userId,
+        saved_at: new Date().toISOString()
+      })
+      return { saved: true }
+    }
+  } catch (error) {
+    console.error('Error toggling save post:', error)
+    throw error
+  }
+}
+
+// --------------------- GET USER'S SAVED POSTS ---------------------
+export const getUserSavedPosts = async (userId) => {
+  try {
+    const { data } = await supabase
+      .from('saved_posts')
+      .select('post_id')
+      .eq('user_id', userId)
+
+    return data?.map(save => save.post_id) || []
+  } catch (error) {
+    console.error('Error getting user saved posts:', error)
+    return []
+  }
+}
+
+// --------------------- GET TRENDING POSTS ---------------------
+export const getTrendingPosts = async (limit = 10) => {
+  try {
+    const { data } = await supabase
       .from('posts')
       .select('*')
       .eq('status', 'published')
-      .contains('tags', [tag])
-      .order('createdat', { ascending: false })
+      .order('likescount', { ascending: false })
       .limit(limit)
 
-    if (error) throw error
-
-    return data
+    return data || []
   } catch (error) {
-    console.error('Error in getPostsByTag:', error)
-    throw error
+    console.error('Error in getTrendingPosts:', error)
+    return []
   }
 }
 
 // --------------------- GET POPULAR TAGS ---------------------
 export const getPopularTags = async (limit = 10) => {
   try {
-    const { data: posts, error } = await supabase
+    const { data: posts } = await supabase
       .from('posts')
       .select('tags')
       .eq('status', 'published')
 
-    if (error) throw error
-
-    // Count tag frequency
     const tagCount = {}
-    posts.forEach(post => {
+    posts?.forEach(post => {
       if (post.tags && Array.isArray(post.tags)) {
         post.tags.forEach(tag => {
           tagCount[tag] = (tagCount[tag] || 0) + 1
@@ -206,7 +264,6 @@ export const getPopularTags = async (limit = 10) => {
       }
     })
 
-    // Convert to array and sort
     const sortedTags = Object.entries(tagCount)
       .sort(([, a], [, b]) => b - a)
       .slice(0, limit)
@@ -216,31 +273,5 @@ export const getPopularTags = async (limit = 10) => {
   } catch (error) {
     console.error('Error in getPopularTags:', error)
     return []
-  }
-}
-
-// --------------------- SEARCH POSTS ---------------------
-export const searchPosts = async (searchTerm, options = {}) => {
-  const {
-    limit = 20,
-    offset = 0
-  } = options
-
-  try {
-    const { data, error } = await supabase
-      .from('posts')
-      .select('*')
-      .or(`title.ilike.%${searchTerm}%,content.ilike.%${searchTerm}%`)
-      .eq('status', 'published')
-      .order('createdat', { ascending: false })
-      .limit(limit)
-      .range(offset, offset + limit - 1)
-
-    if (error) throw error
-
-    return data
-  } catch (error) {
-    console.error('Error in searchPosts:', error)
-    throw error
   }
 }

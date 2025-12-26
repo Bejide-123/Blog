@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-// Import the new service
-import { getPublicPosts } from "../../Services/post";
+// Import the new services
+import { getPublicPosts, togglePostLike, toggleSavePost, getUserLikedPosts, getUserSavedPosts } from "../../Services/post";
+import { useUser } from "../../Context/userContext"; // Your user context
 import {
   Heart,
   MessageCircle,
@@ -24,8 +25,10 @@ import {
 export default function FeedContent() {
   const [activeTab, setActiveTab] = useState("forYou");
   const navigate = useNavigate();
+  const { user } = useUser(); // Changed from useAuth to useUser
+  
   const [likedPosts, setLikedPosts] = useState(new Set());
-  const [bookmarkedPosts, setBookmarkedPosts] = useState(new Set());
+  const [savedPosts, setSavedPosts] = useState(new Set()); // Changed from bookmarkedPosts to savedPosts
   const [expandedPostId, setExpandedPostId] = useState(null);
   const [activeCommentPost, setActiveCommentPost] = useState(null);
   const [newComment, setNewComment] = useState("");
@@ -48,10 +51,13 @@ export default function FeedContent() {
     hasMore: false
   });
 
-  // Fetch posts on component mount
+  // Fetch posts and user data on component mount
   useEffect(() => {
     fetchPosts();
-  }, [activeTab]); // Re-fetch when tab changes
+    if (user?.id) { // Check if user has id property
+      fetchUserData();
+    }
+  }, [activeTab, user]); // Re-fetch when tab changes or user changes
 
   const fetchPosts = async (page = 1) => {
     try {
@@ -65,7 +71,7 @@ export default function FeedContent() {
       // Configure options based on active tab
       switch(activeTab) {
         case 'trending':
-          options.sortBy = 'createdat';
+          options.sortBy = 'likescount'; // Changed to sort by likes for trending
           options.sortOrder = 'desc';
           break;
         case 'latest':
@@ -102,6 +108,89 @@ export default function FeedContent() {
     }
   };
 
+  // Fetch user's liked and saved posts
+  const fetchUserData = async () => {
+    try {
+      if (!user?.id) return;
+      
+      const likedPostIds = await getUserLikedPosts(user.id);
+      setLikedPosts(new Set(likedPostIds));
+      
+      const savedPostIds = await getUserSavedPosts(user.id);
+      setSavedPosts(new Set(savedPostIds));
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  };
+
+  // ========== LIKE FUNCTIONALITY ==========
+  const toggleLike = async (postId) => {
+    if (!user?.id) { // Check for user.id
+      navigate('/login');
+      return;
+    }
+    
+    try {
+      const { liked, count } = await togglePostLike(postId, user.id);
+      
+      // Update liked posts set
+      setLikedPosts(prev => {
+        const newSet = new Set(prev);
+        if (liked) {
+          newSet.add(postId);
+        } else {
+          newSet.delete(postId);
+        }
+        return newSet;
+      });
+      
+      // Update the post in the list with new likes count
+      setPosts(prevPosts => 
+        prevPosts.map(post => 
+          post.id === postId 
+            ? { ...post, likescount: count || 0 } 
+            : post
+        )
+      );
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      alert('Failed to update like. Please try again.');
+    }
+  };
+
+  // ========== SAVE FUNCTIONALITY ==========
+  const toggleSave = async (postId) => {
+    if (!user?.id) { // Check for user.id
+      navigate('/login');
+      return;
+    }
+    
+    try {
+      const { saved } = await toggleSavePost(postId, user.id);
+      
+      // Update saved posts set
+      setSavedPosts(prev => {
+        const newSet = new Set(prev);
+        if (saved) {
+          newSet.add(postId);
+        } else {
+          newSet.delete(postId);
+        }
+        return newSet;
+      });
+      
+      // Optional: Show feedback
+      if (saved) {
+        console.log('Post saved successfully');
+      } else {
+        console.log('Post removed from saved');
+      }
+    } catch (error) {
+      console.error('Error toggling save:', error);
+      alert('Failed to update saved post. Please try again.');
+    }
+  };
+
   const handleLoadMore = () => {
     if (pagination.hasMore) {
       fetchPosts(pagination.page + 1);
@@ -115,7 +204,7 @@ export default function FeedContent() {
     { id: "trending", label: "Trending", icon: <TrendingUp className="w-4 h-4" /> },
   ];
 
-  // ========== MISSING FUNCTIONS ==========
+  // ========== OTHER FUNCTIONS ==========
   const toggleComments = (postId) => {
     if (activeCommentPost === postId) {
       setActiveCommentPost(null);
@@ -124,26 +213,14 @@ export default function FeedContent() {
     }
   };
 
-  const toggleBookmark = (postId) => {
-    setBookmarkedPosts((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(postId)) {
-        newSet.delete(postId);
-      } else {
-        newSet.add(postId);
-      }
-      return newSet;
-    });
-  };
-
   const handleSendComment = (postId) => {
     if (newComment.trim()) {
       const comment = {
         id: Date.now(),
         author: {
-          name: "You",
-          username: "currentuser",
-          avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser",
+          name: user?.full_name || "You",
+          username: user?.username || "currentuser",
+          avatar: user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser",
         },
         content: newComment,
         timestamp: "Just now",
@@ -189,7 +266,7 @@ export default function FeedContent() {
   };
 
   const copyLink = (postId) => {
-    const link = `https://scribe.com/post/${postId}`;
+    const link = `${window.location.origin}/post/${postId}`;
     navigator.clipboard.writeText(link);
     alert("Link copied to clipboard!");
     setActiveMenuPost(null);
@@ -364,7 +441,7 @@ export default function FeedContent() {
               ) : (
                 visiblePosts.map((post) => {
                   const isLiked = likedPosts.has(post.id);
-                  const isBookmarked = bookmarkedPosts.has(post.id);
+                  const isSaved = savedPosts.has(post.id);
                   const isCommentsOpen = activeCommentPost === post.id;
                   const isMenuOpen = activeMenuPost === post.id;
                   const isFollowing = followedUsers.has(post.author?.username);
@@ -501,14 +578,16 @@ export default function FeedContent() {
 
                           {/* Action Buttons */}
                           <div className="flex items-center gap-1">
-                            {/* Like */}
+                            {/* Like Button - UPDATED */}
                             <button
                               onClick={() => toggleLike(post.id)}
+                              disabled={!user?.id}
                               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 ${
                                 isLiked
                                   ? "bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 text-red-600 dark:text-red-400 shadow-sm"
                                   : "text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                              }`}
+                              } ${!user?.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              title={!user?.id ? "Login to like posts" : isLiked ? "Unlike post" : "Like post"}
                             >
                               <Heart
                                 className={`w-5 h-5 ${
@@ -516,7 +595,7 @@ export default function FeedContent() {
                                 }`}
                               />
                               <span className="font-medium">
-                                {post.likes_count || 0}
+                                {post.likescount || 0}
                               </span>
                             </button>
 
@@ -535,18 +614,20 @@ export default function FeedContent() {
                               </span>
                             </button>
 
-                            {/* Bookmark */}
+                            {/* Save Button - UPDATED */}
                             <button
-                              onClick={() => toggleBookmark(post.id)}
+                              onClick={() => toggleSave(post.id)}
+                              disabled={!user?.id}
                               className={`p-2.5 rounded-xl transition-all duration-300 ${
-                                isBookmarked
+                                isSaved
                                   ? "bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 text-yellow-600 dark:text-yellow-400 shadow-sm"
                                   : "text-gray-600 dark:text-gray-400 hover:text-yellow-500 dark:hover:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
-                              }`}
+                              } ${!user?.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              title={!user?.id ? "Login to save posts" : isSaved ? "Remove from saved" : "Save post"}
                             >
                               <Bookmark
                                 className={`w-5 h-5 ${
-                                  isBookmarked ? "fill-current" : ""
+                                  isSaved ? "fill-current" : ""
                                 }`}
                               />
                             </button>
@@ -609,7 +690,7 @@ export default function FeedContent() {
                             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-4">
                               <div className="flex items-end gap-4">
                                 <img
-                                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser"
+                                  src={user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser"}
                                   alt="You"
                                   className="w-10 h-10 rounded-full border-2 border-gray-200 dark:border-slate-700 flex-shrink-0"
                                 />

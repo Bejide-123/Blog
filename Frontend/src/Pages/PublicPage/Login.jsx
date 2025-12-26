@@ -115,6 +115,7 @@ const Auth = () => {
         .single();
 
       setUser({
+        id: loggedInUser.id,
         name: profileData?.full_name || "",
         email: loggedInUser.email,
         username: profileData?.username || "",
