@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { IoMdClose } from "react-icons/io";
-import { FiFeather, FiUser, FiLogIn, FiHome, FiInfo, FiBook, FiMail, FiChevronRight } from "react-icons/fi";
+import { FiFeather, FiUser, FiLogIn, FiHome, FiInfo, FiBook, FiMail, FiChevronRight, FiSun, FiMoon } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTheme } from "../../Context/themeContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,6 +13,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const timeoutRef = useRef(null);
+  const { theme, toggleTheme } = useTheme();
 
   // Track active section on scroll
   useEffect(() => {
@@ -112,7 +114,7 @@ const Navbar = () => {
   return (
     <>
       {/* Progress Bar */}
-      <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 z-50">
+      <div className={`fixed top-0 left-0 right-0 h-1 ${theme === 'light' ? 'bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20' : 'bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10'} z-50`}>
         <div 
           className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
           style={{ 
@@ -124,7 +126,7 @@ const Navbar = () => {
       <nav
         className={`fixed top-1 left-0 w-full z-40 transition-all duration-500 ${
           isScrolled 
-            ? "bg-white/95 backdrop-blur-lg shadow-lg py-2" 
+            ? theme === 'light' ? "bg-white/95 backdrop-blur-lg shadow-lg py-2" : "bg-gray-900/95 backdrop-blur-lg shadow-lg py-2"
             : "bg-transparent py-4"
         }`}
       >
@@ -154,13 +156,13 @@ const Navbar = () => {
             <div className="flex flex-col items-start">
               <h1
                 className={`text-xl sm:text-2xl font-bold tracking-tight transition-all duration-300 ${
-                  isScrolled ? "text-slate-900" : "text-white"
+                  isScrolled ? (theme === 'light' ? "text-slate-900" : "text-white") : "text-white"
                 } ${hoveredItem === 'logo' ? 'scale-105' : ''}`}
               >
                 Scribe
               </h1>
               <span className={`text-xs transition-all duration-300 ${
-                isScrolled ? "text-slate-500" : "text-white/70"
+                isScrolled ? (theme === 'light' ? "text-slate-500" : "text-white/70") : "text-white/70"
               }`}>
                 Share your story
               </span>
@@ -169,7 +171,7 @@ const Navbar = () => {
 
           {/* Center Links - Desktop */}
           <div className="hidden lg:flex flex-1 justify-center">
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-2xl p-1.5 border border-white/20">
+            <div className={`flex items-center gap-2 ${isScrolled ? (theme === 'light' ? 'bg-white/10' : 'bg-gray-800/10') : 'bg-white/10'} backdrop-blur-sm rounded-2xl p-1.5 border ${isScrolled ? (theme === 'light' ? 'border-gray-200/50' : 'border-gray-700/50') : 'border-white/20'}`}>
               {navItems.map((item) => {
                 const isActive = activeSection === item.id && isLandingPage;
                 return (
@@ -182,7 +184,7 @@ const Navbar = () => {
                       isScrolled 
                         ? isActive 
                           ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg" 
-                          : "text-slate-700 hover:text-blue-600"
+                          : theme === 'light' ? "text-slate-700 hover:text-blue-600" : "text-gray-300 hover:text-blue-400"
                         : isActive
                           ? "bg-white/20 text-white backdrop-blur-sm"
                           : "text-white/80 hover:text-white hover:bg-white/10"
@@ -209,10 +211,22 @@ const Navbar = () => {
           {/* Auth Buttons - Desktop */}
           <div className="hidden lg:flex items-center gap-3">
             <button
+              onClick={toggleTheme}
+              className={`group flex items-center gap-2 py-2.5 px-2.5 rounded-xl font-semibold transition-all duration-300 active:scale-95 ${
+                isScrolled
+                  ? theme === 'light' ? "text-slate-700 hover:bg-slate-100 border border-slate-200" : "text-gray-300 hover:bg-gray-800 border border-gray-700"
+                  : "text-white hover:bg-white/10 border border-white/30"
+              }`}
+              onMouseEnter={() => setHoveredItem('theme')}
+              onMouseLeave={() => setHoveredItem(null)}
+            >
+              {theme === 'light' ? <FiMoon className="w-4 h-4" /> : <FiSun className="w-4 h-4" />}
+            </button>
+            <button
               onClick={() => navigate("/login?mode=login")}
               className={`group flex items-center gap-2 py-2.5 px-5 rounded-xl font-semibold transition-all duration-300 active:scale-95 ${
                 isScrolled
-                  ? "text-slate-700 hover:bg-slate-100 border border-slate-200"
+                  ? theme === 'light' ? "text-slate-700 hover:bg-slate-100 border border-slate-200" : "text-gray-300 hover:bg-gray-800 border border-gray-700"
                   : "text-white hover:bg-white/10 border border-white/30"
               }`}
               onMouseEnter={() => setHoveredItem('login')}
@@ -243,7 +257,7 @@ const Navbar = () => {
             onClick={toggleSidebar}
             className={`lg:hidden p-2.5 rounded-xl transition-all duration-300 active:scale-95 group ${
               isScrolled 
-                ? "hover:bg-slate-100" 
+                ? theme === 'light' ? "hover:bg-slate-100" : "hover:bg-gray-800"
                 : "hover:bg-white/20"
             }`}
             aria-label="Toggle menu"
@@ -253,7 +267,7 @@ const Navbar = () => {
             <div className="relative">
               <GiHamburgerMenu
                 className={`w-6 h-6 transition-all duration-300 ${
-                  isScrolled ? "text-slate-700" : "text-white"
+                  isScrolled ? (theme === 'light' ? "text-slate-700" : "text-white") : "text-white"
                 } ${hoveredItem === 'menu' ? 'rotate-90' : ''}`}
               />
               {hoveredItem === 'menu' && (
@@ -266,28 +280,28 @@ const Navbar = () => {
 
       {/* Mobile Sidebar */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 sm:w-96 bg-gradient-to-b from-white via-gray-50 to-white shadow-2xl transform transition-all duration-500 ease-out z-50 flex flex-col ${
+        className={`fixed top-0 right-0 h-full w-80 sm:w-96 ${theme === 'light' ? 'bg-gradient-to-b from-white via-gray-50 to-white' : 'bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900'} shadow-2xl transform transition-all duration-500 ease-out z-50 flex flex-col ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200/50 flex-shrink-0">
+        <div className={`flex items-center justify-between p-6 border-b ${theme === 'light' ? 'border-gray-200/50' : 'border-gray-700/50'} flex-shrink-0`}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
               <FiFeather className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Scribe</h2>
-              <p className="text-sm text-gray-500">Your writing platform</p>
+              <h2 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>Scribe</h2>
+              <p className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>Your writing platform</p>
             </div>
           </div>
           <button
             onClick={toggleSidebar}
-            className="p-2 rounded-xl hover:bg-gray-100 transition-all duration-300 active:scale-95 group"
+            className={`p-2 rounded-xl ${theme === 'light' ? 'hover:bg-gray-100' : 'hover:bg-gray-800'} transition-all duration-300 active:scale-95 group`}
             aria-label="Close menu"
           >
             <div className="relative">
-              <IoMdClose className="w-6 h-6 text-gray-700 group-hover:text-gray-900 transition-colors" />
+              <IoMdClose className={`w-6 h-6 ${theme === 'light' ? 'text-gray-700 group-hover:text-gray-900' : 'text-gray-300 group-hover:text-white'} transition-colors`} />
               <div className="absolute -inset-1 bg-red-500/10 rounded-xl opacity-0 group-hover:opacity-100 blur-sm transition-opacity" />
             </div>
           </button>
@@ -297,7 +311,7 @@ const Navbar = () => {
         <div className="flex-grow overflow-y-auto">
           {/* Sidebar Navigation */}
           <nav className="flex flex-col p-6">
-            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">
+            <h3 className={`text-sm font-semibold ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} uppercase tracking-wider mb-4`}>
               Navigation
             </h3>
             
@@ -310,20 +324,20 @@ const Navbar = () => {
                     onClick={() => scrollToSection(item.id)}
                     className={`group flex items-center justify-between px-4 py-3.5 rounded-xl transition-all duration-300 text-left ${
                       isActive
-                        ? "bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100"
-                        : "hover:bg-gray-50"
+                        ? theme === 'light' ? "bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100" : "bg-gradient-to-r from-blue-900/50 to-purple-900/50 border border-blue-800/50"
+                        : theme === 'light' ? "hover:bg-gray-50" : "hover:bg-gray-800"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
                         isActive
                           ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-                          : "bg-gray-100 text-gray-600 group-hover:bg-blue-50 group-hover:text-blue-600"
+                          : theme === 'light' ? "bg-gray-100 text-gray-600 group-hover:bg-blue-50 group-hover:text-blue-600" : "bg-gray-800 text-gray-400 group-hover:bg-blue-900/50 group-hover:text-blue-400"
                       }`}>
                         {item.icon}
                       </div>
                       <span className={`font-medium ${
-                        isActive ? "text-gray-900" : "text-gray-700 group-hover:text-gray-900"
+                        isActive ? (theme === 'light' ? "text-gray-900" : "text-white") : (theme === 'light' ? "text-gray-700 group-hover:text-gray-900" : "text-gray-300 group-hover:text-white")
                       }`}>
                         {item.label}
                       </span>
@@ -337,17 +351,17 @@ const Navbar = () => {
             </div>
 
             {/* Mobile Auth Buttons */}
-            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">
+            <h3 className={`text-sm font-semibold ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} uppercase tracking-wider mb-4`}>
               Account
             </h3>
             
             <div className="flex flex-col gap-3 pt-2">
               <button
                 onClick={() => handleNavigate("/login?mode=login")}
-                className="group flex items-center gap-3 w-full py-3.5 px-4 rounded-xl font-medium text-gray-700 border-2 border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all duration-300 active:scale-95"
+                className={`group flex items-center gap-3 w-full py-3.5 px-4 rounded-xl font-medium ${theme === 'light' ? 'text-gray-700 border-2 border-gray-200 hover:border-blue-400 hover:bg-blue-50' : 'text-gray-300 border-2 border-gray-700 hover:border-blue-500 hover:bg-blue-900/50'} transition-all duration-300 active:scale-95`}
               >
-                <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
-                  <FiLogIn className="w-4 h-4 text-gray-600 group-hover:text-blue-600" />
+                <div className={`w-9 h-9 rounded-lg ${theme === 'light' ? 'bg-gray-100' : 'bg-gray-800'} flex items-center justify-center ${theme === 'light' ? 'group-hover:bg-blue-100' : 'group-hover:bg-blue-900/50'} transition-colors`}>
+                  <FiLogIn className={`w-4 h-4 ${theme === 'light' ? 'text-gray-600 group-hover:text-blue-600' : 'text-gray-400 group-hover:text-blue-400'}`} />
                 </div>
                 <span>Login to your account</span>
               </button>
@@ -363,7 +377,7 @@ const Navbar = () => {
                 <span className="relative">Create free account</span>
               </button>
               
-              <p className="text-xs text-gray-500 text-center mt-4 px-2">
+              <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} text-center mt-4 px-2`}>
                 Join 10,000+ writers sharing their stories
               </p>
             </div>
@@ -371,8 +385,8 @@ const Navbar = () => {
         </div>
 
         {/* Sidebar Footer */}
-        <div className="flex-shrink-0 p-6 border-t border-gray-200/50 bg-gradient-to-r from-blue-50/30 to-purple-50/30">
-          <p className="text-sm text-gray-600 text-center">
+        <div className={`flex-shrink-0 p-6 border-t ${theme === 'light' ? 'border-gray-200/50' : 'border-gray-700/50'} ${theme === 'light' ? 'bg-gradient-to-r from-blue-50/30 to-purple-50/30' : 'bg-gradient-to-r from-blue-900/20 to-purple-900/20'}`}>
+          <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-center`}>
             Ready to start your writing journey?
           </p>
         </div>

@@ -26,9 +26,11 @@ import NavbarPrivate from "../../Components/Private/Navbarprivate";
 import EditProfileModal from "./EditProfile";
 import { PageLoader } from "../../Components/Private/Loader";
 import { UserContext } from "../../Context/userContext";
+import { useTheme } from "../../Context/themeContext";
 
 export default function ProfilePage() {
   const { user } = useContext(UserContext);
+  const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState("posts");
   const [isFollowing, setIsFollowing] = useState(false);
   const [likedPosts, setLikedPosts] = useState(new Set([1, 3]));
@@ -300,7 +302,7 @@ export default function ProfilePage() {
   // If no user after loading, redirect or show message
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center">
+      <div className={`min-h-screen bg-gradient-to-b ${theme === 'light' ? 'from-gray-50 via-white to-white' : 'from-slate-900 via-slate-900 to-slate-950'} flex items-center justify-center`}>
         <div className="text-center">
           <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
             Please log in to view profile
@@ -319,12 +321,12 @@ export default function ProfilePage() {
   return (
     <>
       <NavbarPrivate />
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 pt-16 md:pt-20">
+      <div className={`min-h-screen bg-gradient-to-b ${theme === 'light' ? 'from-gray-50 via-white to-white' : 'from-slate-900 via-slate-900 to-slate-950'} pt-16 md:pt-20`}>
         <div className="max-w-5xl mx-auto px-4 py-8">
           {/* Profile Header - Enhanced Design */}
-          <div className="relative bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg border border-gray-200/50 dark:border-slate-700/50 rounded-2xl shadow-lg hover:shadow-xl dark:hover:shadow-slate-900/50 transition-all duration-300 mb-8 overflow-hidden">
+          <div className={`relative ${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg border ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} rounded-2xl shadow-lg hover:shadow-xl ${theme === 'light' ? '' : 'dark:hover:shadow-slate-900/50'} transition-all duration-300 mb-8 overflow-hidden`}>
             {/* Cover Photo */}
-            <div className="h-40 md:h-52 bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 dark:from-blue-700 dark:via-blue-600 dark:to-purple-700 relative">
+            <div className={`h-40 md:h-52 bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 ${theme === 'dark' ? 'dark:from-blue-700 dark:via-blue-600 dark:to-purple-700' : ''} relative`}>
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </div>
 
@@ -333,14 +335,14 @@ export default function ProfilePage() {
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between -mt-20 sm:-mt-24">
                 {/* Avatar Container */}
                 <div className="relative">
-                  <div className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-2xl border-4 border-white dark:border-slate-800 shadow-xl overflow-hidden bg-gradient-to-br from-blue-500 to-purple-500 p-1">
+                  <div className={`relative w-32 h-32 sm:w-40 sm:h-40 rounded-2xl border-4 ${theme === 'light' ? 'border-white' : 'border-slate-800'} shadow-xl overflow-hidden bg-gradient-to-br from-blue-500 to-purple-500 p-1`}>
                     <img
                       src={profile.avatar}
                       alt={profile.name}
                       className="w-full h-full rounded-xl object-cover"
                     />
                     {profile.verified && (
-                      <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-500 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center">
+                      <div className={`absolute -bottom-2 -right-2 w-8 h-8 bg-blue-500 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} flex items-center justify-center`}>
                         <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                         </svg>
@@ -365,13 +367,13 @@ export default function ProfilePage() {
                         onClick={() => setIsFollowing(!isFollowing)}
                         className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-300 ${
                           isFollowing
-                            ? "bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600 border border-gray-300 dark:border-slate-600"
+                            ? `${theme === 'light' ? 'bg-gray-200 text-gray-700 hover:bg-gray-300 border-gray-300' : 'bg-slate-700 text-gray-300 hover:bg-slate-600 border-slate-600'} border`
                             : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl"
                         }`}
                       >
                         {isFollowing ? "Following" : "Follow"}
                       </button>
-                      <button className="p-2.5 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-300">
+                      <button className={`p-2.5 ${theme === 'light' ? 'bg-gray-100 text-gray-700 hover:text-blue-500 hover:bg-blue-50' : 'bg-slate-700 text-gray-300 hover:text-blue-400 hover:bg-blue-900/20'} rounded-xl transition-all duration-300`}>
                         <MoreHorizontal className="w-5 h-5" />
                       </button>
                     </>
@@ -383,34 +385,34 @@ export default function ProfilePage() {
               <div className="mt-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+                    <h1 className={`text-2xl md:text-3xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                       {profile.name}
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base mt-1">
+                    <p className={`${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} text-sm md:text-base mt-1`}>
                       @{profile.username}
                     </p>
                   </div>
-                  <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-600 transition-all duration-300 self-start sm:self-center">
+                  <button className={`flex items-center gap-2 px-4 py-2 ${theme === 'light' ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'} rounded-xl transition-all duration-300 self-start sm:self-center`}>
                     <Share2 className="w-4 h-4" />
                     <span className="font-medium">Share</span>
                   </button>
                 </div>
 
-                <p className="mt-4 text-gray-700 dark:text-gray-300 text-sm md:text-base leading-relaxed">
+                <p className={`mt-4 ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-sm md:text-base leading-relaxed`}>
                   {profile.bio}
                 </p>
 
                 {/* Profile Stats */}
-                <div className="flex items-center gap-6 mt-5 pt-5 border-t border-gray-200 dark:border-slate-700">
+                <div className={`flex items-center gap-6 mt-5 pt-5 border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
                   <div className="flex items-center gap-1.5 cursor-pointer group">
                     <div className="p-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg">
                       <FileText className="w-4 h-4 text-blue-500" />
                     </div>
                     <div>
-                      <span className="font-bold text-gray-900 dark:text-white text-lg group-hover:text-blue-600 dark:group-hover:text-blue-500 transition-colors">
+                      <span className={`font-bold ${theme === 'light' ? 'text-gray-900 group-hover:text-blue-600' : 'text-white group-hover:text-blue-500'} text-lg transition-colors`}>
                         {profile.stats.posts}
                       </span>
-                      <span className="ml-1.5 text-gray-600 dark:text-gray-400 text-sm">
+                      <span className={`ml-1.5 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-sm`}>
                         Posts
                       </span>
                     </div>
@@ -420,10 +422,10 @@ export default function ProfilePage() {
                       <Users className="w-4 h-4 text-green-500" />
                     </div>
                     <div>
-                      <span className="font-bold text-gray-900 dark:text-white text-lg group-hover:text-green-600 dark:group-hover:text-green-500 transition-colors">
+                      <span className={`font-bold ${theme === 'light' ? 'text-gray-900 group-hover:text-green-600' : 'text-white group-hover:text-green-500'} text-lg transition-colors`}>
                         {profile.stats.followers}
                       </span>
-                      <span className="ml-1.5 text-gray-600 dark:text-gray-400 text-sm">
+                      <span className={`ml-1.5 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-sm`}>
                         Followers
                       </span>
                     </div>
@@ -433,10 +435,10 @@ export default function ProfilePage() {
                       <Users className="w-4 h-4 text-orange-500" />
                     </div>
                     <div>
-                      <span className="font-bold text-gray-900 dark:text-white text-lg group-hover:text-orange-600 dark:group-hover:text-orange-500 transition-colors">
+                      <span className={`font-bold ${theme === 'light' ? 'text-gray-900 group-hover:text-orange-600' : 'text-white group-hover:text-orange-500'} text-lg transition-colors`}>
                         {profile.stats.following}
                       </span>
-                      <span className="ml-1.5 text-gray-600 dark:text-gray-400 text-sm">
+                      <span className={`ml-1.5 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-sm`}>
                         Following
                       </span>
                     </div>
@@ -444,9 +446,9 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Profile Meta Info */}
-                <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-gray-600 dark:text-gray-400">
+                <div className={`flex flex-wrap items-center gap-4 mt-4 text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
                   {profile.location && (
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full">
+                    <div className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50' : 'from-blue-900/20 to-purple-900/20'} rounded-full`}>
                       <MapPin className="w-3.5 h-3.5 text-blue-500" />
                       <span>{profile.location}</span>
                     </div>
@@ -456,14 +458,14 @@ export default function ProfilePage() {
                       href={`https://${profile.website}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-900/30 dark:hover:to-purple-900/30 transition-all"
+                      className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100' : 'from-blue-900/20 to-purple-900/20 hover:from-blue-900/30 hover:to-purple-900/30'} rounded-full transition-all`}
                     >
                       <Link2 className="w-3.5 h-3.5 text-blue-500" />
                       <span>{profile.website}</span>
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   )}
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full">
+                  <div className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50' : 'from-blue-900/20 to-purple-900/20'} rounded-full`}>
                     <Calendar className="w-3.5 h-3.5 text-blue-500" />
                     <span>Joined {profile.joinedDate}</span>
                   </div>
@@ -472,14 +474,14 @@ export default function ProfilePage() {
                 {/* Badges */}
                 {profile.badges && profile.badges.length > 0 && (
                   <div className="mt-5">
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                    <h3 className={`text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2`}>
                       Badges & Achievements
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {profile.badges.map((badge, index) => (
                         <span
                           key={index}
-                          className="px-3 py-1.5 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 text-yellow-700 dark:text-yellow-400 text-sm font-medium rounded-full border border-yellow-200 dark:border-yellow-800/30"
+                          className={`px-3 py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-yellow-50 to-amber-50 text-yellow-700 border-yellow-200' : 'from-yellow-900/20 to-amber-900/20 text-yellow-400 border-yellow-800/30'} text-sm font-medium rounded-full border`}
                         >
                           <Star className="w-3 h-3 inline mr-1" />
                           {badge}
@@ -493,7 +495,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Tabs Navigation */}
-          <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg border border-gray-200/50 dark:border-slate-700/50 rounded-2xl p-2 mb-8 shadow-sm">
+          <div className={`${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg border ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} rounded-2xl p-2 mb-8 shadow-sm`}>
             <div className="flex items-center gap-1 overflow-x-auto">
               {tabs.map((tab) => (
                 <button
@@ -502,13 +504,13 @@ export default function ProfilePage() {
                   className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold whitespace-nowrap transition-all duration-300 ${
                     activeTab === tab.id
                       ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-white"
+                      : `${theme === 'light' ? 'text-gray-700 hover:bg-gray-100 hover:text-gray-900' : 'text-gray-300 hover:bg-slate-700 hover:text-white'}`
                   }`}
                 >
                   {tab.icon}
                   {tab.label}
                   {tab.count !== undefined && (
-                    <span className="ml-1 bg-white/20 dark:bg-slate-900/30 px-2 py-0.5 rounded-full text-xs">
+                    <span className={`ml-1 ${activeTab === tab.id ? 'bg-white/20' : 'bg-slate-900/30'} px-2 py-0.5 rounded-full text-xs`}>
                       {tab.count}
                     </span>
                   )}
@@ -532,7 +534,7 @@ export default function ProfilePage() {
                     return (
                       <article
                         key={post.id}
-                        className="group relative bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-lg hover:shadow-2xl dark:hover:shadow-slate-900/50 transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                        className={`group relative ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} shadow-lg hover:shadow-2xl ${theme === 'light' ? '' : 'dark:hover:shadow-slate-900/50'} transition-all duration-300 hover:-translate-y-1 overflow-hidden`}
                       >
                         {/* Post Header */}
                         <div className="p-6 pb-4">
@@ -542,10 +544,10 @@ export default function ProfilePage() {
                                 <img
                                   src={post.author.avatar}
                                   alt={post.author.name}
-                                  className="w-12 h-12 rounded-xl border-2 border-white dark:border-slate-800 shadow-sm"
+                                  className={`w-12 h-12 rounded-xl border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} shadow-sm`}
                                 />
                                 {post.author.verified && (
-                                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-blue-500 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center">
+                                  <div className={`absolute -bottom-1 -right-1 w-5 h-5 bg-blue-500 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} flex items-center justify-center`}>
                                     <svg
                                       className="w-2 h-2 text-white"
                                       fill="currentColor"
@@ -558,24 +560,24 @@ export default function ProfilePage() {
                               </div>
                               <div>
                                 <div className="flex items-center gap-2">
-                                  <h3 className="font-bold text-gray-900 dark:text-white text-sm">
+                                  <h3 className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm`}>
                                     {post.author.name}
                                   </h3>
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                                     •
                                   </span>
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                                     {post.date}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                                     @{post.author.username}
                                   </p>
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                                     •
                                   </span>
-                                  <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                  <div className={`flex items-center gap-1 text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                                     <Users className="w-3 h-3" />
                                     <span>{post.author.followers}</span>
                                   </div>
@@ -602,9 +604,9 @@ export default function ProfilePage() {
                                 )}
 
                                 {isReposted && (
-                                  <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-lg">
+                                  <div className={`flex items-center gap-1 text-xs ${theme === 'light' ? 'text-slate-500 bg-white/90' : 'text-slate-400 bg-slate-800/90'} backdrop-blur-sm px-2 py-1 rounded-full shadow-lg`}>
                                     <Repeat2 className="w-3 h-3 text-green-500" />
-                                    <span className="font-medium text-green-600 dark:text-green-400">
+                                    <span className={`font-medium ${theme === 'light' ? 'text-green-600' : 'text-green-400'}`}>
                                       You reposted
                                     </span>
                                   </div>
@@ -614,7 +616,7 @@ export default function ProfilePage() {
                               {/* Menu Button */}
                               <button
                                 onClick={() => toggleMenu(post.id)}
-                                className="p-2 text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-300"
+                                className={`p-2 ${theme === 'light' ? 'text-gray-600 hover:text-blue-500 hover:bg-blue-50' : 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/20'} rounded-xl transition-all duration-300`}
                               >
                                 <MoreHorizontal className="w-5 h-5" />
                               </button>
@@ -622,19 +624,19 @@ export default function ProfilePage() {
                           </div>
 
                           {/* Post Title */}
-                          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3 hover:text-blue-600 dark:hover:text-blue-500 transition-colors cursor-pointer leading-tight">
+                          <h2 className={`text-2xl md:text-3xl font-bold ${theme === 'light' ? 'text-gray-900 hover:text-blue-600' : 'text-white hover:text-blue-500'} mb-3 transition-colors cursor-pointer leading-tight`}>
                             {post.title}
                           </h2>
 
                           {/* Post Content */}
                           {expandedPostId === post.id ? (
-                            <div className="prose dark:prose-invert max-w-none">
-                              <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
+                            <div className={`prose ${theme === 'dark' ? 'dark:prose-invert' : ''} max-w-none`}>
+                              <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} mb-4 leading-relaxed`}>
                                 {post.content}
                               </p>
                               <button
                                 onClick={() => setExpandedPostId(null)}
-                                className="text-blue-600 dark:text-blue-500 hover:underline font-medium text-sm"
+                                className={`${theme === 'light' ? 'text-blue-600' : 'text-blue-500'} hover:underline font-medium text-sm`}
                               >
                                 Show less
                               </button>
@@ -642,14 +644,14 @@ export default function ProfilePage() {
                           ) : (
                             <div className="relative">
                               <div className="relative mb-3">
-                                <p className="text-gray-700 dark:text-gray-300 line-clamp-2 leading-relaxed pr-4">
+                                <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} line-clamp-2 leading-relaxed pr-4`}>
                                   {post.excerpt || post.content}
                                 </p>
                                 {(post.excerpt || post.content.length > 150) && (
-                                  <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white dark:from-slate-800 to-transparent flex items-end justify-center">
+                                  <div className={`absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t ${theme === 'light' ? 'from-white' : 'from-slate-800'} to-transparent flex items-end justify-center`}>
                                     <button
                                       onClick={() => setExpandedPostId(post.id)}
-                                      className="relative -bottom-2 px-4 py-1.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-blue-600 dark:text-blue-500 hover:text-blue-700 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-slate-700 font-medium text-sm rounded-full shadow-sm transition-colors"
+                                      className={`relative -bottom-2 px-4 py-1.5 ${theme === 'light' ? 'bg-white border-gray-200 text-blue-600 hover:text-blue-700 hover:bg-gray-50' : 'bg-slate-800 border-slate-700 text-blue-500 hover:text-blue-400 hover:bg-slate-700'} border font-medium text-sm rounded-full shadow-sm transition-colors`}
                                     >
                                       Read full story
                                     </button>
@@ -678,7 +680,7 @@ export default function ProfilePage() {
                             {post.tags.map((tag, index) => (
                               <span
                                 key={index}
-                                className="px-3 py-1.5 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 text-blue-700 dark:text-blue-400 text-sm font-medium rounded-full hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-900/30 dark:hover:to-purple-900/30 transition-all cursor-pointer"
+                                className={`px-3 py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50 text-blue-700 hover:from-blue-100 hover:to-purple-100' : 'from-blue-900/20 to-purple-900/20 text-blue-400 hover:from-blue-900/30 hover:to-purple-900/30'} text-sm font-medium rounded-full transition-all cursor-pointer`}
                               >
                                 #{tag}
                               </span>
@@ -686,9 +688,9 @@ export default function ProfilePage() {
                           </div>
 
                           {/* Stats & Actions */}
-                          <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-slate-700">
+                          <div className={`flex items-center justify-between pt-4 border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
                             {/* Stats */}
-                            <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
+                            <div className={`flex items-center gap-6 text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
                               <div className="flex items-center gap-1">
                                 <Clock className="w-4 h-4" />
                                 <span>{post.readTime}</span>
@@ -706,8 +708,8 @@ export default function ProfilePage() {
                                 onClick={() => toggleLike(post.id)}
                                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 ${
                                   isLiked
-                                    ? "bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 text-red-600 dark:text-red-400 shadow-sm"
-                                    : "text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                    ? `bg-gradient-to-r ${theme === 'light' ? 'from-red-50 to-pink-50 text-red-600' : 'from-red-900/20 to-pink-900/20 text-red-400'} shadow-sm`
+                                    : `${theme === 'light' ? 'text-gray-600 hover:text-red-500 hover:bg-red-50' : 'text-gray-400 hover:text-red-400 hover:bg-red-900/20'}`
                                 }`}
                               >
                                 <Heart
@@ -725,8 +727,8 @@ export default function ProfilePage() {
                                 onClick={() => toggleComments(post.id)}
                                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 ${
                                   isCommentsOpen
-                                    ? "bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 text-blue-600 dark:text-blue-400 shadow-sm"
-                                    : "text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                    ? `bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-cyan-50 text-blue-600' : 'from-blue-900/20 to-cyan-900/20 text-blue-400'} shadow-sm`
+                                    : `${theme === 'light' ? 'text-gray-600 hover:text-blue-500 hover:bg-blue-50' : 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/20'}`
                                 }`}
                               >
                                 <MessageCircle className="w-5 h-5" />
@@ -738,7 +740,7 @@ export default function ProfilePage() {
                               {/* Share */}
                               <button
                                 onClick={() => toggleMenu(post.id)}
-                                className="p-2.5 text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-300"
+                                className={`p-2.5 ${theme === 'light' ? 'text-gray-600 hover:text-blue-500 hover:bg-blue-50' : 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/20'} rounded-xl transition-all duration-300`}
                               >
                                 <ShareIcon className="w-5 h-5" />
                               </button>
@@ -748,8 +750,8 @@ export default function ProfilePage() {
                                 onClick={() => toggleBookmark(post.id)}
                                 className={`p-2.5 rounded-xl transition-all duration-300 ${
                                   isBookmarked
-                                    ? "bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 text-yellow-600 dark:text-yellow-400 shadow-sm"
-                                    : "text-gray-600 dark:text-gray-400 hover:text-yellow-500 dark:hover:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                                    ? `bg-gradient-to-r ${theme === 'light' ? 'from-yellow-50 to-amber-50 text-yellow-600' : 'from-yellow-900/20 to-amber-900/20 text-yellow-400'} shadow-sm`
+                                    : `${theme === 'light' ? 'text-gray-600 hover:text-yellow-500 hover:bg-yellow-50' : 'text-gray-400 hover:text-yellow-400 hover:bg-yellow-900/20'}`
                                 }`}
                               >
                                 <Bookmark
@@ -764,7 +766,7 @@ export default function ProfilePage() {
 
                         {/* Comments Section */}
                         {isCommentsOpen && (
-                          <div className="border-t border-gray-200 dark:border-slate-700 bg-gradient-to-b from-gray-50/50 to-transparent dark:from-slate-900/50 dark:to-transparent">
+                          <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} bg-gradient-to-b ${theme === 'light' ? 'from-gray-50/50 to-transparent' : 'from-slate-900/50 to-transparent'}`}>
                             <div className="p-6 space-y-6 max-h-80 overflow-y-auto">
                               {/* Existing Comments */}
                               {comments[post.id]?.map((comment) => (
@@ -772,16 +774,16 @@ export default function ProfilePage() {
                                   <img
                                     src={comment.author.avatar}
                                     alt={comment.author.name}
-                                    className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-800 flex-shrink-0"
+                                    className={`w-10 h-10 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} flex-shrink-0`}
                                   />
                                   <div className="flex-1">
-                                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm">
+                                    <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl p-4 shadow-sm`}>
                                       <div className="flex items-center justify-between mb-2">
                                         <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-900 dark:text-white text-sm">
+                                          <span className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm`}>
                                             {comment.author.name}
                                           </span>
-                                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                                          <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                                             {comment.timestamp}
                                           </span>
                                         </div>
@@ -791,8 +793,8 @@ export default function ProfilePage() {
                                           }
                                           className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors ${
                                             comment.isLiked
-                                              ? "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20"
-                                              : "text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-slate-700"
+                                              ? `${theme === 'light' ? 'text-red-600 bg-red-50' : 'text-red-400 bg-red-900/20'}`
+                                              : `${theme === 'light' ? 'text-gray-500 hover:text-red-500 hover:bg-gray-100' : 'text-gray-400 hover:text-red-400 hover:bg-slate-700'}`
                                           }`}
                                         >
                                           <Heart
@@ -805,7 +807,7 @@ export default function ProfilePage() {
                                           </span>
                                         </button>
                                       </div>
-                                      <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                                      <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-sm leading-relaxed`}>
                                         {comment.content}
                                       </p>
                                     </div>
@@ -814,12 +816,12 @@ export default function ProfilePage() {
                               ))}
 
                               {/* New Comment Input */}
-                              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-4">
+                              <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-4`}>
                                 <div className="flex items-end gap-4">
                                   <img
                                     src="https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser"
                                     alt="You"
-                                    className="w-10 h-10 rounded-full border-2 border-gray-200 dark:border-slate-700 flex-shrink-0"
+                                    className={`w-10 h-10 rounded-full border-2 ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} flex-shrink-0`}
                                   />
                                   <div className="flex-1">
                                     <textarea
@@ -828,11 +830,11 @@ export default function ProfilePage() {
                                         setNewComment(e.target.value)
                                       }
                                       placeholder="Share your thoughts..."
-                                      className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                                      className={`w-full px-4 py-3 ${theme === 'light' ? 'bg-gray-50 text-gray-900 placeholder:text-gray-400' : 'bg-slate-700 text-white placeholder:text-slate-500'} rounded-xl resize-none focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500' : 'focus:ring-blue-400'}`}
                                       rows="2"
                                     />
                                     <div className="flex items-center justify-between mt-3">
-                                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                                      <div className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                                         Press Enter to post • Shift+Enter for new line
                                       </div>
                                       <button
@@ -841,7 +843,7 @@ export default function ProfilePage() {
                                         className={`px-6 py-2 rounded-xl font-medium transition-all ${
                                           newComment.trim()
                                             ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl"
-                                            : "bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-slate-500 cursor-not-allowed"
+                                            : `${theme === 'light' ? 'bg-gray-200 text-gray-400' : 'bg-slate-700 text-slate-500'} cursor-not-allowed`
                                         }`}
                                       >
                                         Post Comment
@@ -857,14 +859,14 @@ export default function ProfilePage() {
                     );
                   })
                 ) : (
-                  <div className="text-center py-16 bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700">
-                    <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-full flex items-center justify-center">
+                  <div className={`text-center py-16 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
+                    <div className={`w-20 h-20 mx-auto mb-4 bg-gradient-to-r ${theme === 'light' ? 'from-blue-500/10 to-purple-500/10' : 'from-blue-900/20 to-purple-900/20'} rounded-full flex items-center justify-center`}>
                       <FileText className="w-10 h-10 text-blue-500" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    <h3 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2`}>
                       No posts yet
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                    <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mb-6 max-w-md mx-auto`}>
                       Share your thoughts and experiences with the community
                     </p>
                     {isOwnProfile && (
@@ -882,31 +884,31 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* About Card */}
                 <div className="lg:col-span-2">
-                  <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-6 shadow-lg transition-all duration-300">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                  <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-6 shadow-lg transition-all duration-300`}>
+                    <h3 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-4`}>
                       About {profile.name}
                     </h3>
                     
                     <div className="space-y-6">
                       <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-sm uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                        <h4 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 text-sm uppercase tracking-wider ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                           Bio
                         </h4>
-                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                        <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} leading-relaxed`}>
                           {profile.bio}
                         </p>
                       </div>
 
                       {/* Topics of Interest */}
                       <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-sm uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                        <h4 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 text-sm uppercase tracking-wider ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                           Topics of Interest
                         </h4>
                         <div className="flex flex-wrap gap-2">
                           {profile.topics.map((topic, index) => (
                             <span
                               key={index}
-                              className="px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 text-blue-700 dark:text-blue-400 font-medium rounded-xl hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-900/30 dark:hover:to-purple-900/30 transition-all cursor-pointer"
+                              className={`px-4 py-2 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50 text-blue-700 hover:from-blue-100 hover:to-purple-100' : 'from-blue-900/20 to-purple-900/20 text-blue-400 hover:from-blue-900/30 hover:to-purple-900/30'} font-medium rounded-xl transition-all cursor-pointer`}
                             >
                               <Hash className="w-3.5 h-3.5 inline mr-1.5" />
                               {topic}
@@ -917,31 +919,31 @@ export default function ProfilePage() {
 
                       {/* Stats Cards */}
                       <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-sm uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                        <h4 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 text-sm uppercase tracking-wider ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                           Activity Stats
                         </h4>
                         <div className="grid grid-cols-3 gap-4">
-                          <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/10 dark:to-purple-900/10 rounded-xl border border-blue-100 dark:border-blue-800/30">
-                            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                          <div className={`text-center p-4 bg-gradient-to-br ${theme === 'light' ? 'from-blue-50 to-purple-50 border-blue-100' : 'from-blue-900/10 to-purple-900/10 border-blue-800/30'} rounded-xl border`}>
+                            <div className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                               {profile.stats.posts}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            <div className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mt-1`}>
                               Posts
                             </div>
                           </div>
-                          <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 rounded-xl border border-green-100 dark:border-green-800/30">
-                            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                          <div className={`text-center p-4 bg-gradient-to-br ${theme === 'light' ? 'from-green-50 to-emerald-50 border-green-100' : 'from-green-900/10 to-emerald-900/10 border-green-800/30'} rounded-xl border`}>
+                            <div className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                               {profile.stats.followers}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            <div className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mt-1`}>
                               Followers
                             </div>
                           </div>
-                          <div className="text-center p-4 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/10 dark:to-red-900/10 rounded-xl border border-orange-100 dark:border-orange-800/30">
-                            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                          <div className={`text-center p-4 bg-gradient-to-br ${theme === 'light' ? 'from-orange-50 to-red-50 border-orange-100' : 'from-orange-900/10 to-red-900/10 border-orange-800/30'} rounded-xl border`}>
+                            <div className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                               {profile.stats.following}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            <div className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mt-1`}>
                               Following
                             </div>
                           </div>
@@ -954,16 +956,16 @@ export default function ProfilePage() {
                 {/* Side Info */}
                 <div className="space-y-6">
                   {/* Join Date */}
-                  <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5 shadow-lg transition-all duration-300">
+                  <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-5 shadow-lg transition-all duration-300`}>
                     <div className="flex items-center gap-3 mb-3">
                       <div className="p-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg">
                         <Calendar className="w-5 h-5 text-blue-500" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white">
+                        <h4 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                           Member Since
                         </h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
                           {profile.joinedDate}
                         </p>
                       </div>
@@ -972,16 +974,16 @@ export default function ProfilePage() {
 
                   {/* Location */}
                   {profile.location && (
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5 shadow-lg transition-all duration-300">
+                    <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-5 shadow-lg transition-all duration-300`}>
                       <div className="flex items-center gap-3 mb-3">
                         <div className="p-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg">
                           <MapPin className="w-5 h-5 text-blue-500" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-gray-900 dark:text-white">
+                          <h4 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                             Location
                           </h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
                             {profile.location}
                           </p>
                         </div>
@@ -991,20 +993,20 @@ export default function ProfilePage() {
 
                   {/* Website */}
                   {profile.website && (
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5 shadow-lg transition-all duration-300">
+                    <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-5 shadow-lg transition-all duration-300`}>
                       <div className="flex items-center gap-3 mb-3">
                         <div className="p-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg">
                           <Link2 className="w-5 h-5 text-blue-500" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-gray-900 dark:text-white">
+                          <h4 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                             Website
                           </h4>
                           <a
                             href={`https://${profile.website}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                            className={`text-sm ${theme === 'light' ? 'text-blue-600' : 'text-blue-400'} hover:underline flex items-center gap-1`}
                           >
                             {profile.website}
                             <ExternalLink className="w-3 h-3" />

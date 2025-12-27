@@ -42,9 +42,11 @@ import {
 } from 'lucide-react'
 import NavbarPrivate from '../../Components/Private/Navbarprivate'
 import { PageLoader } from '../../Components/Private/Loader'
+import { useTheme } from '../../Context/themeContext'
 // import { getNotifications, markNotificationAsRead, deleteNotification } from '../../Services/api'
 
 const Notifications = () => {
+  const { theme } = useTheme();
   const [notifications, setNotifications] = useState([])
   const [activeFilter, setActiveFilter] = useState('all')
   const [isLoading, setIsLoading] = useState(true)
@@ -354,7 +356,7 @@ const Notifications = () => {
   return (
     <>
       <NavbarPrivate />
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 pt-20 md:pt-24">
+      <div className={`min-h-screen bg-gradient-to-b ${theme === 'light' ? 'from-gray-50 via-white to-white' : 'from-slate-900 via-slate-900 to-slate-950'} pt-20 md:pt-24`}>
         <div className="max-w-6xl mx-auto px-4 py-8">
           {/* Enhanced Header */}
           <div className="mb-8">
@@ -363,13 +365,13 @@ const Notifications = () => {
                 <div className="flex items-center gap-3 mb-3">
                   <div className="relative">
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl blur opacity-30" />
-                    <Bell className="relative w-10 h-10 text-blue-600 dark:text-blue-500" />
+                    <Bell className={`relative w-10 h-10 ${theme === 'light' ? 'text-blue-600' : 'text-blue-500'}`} />
                   </div>
                   <div>
-                    <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 bg-clip-text text-transparent">
+                    <h1 className={`text-3xl md:text-4xl font-bold bg-gradient-to-r ${theme === 'light' ? 'from-blue-600 to-purple-600' : 'from-blue-500 to-purple-500'} bg-clip-text text-transparent`}>
                       Notifications
                     </h1>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">
+                    <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mt-1`}>
                       Stay updated with your community activity
                     </p>
                   </div>
@@ -377,21 +379,21 @@ const Notifications = () => {
 
                 {/* Quick Actions Bar */}
                 <div className="flex flex-wrap items-center gap-3 mt-4">
-                  <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl">
-                    <Zap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    <span className="font-semibold text-blue-700 dark:text-blue-400">{unreadCount} unread</span>
+                  <div className={`flex items-center gap-2 px-4 py-2 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50' : 'from-blue-900/20 to-purple-900/20'} rounded-xl`}>
+                    <Zap className={`w-4 h-4 ${theme === 'light' ? 'text-blue-600' : 'text-blue-400'}`} />
+                    <span className={`font-semibold ${theme === 'light' ? 'text-blue-700' : 'text-blue-400'}`}>{unreadCount} unread</span>
                   </div>
                   
                   <button
                     onClick={() => setIsMuted(!isMuted)}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-xl transition-colors"
+                    className={`flex items-center gap-2 px-4 py-2 ${theme === 'light' ? 'bg-gray-100 hover:bg-gray-200' : 'bg-slate-800 hover:bg-slate-700'} rounded-xl transition-colors`}
                   >
                     {isMuted ? (
-                      <VolumeX className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                      <VolumeX className={`w-4 h-4 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`} />
                     ) : (
-                      <Volume2 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                      <Volume2 className={`w-4 h-4 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`} />
                     )}
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className={`text-sm font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
                       {isMuted ? 'Unmute' : 'Mute'}
                     </span>
                   </button>
@@ -402,7 +404,7 @@ const Notifications = () => {
                     className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all ${
                       unreadCount > 0
                         ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 shadow-lg hover:shadow-xl'
-                        : 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500 cursor-not-allowed'
+                        : `${theme === 'light' ? 'bg-gray-100 text-gray-400' : 'bg-slate-800 text-slate-500'} cursor-not-allowed`
                     }`}
                   >
                     <CheckCheck className="w-4 h-4" />
@@ -414,18 +416,18 @@ const Notifications = () => {
               {/* Search Bar */}
               <div className="w-full lg:w-80">
                 <div className="relative group">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-slate-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors" />
+                  <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${theme === 'light' ? 'text-gray-400 group-hover:text-blue-500' : 'text-slate-500 group-hover:text-blue-400'} transition-colors`} />
                   <input
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search notifications..."
-                    className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all"
+                    className={`w-full pl-12 pr-4 py-3 ${theme === 'light' ? 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400' : 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500'} border rounded-xl focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500/50 focus:border-blue-500' : 'focus:ring-blue-400/50 focus:border-blue-400'} transition-all`}
                   />
                   {searchTerm && (
                     <button
                       onClick={() => setSearchTerm('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors"
+                      className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 ${theme === 'light' ? 'text-gray-400 hover:text-gray-600' : 'text-slate-500 hover:text-slate-300'} transition-colors`}
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -440,32 +442,32 @@ const Notifications = () => {
                 <div 
                   key={filter.id}
                   onClick={() => setActiveFilter(filter.id)}
-                  className={`bg-white dark:bg-slate-800 rounded-2xl border p-4 cursor-pointer transition-all hover:scale-105 hover:shadow-lg ${
+                  className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border p-4 cursor-pointer transition-all hover:scale-105 hover:shadow-lg ${
                     activeFilter === filter.id 
-                      ? 'border-blue-500 dark:border-blue-500 shadow-lg' 
-                      : 'border-gray-200 dark:border-slate-700'
+                      ? 'border-blue-500 shadow-lg' 
+                      : `${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={`p-2 rounded-lg ${
                         activeFilter === filter.id
-                          ? 'bg-blue-100 dark:bg-blue-900/30'
-                          : 'bg-gray-100 dark:bg-slate-700'
+                          ? `${theme === 'light' ? 'bg-blue-100' : 'bg-blue-900/30'}`
+                          : `${theme === 'light' ? 'bg-gray-100' : 'bg-slate-700'}`
                       }`}>
                         {React.cloneElement(filter.icon, { 
                           className: `w-4 h-4 ${
                             activeFilter === filter.id
-                              ? 'text-blue-600 dark:text-blue-400'
-                              : 'text-gray-600 dark:text-gray-400'
+                              ? `${theme === 'light' ? 'text-blue-600' : 'text-blue-400'}`
+                              : `${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`
                           }` 
                         })}
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        <p className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                           {filter.count}
                         </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{filter.label}</p>
+                        <p className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>{filter.label}</p>
                       </div>
                     </div>
                     {activeFilter === filter.id && (
@@ -483,8 +485,8 @@ const Notifications = () => {
             <div className="lg:block hidden space-y-4">
               <div className="sticky top-28 space-y-4">
                 {/* Filters */}
-                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-4">
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-4`}>
+                  <h3 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 flex items-center gap-2`}>
                     <Filter className="w-4 h-4" />
                     Filters
                   </h3>
@@ -496,7 +498,7 @@ const Notifications = () => {
                         className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                           activeFilter === filter.id
                             ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
-                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
+                            : `${theme === 'light' ? 'text-gray-700 hover:bg-gray-100' : 'text-gray-300 hover:bg-slate-700'}`
                         }`}
                       >
                         <div className="flex items-center gap-2">
@@ -507,7 +509,7 @@ const Notifications = () => {
                           <span className={`px-2 py-0.5 rounded-full text-xs ${
                             activeFilter === filter.id
                               ? 'bg-white/20'
-                              : 'bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-300'
+                              : `${theme === 'light' ? 'bg-gray-200 text-gray-600' : 'bg-slate-700 text-gray-300'}`
                           }`}>
                             {filter.count}
                           </span>
@@ -518,30 +520,30 @@ const Notifications = () => {
                 </div>
 
                 {/* Settings */}
-                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-4">
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-4`}>
+                  <h3 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 flex items-center gap-2`}>
                     <Settings className="w-4 h-4" />
                     Settings
                   </h3>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-700 dark:text-gray-300">Email notifications</span>
+                      <span className={`text-sm ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>Email notifications</span>
                       <button className="w-10 h-6 bg-blue-500 rounded-full relative">
                         <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1"></div>
                       </button>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-700 dark:text-gray-300">Push notifications</span>
+                      <span className={`text-sm ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>Push notifications</span>
                       <button className="w-10 h-6 bg-blue-500 rounded-full relative">
                         <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1"></div>
                       </button>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-700 dark:text-gray-300">Sound alerts</span>
+                      <span className={`text-sm ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>Sound alerts</span>
                       <button 
                         onClick={() => setIsMuted(!isMuted)}
                         className={`w-10 h-6 rounded-full relative transition-all ${
-                          isMuted ? 'bg-gray-300 dark:bg-slate-600' : 'bg-blue-500'
+                          isMuted ? `${theme === 'light' ? 'bg-gray-300' : 'bg-slate-600'}` : 'bg-blue-500'
                         }`}
                       >
                         <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all ${
@@ -549,7 +551,7 @@ const Notifications = () => {
                         }`}></div>
                       </button>
                     </div>
-                    <button className="w-full text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-center pt-2">
+                    <button className={`w-full text-sm ${theme === 'light' ? 'text-blue-600 hover:text-blue-700' : 'text-blue-400 hover:text-blue-300'} text-center pt-2`}>
                       Customize notifications
                     </button>
                   </div>
@@ -563,14 +565,14 @@ const Notifications = () => {
               <div className="lg:hidden mb-6">
                 <button
                   onClick={() => setShowMobileFilters(!showMobileFilters)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl"
+                  className={`w-full flex items-center justify-between px-4 py-3 ${theme === 'light' ? 'bg-white border-gray-300' : 'bg-slate-800 border-slate-700'} border rounded-xl`}
                 >
                   <div className="flex items-center gap-2">
                     <Filter className="w-5 h-5" />
-                    <span className="font-semibold text-gray-900 dark:text-white">
+                    <span className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                       {filters.find(f => f.id === activeFilter)?.label || 'All Notifications'}
                     </span>
-                    <span className="px-2 py-0.5 bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-300 rounded-full text-sm">
+                    <span className={`px-2 py-0.5 ${theme === 'light' ? 'bg-gray-200 text-gray-600' : 'bg-slate-700 text-gray-300'} rounded-full text-sm`}>
                       {filteredNotifications.length}
                     </span>
                   </div>
@@ -579,7 +581,7 @@ const Notifications = () => {
 
                 {/* Mobile Filters Dropdown */}
                 {showMobileFilters && (
-                  <div className="mt-2 bg-white dark:bg-slate-800 rounded-2xl border border-gray-300 dark:border-slate-700 p-4">
+                  <div className={`mt-2 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-300' : 'border-slate-700'} p-4`}>
                     <div className="grid grid-cols-2 gap-2">
                       {filters.map((filter) => (
                         <button
@@ -591,7 +593,7 @@ const Notifications = () => {
                           className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all ${
                             activeFilter === filter.id
                               ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
-                              : "bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300"
+                              : `${theme === 'light' ? 'bg-gray-100 text-gray-700' : 'bg-slate-700 text-gray-300'}`
                           }`}
                         >
                           {filter.icon}
@@ -607,11 +609,11 @@ const Notifications = () => {
               </div>
 
               {/* Action Bar */}
-              <div className="flex items-center justify-between mb-6 bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-4">
+              <div className={`flex items-center justify-between mb-6 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-4`}>
                 <div className="flex items-center gap-2">
                   {selectMode ? (
                     <>
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                      <span className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
                         {selectedNotifications.size} selected
                       </span>
                       <button
@@ -620,7 +622,7 @@ const Notifications = () => {
                         className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
                           selectedNotifications.size > 0
                             ? 'bg-red-500 text-white hover:bg-red-600'
-                            : 'bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-slate-500 cursor-not-allowed'
+                            : `${theme === 'light' ? 'bg-gray-200 text-gray-400' : 'bg-slate-700 text-slate-500'} cursor-not-allowed`
                         }`}
                       >
                         Delete selected
@@ -630,7 +632,7 @@ const Notifications = () => {
                           setSelectMode(false)
                           setSelectedNotifications(new Set())
                         }}
-                        className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                        className={`px-4 py-2 text-sm ${theme === 'light' ? 'text-gray-600 hover:text-gray-900' : 'text-gray-400 hover:text-white'}`}
                       >
                         Cancel
                       </button>
@@ -639,13 +641,13 @@ const Notifications = () => {
                     <>
                       <button
                         onClick={() => setSelectMode(true)}
-                        className="px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg font-medium text-sm transition-colors"
+                        className={`px-4 py-2 ${theme === 'light' ? 'bg-gray-100 text-gray-700 hover:text-gray-900' : 'bg-slate-700 text-gray-300 hover:text-white'} rounded-lg font-medium text-sm transition-colors`}
                       >
                         Select
                       </button>
                       <button
                         onClick={() => setShowFilters(!showFilters)}
-                        className="px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg font-medium text-sm transition-colors"
+                        className={`px-4 py-2 ${theme === 'light' ? 'bg-gray-100 text-gray-700 hover:text-gray-900' : 'bg-slate-700 text-gray-300 hover:text-white'} rounded-lg font-medium text-sm transition-colors`}
                       >
                         <Settings className="w-4 h-4 inline mr-1" />
                         Settings
@@ -653,7 +655,7 @@ const Notifications = () => {
                     </>
                   )}
                 </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
+                <div className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                   {filteredNotifications.length} of {notifications.length} notifications
                 </div>
               </div>
@@ -669,7 +671,7 @@ const Notifications = () => {
                         key={notification.id}
                         className={`group relative rounded-2xl border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
                           getNotificationColor(notification.type)
-                        } ${!notification.read ? 'ring-2 ring-blue-500/20 dark:ring-blue-400/20' : ''}`}
+                        } ${!notification.read ? `ring-2 ${theme === 'light' ? 'ring-blue-500/20' : 'ring-blue-400/20'}` : ''}`}
                       >
                         {selectMode && (
                           <div className="absolute left-4 top-4 z-10">
@@ -677,7 +679,7 @@ const Notifications = () => {
                               type="checkbox"
                               checked={isSelected}
                               onChange={() => toggleSelect(notification.id)}
-                              className="w-5 h-5 rounded-lg border-2 border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 checked:bg-blue-500 checked:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                              className={`w-5 h-5 rounded-lg border-2 ${theme === 'light' ? 'border-gray-300 bg-white' : 'border-slate-600 bg-slate-700'} checked:bg-blue-500 checked:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
                             />
                           </div>
                         )}
@@ -686,7 +688,7 @@ const Notifications = () => {
                           <div className="flex items-start gap-4">
                             {/* Icon */}
                             <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                              notification.read ? 'bg-white dark:bg-slate-700' : 'bg-blue-50 dark:bg-blue-900/20'
+                              notification.read ? `${theme === 'light' ? 'bg-white' : 'bg-slate-700'}` : `${theme === 'light' ? 'bg-blue-50' : 'bg-blue-900/20'}`
                             }`}>
                               {getNotificationIcon(notification.type)}
                             </div>
@@ -702,11 +704,11 @@ const Notifications = () => {
                                         <img
                                           src={notification.user.avatar}
                                           alt={notification.user.name}
-                                          className="w-8 h-8 rounded-full border-2 border-white dark:border-slate-800"
+                                          className={`w-8 h-8 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'}`}
                                         />
                                         <div>
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-900 dark:text-white">
+                                            <span className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                                               {notification.user.name}
                                             </span>
                                             {notification.user.verified && (
@@ -717,7 +719,7 @@ const Notifications = () => {
                                               </span>
                                             )}
                                           </div>
-                                          <span className="text-sm text-gray-500 dark:text-gray-400">
+                                          <span className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                                             @{notification.user.username}
                                           </span>
                                         </div>
@@ -727,7 +729,7 @@ const Notifications = () => {
                                     {!notification.user && notification.type === 'achievement' && (
                                       <div className="flex items-center gap-2">
                                         <Trophy className="w-5 h-5 text-yellow-500" />
-                                        <span className="font-semibold text-gray-900 dark:text-white">
+                                        <span className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                                           Achievement Unlocked!
                                         </span>
                                       </div>
@@ -735,7 +737,7 @@ const Notifications = () => {
                                   </div>
 
                                   {/* Message */}
-                                  <p className="text-gray-800 dark:text-gray-200 mb-2">
+                                  <p className={`${theme === 'light' ? 'text-gray-800' : 'text-gray-200'} mb-2`}>
                                     {notification.type === 'like' && `liked your post`}
                                     {notification.type === 'comment' && `commented on your post`}
                                     {notification.type === 'follow' && 'started following you'}
@@ -748,12 +750,12 @@ const Notifications = () => {
 
                                   {/* Post Title */}
                                   {notification.post?.title && (
-                                    <div className="mt-3 p-3 bg-white/50 dark:bg-slate-700/30 rounded-lg border border-gray-200 dark:border-slate-600">
-                                      <h4 className="font-semibold text-gray-900 dark:text-white">
+                                    <div className={`mt-3 p-3 ${theme === 'light' ? 'bg-white/50' : 'bg-slate-700/30'} rounded-lg border ${theme === 'light' ? 'border-gray-200' : 'border-slate-600'}`}>
+                                      <h4 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                                         {notification.post.title}
                                       </h4>
                                       {notification.post.excerpt && (
-                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                        <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mt-1`}>
                                           {notification.post.excerpt}
                                         </p>
                                       )}
@@ -762,36 +764,37 @@ const Notifications = () => {
 
                                   {/* Comment Preview */}
                                   {notification.comment && (
-                                    <div className="mt-3 p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg border border-blue-100 dark:border-blue-800">
-                                      <p className="text-sm text-gray-700 dark:text-gray-300">"{notification.comment}"</p>
+                                    <div className={`mt-3 p-3 ${theme === 'light' ? 'bg-blue-50/50' : 'bg-blue-900/10'} rounded-lg border ${theme === 'light' ? 'border-blue-100' : 'border-blue-800'}`}>
+                                      <p className={`text-sm ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>"{
+                                        notification.comment}"</p>
                                     </div>
                                   )}
 
                                   {/* Meta Info */}
                                   <div className="flex items-center gap-4 mt-4">
-                                    <span className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+                                    <span className={`flex items-center gap-1 text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                                       <Clock className="w-3 h-3" />
                                       {getTimeAgo(notification.timestamp)}
                                     </span>
                                     {!notification.read && (
-                                      <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full">
+                                      <span className={`px-2 py-0.5 ${theme === 'light' ? 'bg-blue-100 text-blue-600' : 'bg-blue-900/30 text-blue-400'} text-xs font-medium rounded-full`}>
                                         New
                                       </span>
                                     )}
                                     {notification.meta && (
                                       <div className="flex items-center gap-3">
                                         {notification.meta.likes && (
-                                          <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                                          <span className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} flex items-center gap-1`}>
                                             <Heart className="w-3 h-3" /> {notification.meta.likes}
                                           </span>
                                         )}
                                         {notification.meta.shares && (
-                                          <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                                          <span className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} flex items-center gap-1`}>
                                             <Share2 className="w-3 h-3" /> {notification.meta.shares}
                                           </span>
                                         )}
                                         {notification.meta.views && (
-                                          <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                                          <span className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} flex items-center gap-1`}>
                                             <Eye className="w-3 h-3" /> {notification.meta.views}
                                           </span>
                                         )}
@@ -806,7 +809,7 @@ const Notifications = () => {
                                     {!notification.read && (
                                       <button
                                         onClick={() => markAsRead(notification.id)}
-                                        className="p-2 text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-xl transition-colors"
+                                        className={`p-2 text-gray-400 hover:text-green-600 ${theme === 'dark' ? 'dark:hover:text-green-400' : ''} hover:bg-green-50 ${theme === 'dark' ? 'dark:hover:bg-green-900/20' : ''} rounded-xl transition-colors`}
                                         title="Mark as read"
                                       >
                                         <CheckCircle className="w-5 h-5" />
@@ -814,7 +817,7 @@ const Notifications = () => {
                                     )}
                                     <button
                                       onClick={() => deleteSingleNotification(notification.id)}
-                                      className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
+                                      className={`p-2 text-gray-400 hover:text-red-600 ${theme === 'dark' ? 'dark:hover:text-red-400' : ''} hover:bg-red-50 ${theme === 'dark' ? 'dark:hover:bg-red-900/20' : ''} rounded-xl transition-colors`}
                                       title="Delete notification"
                                     >
                                       <Trash2 className="w-5 h-5" />
@@ -825,11 +828,11 @@ const Notifications = () => {
 
                               {/* Action Buttons */}
                               {(notification.type === 'comment' || notification.type === 'mention') && !selectMode && (
-                                <div className="flex items-center gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-slate-700">
+                                <div className={`flex items-center gap-3 mt-4 pt-4 border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
                                   <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-sm">
                                     Reply
                                   </button>
-                                  <button className="px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors font-medium text-sm">
+                                  <button className={`px-4 py-2 ${theme === 'light' ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'} rounded-lg transition-colors font-medium text-sm`}>
                                     View post
                                   </button>
                                 </div>
@@ -842,14 +845,14 @@ const Notifications = () => {
                   })
                 ) : (
                   /* Empty State */
-                  <div className="text-center py-20 bg-white dark:bg-slate-800 rounded-2xl border-2 border-dashed border-gray-300 dark:border-slate-700">
-                    <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full flex items-center justify-center">
-                      <Bell className="w-12 h-12 text-blue-600 dark:text-blue-500" />
+                  <div className={`text-center py-20 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border-2 border-dashed ${theme === 'light' ? 'border-gray-300' : 'border-slate-700'}`}>
+                    <div className={`w-24 h-24 mx-auto mb-6 bg-gradient-to-r ${theme === 'light' ? 'from-blue-100 to-purple-100' : 'from-blue-900/20 to-purple-900/20'} rounded-full flex items-center justify-center`}>
+                      <Bell className={`w-12 h-12 ${theme === 'light' ? 'text-blue-600' : 'text-blue-500'}`} />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                    <h3 className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3`}>
                       No notifications found
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
+                    <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mb-8 max-w-md mx-auto`}>
                       {searchTerm
                         ? `No notifications matching "${searchTerm}"`
                         : activeFilter === 'unread'

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { X, Camera, Upload, Image, User, MapPin, Link2, Globe } from 'lucide-react';
+import { useTheme } from '../../Context/themeContext';
 
 export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
+  const { theme } = useTheme();
   const [formData, setFormData] = useState({
     name: currentProfile?.name || '',
     username: currentProfile?.username || '',
@@ -67,31 +69,31 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm"
+        className={`absolute inset-0 ${theme === 'light' ? 'bg-black/60' : 'bg-black/80'} backdrop-blur-sm`}
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-2xl max-h-[90vh] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-gray-200/50 dark:border-slate-700/50">
+      <div className={`relative w-full max-w-2xl max-h-[90vh] ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl shadow-2xl overflow-hidden flex flex-col border ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'}`}>
         
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200 dark:border-slate-700 bg-gradient-to-r from-blue-500/5 to-purple-500/5">
+        <div className={`flex items-center justify-between px-6 py-5 border-b ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} bg-gradient-to-r from-blue-500/5 to-purple-500/5`}>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg">
               <User className="w-5 h-5 text-blue-500" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              <h2 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                 Edit Profile
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                 Update your profile information
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2.5 text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-300"
+            className={`p-2.5 ${theme === 'light' ? 'text-gray-600 hover:text-blue-500 hover:bg-blue-50' : 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/20'} rounded-xl transition-all duration-300`}
           >
             <X className="w-5 h-5" />
           </button>
@@ -103,11 +105,11 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
             
             {/* Cover Image Upload */}
             <div className="mb-8">
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+              <label className={`block text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 flex items-center gap-2`}>
                 <Image className="w-4 h-4 text-blue-500" />
                 Cover Image
               </label>
-              <div className="relative h-40 bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 dark:from-blue-700 dark:via-blue-600 dark:to-purple-700 rounded-xl overflow-hidden group border-2 border-gray-300/50 dark:border-slate-600/50 hover:border-blue-500/50 dark:hover:border-blue-500/50 transition-all duration-300">
+              <div className={`relative h-40 bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 ${theme === 'dark' ? 'dark:from-blue-700 dark:via-blue-600 dark:to-purple-700' : ''} rounded-xl overflow-hidden group border-2 ${theme === 'light' ? 'border-gray-300/50 hover:border-blue-500/50' : 'border-slate-600/50 hover:border-blue-500/50'} transition-all duration-300`}>
                 {coverPreview && (
                   <img
                     src={coverPreview}
@@ -139,13 +141,13 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
 
             {/* Avatar Upload */}
             <div className="mb-8">
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+              <label className={`block text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 flex items-center gap-2`}>
                 <Camera className="w-4 h-4 text-blue-500" />
                 Profile Picture
               </label>
               <div className="flex items-center gap-6">
                 <div className="relative group">
-                  <div className="relative w-24 h-24 rounded-2xl border-4 border-white dark:border-slate-800 shadow-xl overflow-hidden bg-gradient-to-br from-blue-500 to-purple-500 p-1">
+                  <div className={`relative w-24 h-24 rounded-2xl border-4 ${theme === 'light' ? 'border-white' : 'border-slate-800'} shadow-xl overflow-hidden bg-gradient-to-br from-blue-500 to-purple-500 p-1`}>
                     <img
                       src={avatarPreview || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}
                       alt="Avatar preview"
@@ -168,10 +170,10 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
                   </label>
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                  <p className={`text-sm font-medium ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-1`}>
                     Upload a new photo
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                  <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} mb-3`}>
                     JPG, PNG or GIF • Max 2MB
                   </p>
                   <button
@@ -189,7 +191,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
             <div className="space-y-5">
               {/* Name */}
               <div>
-                <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                <label className={`block text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2 flex items-center gap-2`}>
                   <User className="w-4 h-4 text-blue-500" />
                   Name <span className="text-red-500">*</span>
                 </label>
@@ -199,19 +201,19 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-300"
+                  className={`w-full px-4 py-3 ${theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400' : 'bg-slate-700 border-slate-600 text-white placeholder:text-slate-500'} border rounded-xl focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500 focus:border-transparent' : 'focus:ring-blue-400 focus:border-transparent'} transition-all duration-300`}
                   placeholder="Your full name"
                 />
               </div>
 
               {/* Username */}
               <div>
-                <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                <label className={`block text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2 flex items-center gap-2`}>
                   <User className="w-4 h-4 text-blue-500" />
                   Username <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500">
+                  <span className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme === 'light' ? 'text-gray-400' : 'text-slate-500'}`}>
                     @
                   </span>
                   <input
@@ -220,7 +222,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
                     value={formData.username}
                     onChange={handleInputChange}
                     required
-                    className="w-full pl-8 pr-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-300"
+                    className={`w-full pl-8 pr-4 py-3 ${theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400' : 'bg-slate-700 border-slate-600 text-white placeholder:text-slate-500'} border rounded-xl focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500 focus:border-transparent' : 'focus:ring-blue-400 focus:border-transparent'} transition-all duration-300`}
                     placeholder="username"
                   />
                 </div>
@@ -228,7 +230,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
 
               {/* Bio */}
               <div>
-                <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                <label className={`block text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2 flex items-center gap-2`}>
                   <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
@@ -240,11 +242,11 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
                   onChange={handleInputChange}
                   rows="4"
                   maxLength="160"
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-300 resize-none"
+                  className={`w-full px-4 py-3 ${theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400' : 'bg-slate-700 border-slate-600 text-white placeholder:text-slate-500'} border rounded-xl focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500 focus:border-transparent' : 'focus:ring-blue-400 focus:border-transparent'} transition-all duration-300 resize-none`}
                   placeholder="Tell us about yourself..."
                 />
                 <div className="flex justify-between items-center mt-2">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                     Brief description for your profile
                   </p>
                   <div className={`text-xs px-2 py-1 rounded-full ${formData.bio.length > 150 ? 'bg-red-500/10 text-red-600 dark:text-red-400' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'}`}>
@@ -255,7 +257,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
 
               {/* Location */}
               <div>
-                <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                <label className={`block text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2 flex items-center gap-2`}>
                   <MapPin className="w-4 h-4 text-blue-500" />
                   Location
                 </label>
@@ -264,29 +266,29 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
                   name="location"
                   value={formData.location}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-300"
+                  className={`w-full px-4 py-3 ${theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400' : 'bg-slate-700 border-slate-600 text-white placeholder:text-slate-500'} border rounded-xl focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500 focus:border-transparent' : 'focus:ring-blue-400 focus:border-transparent'} transition-all duration-300`}
                   placeholder="e.g. Lagos, Nigeria"
                 />
               </div>
 
               {/* Website */}
               {/* <div>
-                <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                <label className={`block text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2 flex items-center gap-2`}>
                   <Link2 className="w-4 h-4 text-blue-500" />
                   Website
                 </label>
                 <div className="relative">
-                  <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-slate-500" />
+                  <Globe className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 ${theme === 'light' ? 'text-gray-400' : 'text-slate-500'}`} />
                   <input
                     type="text"
                     name="website"
                     value={formData.website}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-300"
+                    className={`w-full pl-10 pr-4 py-3 ${theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400' : 'bg-slate-700 border-slate-600 text-white placeholder:text-slate-500'} border rounded-xl focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500 focus:border-transparent' : 'focus:ring-blue-400 focus:border-transparent'} transition-all duration-300`}
                     placeholder="yourwebsite.com"
                   />
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} mt-2`}>
                   No need for https://
                 </p>
               </div> */}
@@ -294,11 +296,11 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
           </div>
 
           {/* Footer - Action Buttons */}
-          <div className="sticky bottom-0 flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-slate-700 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
+          <div className={`sticky bottom-0 flex items-center justify-between px-6 py-4 border-t ${theme === 'light' ? 'border-gray-200 bg-white/95' : 'border-slate-700 bg-slate-800/95'} backdrop-blur-sm`}>
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-semibold rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-all duration-300"
+              className={`px-5 py-2.5 ${theme === 'light' ? 'text-gray-700 hover:text-gray-900 hover:bg-gray-100' : 'text-gray-300 hover:text-white hover:bg-slate-700'} font-semibold rounded-xl transition-all duration-300`}
             >
               Cancel
             </button>

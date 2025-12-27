@@ -29,8 +29,10 @@ import {
   getUserLikedPosts // Add this import
 } from "../../Services/post";
 import { useUser } from "../../Context/userContext";
+import { useTheme } from "../../Context/themeContext";
 
 export default function SavedPage() {
+  const { theme } = useTheme();
   const [savedPosts, setSavedPosts] = useState([]);
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [pageLoading, setPageLoading] = useState(true);
@@ -293,12 +295,12 @@ export default function SavedPage() {
     return (
       <>
         <NavbarPrivate />
-        <div className="min-h-screen bg-gray-50 dark:bg-slate-900 pt-16 md:pt-20">
+        <div className={`min-h-screen ${theme === 'light' ? 'bg-gray-50' : 'bg-slate-900'} pt-16 md:pt-20`}>
           <div className="max-w-7xl mx-auto px-4 py-8">
             <div className="flex justify-center items-center h-64">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="mt-4 text-gray-600 dark:text-gray-400">Loading saved posts...</p>
+                <p className={`mt-4 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>Loading saved posts...</p>
               </div>
             </div>
           </div>
@@ -311,10 +313,10 @@ export default function SavedPage() {
     return (
       <>
         <NavbarPrivate />
-        <div className="min-h-screen bg-gray-50 dark:bg-slate-900 pt-16 md:pt-20">
+        <div className={`min-h-screen ${theme === 'light' ? 'bg-gray-50' : 'bg-slate-900'} pt-16 md:pt-20`}>
           <div className="max-w-7xl mx-auto px-4 py-8">
             <div className="text-center py-12">
-              <p className="text-red-500 dark:text-red-400">{error}</p>
+              <p className={`${theme === 'light' ? 'text-red-500' : 'text-red-400'}`}>{error}</p>
               <button 
                 onClick={() => fetchSavedPosts()}
                 className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -331,19 +333,19 @@ export default function SavedPage() {
   return (
     <>
       <NavbarPrivate />
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 pt-16 md:pt-20">
+      <div className={`min-h-screen bg-gradient-to-b ${theme === 'light' ? 'from-gray-50 via-white to-white' : 'from-slate-900 via-slate-900 to-slate-950'} pt-16 md:pt-20`}>
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex flex-col lg:grid lg:grid-cols-4 gap-8">
             {/* Main Feed */}
             <div className="lg:col-span-3">
               {/* Header */}
-              <div className="relative bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg border border-gray-200/50 dark:border-slate-700/50 rounded-2xl p-4 mb-8 shadow-sm">
+              <div className={`relative ${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg border ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} rounded-2xl p-4 mb-8 shadow-sm`}>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 bg-clip-text text-transparent">
+                    <h1 className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${theme === 'light' ? 'from-blue-600 to-purple-600' : 'from-blue-500 to-purple-500'} bg-clip-text text-transparent`}>
                       Saved Stories
                     </h1>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+                    <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-sm mt-1`}>
                       Your personal collection • {displayedPosts.length} {displayedPosts.length === 1 ? 'story' : 'stories'}
                     </p>
                   </div>
@@ -351,7 +353,7 @@ export default function SavedPage() {
                   <div className="flex items-center gap-3">
                     <button 
                       onClick={() => setShowFilters(!showFilters)}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-700 transition-all"
+                      className={`flex items-center gap-2 px-4 py-2.5 ${theme === 'light' ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-slate-800 text-gray-300 hover:bg-slate-700'} rounded-xl transition-all`}
                     >
                       <Filter className="w-4 h-4" />
                       <span className="font-medium">Filters</span>
@@ -368,31 +370,31 @@ export default function SavedPage() {
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
-                  <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl">
+                  <div className={`flex items-center gap-3 p-3 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50' : 'from-blue-900/20 to-purple-900/20'} rounded-xl`}>
                     <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
                       <BookOpen className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Saved</p>
-                      <p className="font-bold text-gray-900 dark:text-white">{displayedPosts.length}</p>
+                      <p className={`text-xs ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>Saved</p>
+                      <p className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>{displayedPosts.length}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl">
+                  <div className={`flex items-center gap-3 p-3 bg-gradient-to-r ${theme === 'light' ? 'from-green-50 to-emerald-50' : 'from-green-900/20 to-emerald-900/20'} rounded-xl`}>
                     <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center">
                       <Heart className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Liked</p>
-                      <p className="font-bold text-gray-900 dark:text-white">{likedPosts.size}</p>
+                      <p className={`text-xs ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>Liked</p>
+                      <p className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>{likedPosts.size}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl">
+                  <div className={`flex items-center gap-3 p-3 bg-gradient-to-r ${theme === 'light' ? 'from-orange-50 to-red-50' : 'from-orange-900/20 to-red-900/20'} rounded-xl`}>
                     <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center">
                       <Clock className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Total Read Time</p>
-                      <p className="font-bold text-gray-900 dark:text-white">
+                      <p className={`text-xs ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>Total Read Time</p>
+                      <p className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                         {displayedPosts.reduce((total, post) => total + (post.read_time || 5), 0)} min
                       </p>
                     </div>
@@ -402,24 +404,24 @@ export default function SavedPage() {
 
               {/* Filter Panel */}
               {showFilters && (
-                <div className="relative bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5 mb-8 shadow-lg">
+                <div className={`relative ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-5 mb-8 shadow-lg`}>
                   <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg">
                         <Filter className="w-5 h-5 text-blue-500" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-900 dark:text-white text-base">
+                        <h3 className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-base`}>
                           Filter Saved Stories
                         </h3>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                        <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                           Refine your collection
                         </p>
                       </div>
                     </div>
                     <button 
                       onClick={() => setSelectedTags([])}
-                      className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
+                      className={`text-sm ${theme === 'light' ? 'text-blue-600 hover:text-blue-700' : 'text-blue-400 hover:text-blue-300'} font-medium`}
                     >
                       Clear all
                     </button>
@@ -427,7 +429,7 @@ export default function SavedPage() {
 
                   {/* Sort Options */}
                   <div className="flex items-center gap-2 mb-4">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Sort by:</span>
+                    <span className={`text-sm font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>Sort by:</span>
                     {sortOptions.map((option) => (
                       <button
                         key={option.id}
@@ -435,7 +437,7 @@ export default function SavedPage() {
                         className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                           sortBy === option.id
                             ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-sm"
-                            : "bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600"
+                            : `${theme === 'light' ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`
                         }`}
                       >
                         {option.icon}
@@ -447,7 +449,7 @@ export default function SavedPage() {
                   {/* Tags */}
                   {allTags.length > 0 && (
                     <div className="mb-4">
-                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Filter by topics:</p>
+                      <p className={`text-sm font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} mb-3`}>Filter by topics:</p>
                       <div className="flex flex-wrap gap-2">
                         {allTags.map((tag) => (
                           <button
@@ -456,7 +458,7 @@ export default function SavedPage() {
                             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                               selectedTags.includes(tag)
                                 ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-                                : "bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600"
+                                : `${theme === 'light' ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`
                             }`}
                           >
                             #{tag}
@@ -470,9 +472,9 @@ export default function SavedPage() {
                   {selectedTags.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {selectedTags.map(tag => (
-                        <span key={tag} className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-sm">
+                        <span key={tag} className={`inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-100 to-purple-100 text-blue-700' : 'from-blue-900/30 to-purple-900/30 text-blue-300'} rounded-lg text-sm`}>
                           #{tag}
-                          <button onClick={() => toggleTag(tag)} className="hover:text-blue-900 dark:hover:text-blue-100">
+                          <button onClick={() => toggleTag(tag)} className={`${theme === 'light' ? 'hover:text-blue-900' : 'hover:text-blue-100'}`}>
                             <X className="w-3 h-3" />
                           </button>
                         </span>
@@ -485,14 +487,14 @@ export default function SavedPage() {
               {/* Posts Feed */}
               <div className="space-y-8">
                 {displayedPosts.length === 0 ? (
-                  <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700">
-                    <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-full flex items-center justify-center">
-                      <Bookmark className="w-12 h-12 text-blue-600 dark:text-blue-500 fill-current" />
+                  <div className={`text-center py-12 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
+                    <div className={`w-24 h-24 mx-auto mb-6 bg-gradient-to-r ${theme === 'light' ? 'from-blue-100 to-purple-100' : 'from-blue-900/30 to-purple-900/30'} rounded-full flex items-center justify-center`}>
+                      <Bookmark className={`w-12 h-12 ${theme === 'light' ? 'text-blue-600' : 'text-blue-500'} fill-current`} />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                    <h3 className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3`}>
                       No saved stories yet
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
+                    <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mb-8 max-w-md mx-auto`}>
                       When you find stories you want to read later, click the bookmark icon to save them here.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -505,7 +507,7 @@ export default function SavedPage() {
                       </button>
                       <button
                         onClick={() => nav("/create")}
-                        className="px-8 py-3.5 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 text-gray-900 dark:text-white font-semibold rounded-xl hover:bg-gray-200 dark:hover:bg-slate-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                        className={`px-8 py-3.5 bg-gradient-to-r ${theme === 'light' ? 'from-gray-100 to-gray-200 text-gray-900 hover:bg-gray-200' : 'from-slate-800 to-slate-700 text-white hover:bg-slate-700'} font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2`}
                       >
                         <Sparkles className="w-5 h-5" />
                         Write Your Story
@@ -523,7 +525,7 @@ export default function SavedPage() {
                     return (
                       <article
                         key={post.id}
-                        className="group relative bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-lg hover:shadow-2xl dark:hover:shadow-slate-900/50 transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                        className={`group relative ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} shadow-lg hover:shadow-2xl ${theme === 'light' ? '' : 'dark:hover:shadow-slate-900/50'} transition-all duration-300 hover:-translate-y-1 overflow-hidden`}
                       >
                         {/* Post Header */}
                         <div className="p-6 pb-4">
@@ -533,23 +535,23 @@ export default function SavedPage() {
                                 <img
                                   src={post.author?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.author?.username || 'anonymous'}`}
                                   alt={post.author?.full_name || 'Anonymous'}
-                                  className="w-12 h-12 rounded-xl border-2 border-white dark:border-slate-800 shadow-sm"
+                                  className={`w-12 h-12 rounded-xl border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} shadow-sm`}
                                 />
                               </div>
                               <div>
                                 <div className="flex items-center gap-2">
-                                  <h3 className="font-bold text-gray-900 dark:text-white text-sm">
+                                  <h3 className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm`}>
                                     {post.author?.full_name || 'Anonymous'}
                                   </h3>
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                                     •
                                   </span>
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                                     {formatDate(post.saved_at || post.createdat)}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                                     @{post.author?.username || 'anonymous'}
                                   </p>
                                 </div>
@@ -563,7 +565,7 @@ export default function SavedPage() {
                                 onClick={() => toggleFollow(post.author?.username)}
                                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                                   isFollowing
-                                    ? "bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600"
+                                    ? `${theme === 'light' ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`
                                     : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-sm"
                                 }`}
                               >
@@ -574,24 +576,24 @@ export default function SavedPage() {
                               <div className="relative">
                                 <button 
                                   onClick={() => toggleMenu(post.id)} 
-                                  className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                                  className={`p-1.5 ${theme === 'light' ? 'text-gray-400 hover:text-gray-600 hover:bg-gray-100' : 'text-gray-400 hover:text-gray-300 hover:bg-slate-700'} rounded-lg transition-colors`}
                                 >
                                   <MoreHorizontal className="w-5 h-5" />
                                 </button>
 
                                 {/* Dropdown Menu */}
                                 {isMenuOpen && (
-                                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-gray-200 dark:border-slate-700 py-2 z-50">
+                                  <div className={`absolute right-0 mt-2 w-56 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-xl shadow-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} py-2 z-50`}>
                                     <button
                                       onClick={() => toggleSave(post.id)}
-                                      className="w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-gray-700 dark:text-gray-300"
+                                      className={`w-full px-4 py-2.5 text-left flex items-center gap-3 ${theme === 'light' ? 'hover:bg-gray-50 text-gray-700' : 'hover:bg-slate-700 text-gray-300'} transition-colors`}
                                     >
                                       <Trash2 className="w-4 h-4 text-red-500" />
                                       <span className="font-medium">Remove from Saved</span>
                                     </button>
                                     <button
                                       onClick={() => toggleFollow(post.author?.username)}
-                                      className="w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-gray-700 dark:text-gray-300"
+                                      className={`w-full px-4 py-2.5 text-left flex items-center gap-3 ${theme === 'light' ? 'hover:bg-gray-50 text-gray-700' : 'hover:bg-slate-700 text-gray-300'} transition-colors`}
                                     >
                                       {isFollowing ? (
                                         <>
@@ -605,8 +607,8 @@ export default function SavedPage() {
                                         </>
                                       )}
                                     </button>
-                                    <div className="border-t border-gray-200 dark:border-slate-700 my-1"></div>
-                                    <button className="w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-red-600 dark:text-red-500">
+                                    <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} my-1`}></div>
+                                    <button className={`w-full px-4 py-2.5 text-left flex items-center gap-3 ${theme === 'light' ? 'hover:bg-gray-50 text-red-600' : 'hover:bg-slate-700 text-red-500'} transition-colors`}>
                                       <Flag className="w-4 h-4" />
                                       <span className="font-medium">Report</span>
                                     </button>
@@ -619,20 +621,20 @@ export default function SavedPage() {
                           {/* Post Title */}
                           <h2 
                             onClick={() => nav(`/post/${post.id}`)}
-                            className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3 hover:text-blue-600 dark:hover:text-blue-500 transition-colors cursor-pointer leading-tight"
+                            className={`text-2xl md:text-3xl font-bold ${theme === 'light' ? 'text-gray-900 hover:text-blue-600' : 'text-white hover:text-blue-500'} mb-3 transition-colors cursor-pointer leading-tight`}
                           >
                             {post.title}
                           </h2>
 
                           {/* Post Content */}
                           {isContentExpanded ? (
-                            <div className="prose dark:prose-invert max-w-none">
-                              <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
+                            <div className={`prose ${theme === 'dark' ? 'dark:prose-invert' : ''} max-w-none`}>
+                              <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} mb-4 leading-relaxed`}>
                                 {post.content}
                               </p>
                               <button
                                 onClick={() => setExpandedPostId(null)}
-                                className="text-blue-600 dark:text-blue-500 hover:underline font-medium text-sm"
+                                className={`${theme === 'light' ? 'text-blue-600' : 'text-blue-500'} hover:underline font-medium text-sm`}
                               >
                                 Show less
                               </button>
@@ -640,14 +642,14 @@ export default function SavedPage() {
                           ) : (
                             <div className="relative">
                               <div className="relative mb-3">
-                                <p className="text-gray-700 dark:text-gray-300 line-clamp-2 leading-relaxed pr-4">
+                                <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} line-clamp-2 leading-relaxed pr-4`}>
                                   {post.content}
                                 </p>
                                 {post.content && post.content.length > 150 && (
-                                  <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white dark:from-slate-800 to-transparent flex items-end justify-center">
+                                  <div className={`absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t ${theme === 'light' ? 'from-white' : 'from-slate-800'} to-transparent flex items-end justify-center`}>
                                     <button
                                       onClick={() => setExpandedPostId(post.id)}
-                                      className="relative -bottom-2 px-4 py-1.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-blue-600 dark:text-blue-500 hover:text-blue-700 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-slate-700 font-medium text-sm rounded-full shadow-sm transition-colors"
+                                      className={`relative -bottom-2 px-4 py-1.5 ${theme === 'light' ? 'bg-white border-gray-200 text-blue-600 hover:text-blue-700 hover:bg-gray-50' : 'bg-slate-800 border-slate-700 text-blue-500 hover:text-blue-400 hover:bg-slate-700'} border font-medium text-sm rounded-full shadow-sm transition-colors`}
                                     >
                                       Read full story
                                     </button>
@@ -678,7 +680,7 @@ export default function SavedPage() {
                               {post.tags.map((tag, index) => (
                                 <span
                                   key={index}
-                                  className="px-3 py-1.5 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 text-blue-700 dark:text-blue-400 text-sm font-medium rounded-full hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-900/30 dark:hover:to-purple-900/30 transition-all cursor-pointer"
+                                  className={`px-3 py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50 text-blue-700 hover:from-blue-100 hover:to-purple-100' : 'from-blue-900/20 to-purple-900/20 text-blue-400 hover:from-blue-900/30 hover:to-purple-900/30'} text-sm font-medium rounded-full transition-all cursor-pointer`}
                                 >
                                   #{tag}
                                 </span>
@@ -687,9 +689,9 @@ export default function SavedPage() {
                           )}
 
                           {/* Stats & Actions */}
-                          <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-slate-700">
+                          <div className={`flex items-center justify-between pt-4 border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
                             {/* Stats */}
-                            <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
+                            <div className={`flex items-center gap-6 text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
                               <div className="flex items-center gap-1">
                                 <Clock className="w-4 h-4" />
                                 <span>{post.read_time || 5} min read</span>
@@ -704,8 +706,8 @@ export default function SavedPage() {
                                 disabled={!user?.id}
                                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 ${
                                   isLiked
-                                    ? "bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 text-red-600 dark:text-red-400 shadow-sm"
-                                    : "text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                    ? `bg-gradient-to-r ${theme === 'light' ? 'from-red-50 to-pink-50 text-red-600' : 'from-red-900/20 to-pink-900/20 text-red-400'} shadow-sm`
+                                    : `${theme === 'light' ? 'text-gray-600 hover:text-red-500 hover:bg-red-50' : 'text-gray-400 hover:text-red-400 hover:bg-red-900/20'}`
                                 } ${!user?.id ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 title={!user?.id ? "Login to like posts" : isLiked ? "Unlike post" : "Like post"}
                               >
@@ -724,8 +726,8 @@ export default function SavedPage() {
                                 onClick={() => toggleComments(post.id)}
                                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 ${
                                   isCommentsOpen
-                                    ? "bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 text-blue-600 dark:text-blue-400 shadow-sm"
-                                    : "text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                    ? `bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-cyan-50 text-blue-600' : 'from-blue-900/20 to-cyan-900/20 text-blue-400'} shadow-sm`
+                                    : `${theme === 'light' ? 'text-gray-600 hover:text-blue-500 hover:bg-blue-50' : 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/20'}`
                                 }`}
                               >
                                 <MessageCircle className="w-5 h-5" />
@@ -739,7 +741,7 @@ export default function SavedPage() {
                                 onClick={() => toggleSave(post.id)}
                                 disabled={!user?.id}
                                 className={`p-2.5 rounded-xl transition-all duration-300 ${
-                                  "bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 text-yellow-600 dark:text-yellow-400 shadow-sm"
+                                  `bg-gradient-to-r ${theme === 'light' ? 'from-yellow-50 to-amber-50 text-yellow-600' : 'from-yellow-900/20 to-amber-900/20 text-yellow-400'} shadow-sm`
                                 } ${!user?.id ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 title="Remove from saved"
                               >
@@ -753,7 +755,7 @@ export default function SavedPage() {
 
                         {/* ========== COMMENTS SECTION ========== */}
                         {isCommentsOpen && (
-                          <div className="border-t border-gray-200 dark:border-slate-700 bg-gradient-to-b from-gray-50/50 to-transparent dark:from-slate-900/50 dark:to-transparent">
+                          <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} bg-gradient-to-b ${theme === 'light' ? 'from-gray-50/50 to-transparent' : 'from-slate-900/50 to-transparent'}`}>
                             <div className="p-6 space-y-6 max-h-80 overflow-y-auto">
                               {/* Existing Comments */}
                               {comments[post.id]?.map((comment) => (
@@ -761,16 +763,16 @@ export default function SavedPage() {
                                   <img
                                     src={comment.author.avatar}
                                     alt={comment.author.name}
-                                    className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-800 flex-shrink-0"
+                                    className={`w-10 h-10 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} flex-shrink-0`}
                                   />
                                   <div className="flex-1">
-                                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm">
+                                    <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl p-4 shadow-sm`}>
                                       <div className="flex items-center justify-between mb-2">
                                         <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-900 dark:text-white text-sm">
+                                          <span className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm`}>
                                             {comment.author.name}
                                           </span>
-                                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                                          <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                                             {comment.timestamp}
                                           </span>
                                         </div>
@@ -780,8 +782,8 @@ export default function SavedPage() {
                                           }
                                           className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors ${
                                             comment.isLiked
-                                              ? "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20"
-                                              : "text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-slate-700"
+                                              ? `${theme === 'light' ? 'text-red-600 bg-red-50' : 'text-red-400 bg-red-900/20'}`
+                                              : `${theme === 'light' ? 'text-gray-500 hover:text-red-500 hover:bg-gray-100' : 'text-gray-400 hover:text-red-400 hover:bg-slate-700'}`
                                           }`}
                                         >
                                           <Heart
@@ -794,7 +796,7 @@ export default function SavedPage() {
                                           </span>
                                         </button>
                                       </div>
-                                      <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                                      <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-sm leading-relaxed`}>
                                         {comment.content}
                                       </p>
                                     </div>
@@ -803,12 +805,12 @@ export default function SavedPage() {
                               ))}
 
                               {/* New Comment Input */}
-                              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-4">
+                              <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-4`}>
                                 <div className="flex items-end gap-4">
                                   <img
                                     src={user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser"}
                                     alt="You"
-                                    className="w-10 h-10 rounded-full border-2 border-gray-200 dark:border-slate-700 flex-shrink-0"
+                                    className={`w-10 h-10 rounded-full border-2 ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} flex-shrink-0`}
                                   />
                                   <div className="flex-1">
                                     <textarea
@@ -817,11 +819,11 @@ export default function SavedPage() {
                                         setNewComment(e.target.value)
                                       }
                                       placeholder="Share your thoughts..."
-                                      className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                                      className={`w-full px-4 py-3 ${theme === 'light' ? 'bg-gray-50 text-gray-900 placeholder:text-gray-400' : 'bg-slate-700 text-white placeholder:text-slate-500'} rounded-xl resize-none focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500' : 'focus:ring-blue-400'}`}
                                       rows="2"
                                     />
                                     <div className="flex items-center justify-between mt-3">
-                                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                                      <div className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                                         Press Enter to post • Shift+Enter for new line
                                       </div>
                                       <button
@@ -830,7 +832,7 @@ export default function SavedPage() {
                                         className={`px-6 py-2 rounded-xl font-medium transition-all ${
                                           newComment.trim()
                                             ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl"
-                                            : "bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-slate-500 cursor-not-allowed"
+                                            : `${theme === 'light' ? 'bg-gray-200 text-gray-400' : 'bg-slate-700 text-slate-500'} cursor-not-allowed`
                                         }`}
                                       >
                                         Post Comment
@@ -865,22 +867,22 @@ export default function SavedPage() {
             {/* Right Sidebar */}
             <div className={`lg:col-span-1 space-y-6 md:space-y-8 ${showTrendingSidebar ? "block" : "hidden"} lg:block`}>
               {/* Trending Topics - Simplified */}
-              <div className="relative bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5 shadow-lg transition-all duration-300">
+              <div className={`relative ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-5 shadow-lg transition-all duration-300`}>
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-lg">
                       <TrendingUp className="w-5 h-5 text-orange-500" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-gray-900 dark:text-white text-base">
+                      <h3 className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-base`}>
                         Trending Topics
                       </h3>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                         What's hot now
                       </p>
                     </div>
                   </div>
-                  <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
+                  <button className={`text-sm ${theme === 'light' ? 'text-blue-600 hover:text-blue-700' : 'text-blue-400 hover:text-blue-300'} font-medium`}>
                     See all →
                   </button>
                 </div>
@@ -889,7 +891,7 @@ export default function SavedPage() {
                   {trendingTopics.map((topic, index) => (
                     <button
                       key={index}
-                      className="w-full flex items-center justify-between p-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors group"
+                      className={`w-full flex items-center justify-between p-2.5 rounded-lg ${theme === 'light' ? 'hover:bg-gray-50' : 'hover:bg-slate-700/50'} transition-colors group`}
                     >
                       <div className="flex items-center gap-2.5 flex-1 min-w-0">
                         <div className="relative">
@@ -897,20 +899,20 @@ export default function SavedPage() {
                             <Hash className="w-3.5 h-3.5 text-blue-500" />
                           </div>
                           {topic.trending && (
-                            <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white dark:border-slate-800" />
+                            <div className={`absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border ${theme === 'light' ? 'border-white' : 'border-slate-800'}`} />
                           )}
                         </div>
                         <div className="text-left flex-1 min-w-0">
-                          <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">
+                          <p className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm truncate`}>
                             {topic.tag}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                          <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                             {topic.posts} posts
                           </p>
                         </div>
                       </div>
                       {topic.trending && (
-                        <span className="px-2 py-0.5 bg-gradient-to-r from-red-500/10 to-pink-500/10 text-red-600 dark:text-red-400 text-xs font-medium rounded-full">
+                        <span className={`px-2 py-0.5 bg-gradient-to-r from-red-500/10 to-pink-500/10 text-red-600 ${theme === 'dark' ? 'dark:text-red-400' : ''} text-xs font-medium rounded-full`}>
                           🔥
                         </span>
                       )}
@@ -920,16 +922,16 @@ export default function SavedPage() {
               </div>
 
               {/* Recommended Authors - Stacked layout */}
-              <div className="relative bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5 shadow-lg transition-all duration-300">
+              <div className={`relative ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-5 shadow-lg transition-all duration-300`}>
                 <div className="flex items-center gap-3 mb-5">
                   <div className="p-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg">
                     <UsersIcon className="w-5 h-5 text-blue-500" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900 dark:text-white text-base">
+                    <h3 className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-base`}>
                       Top Authors
                     </h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                       Recommended for you
                     </p>
                   </div>
@@ -939,24 +941,24 @@ export default function SavedPage() {
                   {recommendedAuthors.map((author, index) => (
                     <div
                       key={index}
-                      className="flex flex-col p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
+                      className={`flex flex-col p-3 rounded-lg ${theme === 'light' ? 'hover:bg-gray-50' : 'hover:bg-slate-700/50'} transition-colors`}
                     >
                       <div className="flex items-center gap-3 mb-2">
                         <div className="relative">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 p-0.5">
-                            <div className="w-full h-full rounded-full bg-white dark:bg-slate-800 flex items-center justify-center">
+                          <div className={`w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 p-0.5`}>
+                            <div className={`w-full h-full rounded-full ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} flex items-center justify-center`}>
                               <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500 text-sm">
                                 {author.name.charAt(0)}
                               </span>
                             </div>
                           </div>
-                          <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border border-white dark:border-slate-800" />
+                          <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border ${theme === 'light' ? 'border-white' : 'border-slate-800'}`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">
+                          <p className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm truncate`}>
                             {author.name}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                          <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                             {author.followers} followers
                           </p>
                         </div>
@@ -968,8 +970,8 @@ export default function SavedPage() {
                   ))}
                 </div>
 
-                <div className="mt-5 pt-4 border-t border-gray-100 dark:border-slate-700/50">
-                  <button className="w-full text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-center">
+                <div className={`mt-5 pt-4 border-t ${theme === 'light' ? 'border-gray-100' : 'border-slate-700/50'}`}>
+                  <button className={`w-full text-sm ${theme === 'light' ? 'text-blue-600 hover:text-blue-700' : 'text-blue-400 hover:text-blue-300'} font-medium text-center`}>
                     View all recommendations →
                   </button>
                 </div>

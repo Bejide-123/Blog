@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
+import { useTheme } from "../../Context/themeContext";
 
 export default function MobileNotificationModal({ isOpen, onClose }) {
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const sampleNotifications = [
     {
       id: 1,
@@ -40,16 +42,16 @@ export default function MobileNotificationModal({ isOpen, onClose }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md bg-white dark:bg-slate-800 rounded-t-2xl shadow-lg border-t border-gray-200 dark:border-slate-700 animate-slide-up"
+        className={`w-full max-w-md ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-t-2xl shadow-lg border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} animate-slide-up`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-slate-700">
-          <p className="text-base font-semibold text-slate-900 dark:text-white">
+        <div className={`flex items-center justify-between px-4 py-3 border-b ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
+          <p className={`text-base font-semibold ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
             Notifications
           </p>
           <button
             onClick={onClose}
-            className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 text-lg"
+            className={`${theme === 'light' ? 'text-slate-500 hover:text-slate-700' : 'text-slate-400 hover:text-slate-300'} text-lg`}
           >
             ✕
           </button>
@@ -60,18 +62,18 @@ export default function MobileNotificationModal({ isOpen, onClose }) {
           {sampleNotifications.map((n) => (
             <div
               key={n.id}
-              className="flex items-start px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors rounded-lg"
+              className={`flex items-start px-4 py-3 ${theme === 'light' ? 'hover:bg-gray-50' : 'hover:bg-slate-700'} transition-colors rounded-lg`}
             >
               <img
                 src={n.avatar}
-                className="w-11 h-11 rounded-full border-2 border-gray-200 dark:border-slate-700 mr-3"
+                className={`w-11 h-11 rounded-full border-2 ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} mr-3`}
                 alt="avatar"
               />
               <div>
-                <p className="text-sm text-slate-800 dark:text-slate-200">
+                <p className={`text-sm ${theme === 'light' ? 'text-slate-800' : 'text-slate-200'}`}>
                   {n.message}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <p className={`text-xs ${theme === 'light' ? 'text-slate-500' : 'text-slate-400'} mt-1`}>
                   {n.time}
                 </p>
               </div>
@@ -80,8 +82,8 @@ export default function MobileNotificationModal({ isOpen, onClose }) {
         </div>
 
         {/* Footer */}
-        <div onClick={() => navigate("/notifications")} className="border-t border-gray-200 dark:border-slate-700 px-4 py-3 text-center">
-          <button className="text-sm text-blue-600 dark:text-blue-500 hover:underline">
+        <div onClick={() => navigate("/notifications")} className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} px-4 py-3 text-center`}>
+          <button className={`text-sm ${theme === 'light' ? 'text-blue-600' : 'text-blue-500'} hover:underline`}>
             View all
           </button>
         </div>

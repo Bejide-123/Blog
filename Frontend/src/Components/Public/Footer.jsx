@@ -16,10 +16,12 @@ import {
   FiExternalLink 
 } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTheme } from "../../Context/themeContext";
 
 const Footer = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme } = useTheme();
   const [email, setEmail] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [hoveredLink, setHoveredLink] = useState(null);
@@ -110,7 +112,7 @@ const Footer = () => {
         </button>
       )}
 
-      <footer className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-300 pt-16 pb-8">
+      <footer className={`relative overflow-hidden ${theme === 'light' ? 'bg-gradient-to-br from-gray-100 via-white to-gray-100 text-gray-700' : 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-300'} pt-16 pb-8`}>
         {/* Background Elements */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl" />
@@ -128,19 +130,19 @@ const Footer = () => {
                   <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl opacity-20 blur-sm" />
                 </div>
                 <div>
-                  <h3 className="text-3xl font-bold text-white">Scribe</h3>
-                  <p className="text-sm text-gray-400">Share Your Story</p>
+                  <h3 className={`text-3xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>Scribe</h3>
+                  <p className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>Share Your Story</p>
                 </div>
               </div>
               
-              <p className="text-gray-400 leading-relaxed mb-8 max-w-md">
+              <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} leading-relaxed mb-8 max-w-md`}>
                 A community-driven platform where writers and readers connect through authentic storytelling. 
                 Share your voice, discover new perspectives, and grow together.
               </p>
 
               {/* Newsletter Subscription */}
               <div className="mb-8">
-                <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <h4 className={`text-lg font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-4 flex items-center gap-2`}>
                   <FiMail className="w-5 h-5" />
                   Stay Updated
                 </h4>
@@ -150,7 +152,7 @@ const Footer = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Your email address"
-                    className="w-full px-4 py-3 pr-12 rounded-xl bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all"
+                    className={`w-full px-4 py-3 pr-12 rounded-xl ${theme === 'light' ? 'bg-gray-200/50 border-gray-300/50 text-gray-800 placeholder-gray-500' : 'bg-gray-800/50 border-gray-700 text-white placeholder-gray-500'} focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all`}
                   />
                   <button
                     type="submit"
@@ -168,7 +170,7 @@ const Footer = () => {
 
               {/* Social Links */}
               <div>
-                <h4 className="text-lg font-semibold text-white mb-4">
+                <h4 className={`text-lg font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-4`}>
                   Connect With Us
                 </h4>
                 <div className="flex flex-wrap gap-3">
@@ -176,8 +178,8 @@ const Footer = () => {
                     <a
                       key={index}
                       href={social.url}
-                      className={`w-10 h-10 rounded-lg bg-gray-800/50 border border-gray-700 flex items-center justify-center 
-                                ${social.color} hover:bg-gray-700/50 hover:scale-110 
+                      className={`w-10 h-10 rounded-lg ${theme === 'light' ? 'bg-gray-200/50 border-gray-300/50' : 'bg-gray-800/50 border-gray-700'} flex items-center justify-center 
+                                ${social.color} ${theme === 'light' ? 'hover:bg-gray-300/50' : 'hover:bg-gray-700/50'} hover:scale-110 
                                 transition-all duration-300 group relative`}
                       aria-label={social.label}
                       onMouseEnter={() => setHoveredLink(social.label)}
@@ -185,7 +187,7 @@ const Footer = () => {
                     >
                       {social.icon}
                       {hoveredLink === social.label && (
-                        <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap">
+                        <span className={`absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 ${theme === 'light' ? 'bg-gray-800 text-white' : 'bg-gray-900 text-white'} text-xs rounded whitespace-nowrap`}>
                           {social.label}
                         </span>
                       )}
@@ -199,7 +201,7 @@ const Footer = () => {
             <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-8">
               {/* Quick Links */}
               <div>
-                <h4 className="text-xl font-bold text-white mb-6 pb-2 border-b border-gray-700/50">
+                <h4 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-6 pb-2 border-b ${theme === 'light' ? 'border-gray-300/50' : 'border-gray-700/50'}`}>
                   Quick Links
                 </h4>
                 <ul className="space-y-3">
@@ -207,7 +209,7 @@ const Footer = () => {
                     <li key={index}>
                       <button
                         onClick={link.action}
-                        className="group flex items-center gap-2 text-gray-400 hover:text-white transition-all duration-300 hover:translate-x-1"
+                        className={`group flex items-center gap-2 ${theme === 'light' ? 'text-gray-600 hover:text-gray-900' : 'text-gray-400 hover:text-white'} transition-all duration-300 hover:translate-x-1`}
                       >
                         <FiChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                         {link.label}
@@ -219,7 +221,7 @@ const Footer = () => {
 
               {/* Resources */}
               <div>
-                <h4 className="text-xl font-bold text-white mb-6 pb-2 border-b border-gray-700/50">
+                <h4 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-6 pb-2 border-b ${theme === 'light' ? 'border-gray-300/50' : 'border-gray-700/50'}`}>
                   Resources
                 </h4>
                 <ul className="space-y-3">
@@ -227,7 +229,7 @@ const Footer = () => {
                     <li key={index}>
                       <a
                         href={link.url}
-                        className="group flex items-center gap-2 text-gray-400 hover:text-white transition-all duration-300 hover:translate-x-1"
+                        className={`group flex items-center gap-2 ${theme === 'light' ? 'text-gray-600 hover:text-gray-900' : 'text-gray-400 hover:text-white'} transition-all duration-300 hover:translate-x-1`}
                       >
                         <FiExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                         {link.label}
@@ -239,7 +241,7 @@ const Footer = () => {
 
               {/* Platform */}
               <div>
-                <h4 className="text-xl font-bold text-white mb-6 pb-2 border-b border-gray-700/50">
+                <h4 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-6 pb-2 border-b ${theme === 'light' ? 'border-gray-300/50' : 'border-gray-700/50'}`}>
                   Platform
                 </h4>
                 <ul className="space-y-3">
@@ -247,7 +249,7 @@ const Footer = () => {
                     <li key={index}>
                       <a
                         href={link.url}
-                        className="group flex items-center gap-2 text-gray-400 hover:text-white transition-all duration-300 hover:translate-x-1"
+                        className={`group flex items-center gap-2 ${theme === 'light' ? 'text-gray-600 hover:text-gray-900' : 'text-gray-400 hover:text-white'} transition-all duration-300 hover:translate-x-1`}
                       >
                         <FiChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                         {link.label}
@@ -259,28 +261,28 @@ const Footer = () => {
 
               {/* Contact Info */}
               <div>
-                <h4 className="text-xl font-bold text-white mb-6 pb-2 border-b border-gray-700/50">
+                <h4 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-6 pb-2 border-b ${theme === 'light' ? 'border-gray-300/50' : 'border-gray-700/50'}`}>
                   Contact Info
                 </h4>
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gray-800/50 flex items-center justify-center flex-shrink-0">
+                    <div className={`w-8 h-8 rounded-lg ${theme === 'light' ? 'bg-gray-200/50' : 'bg-gray-800/50'} flex items-center justify-center flex-shrink-0`}>
                       <FiMail className="w-4 h-4 text-blue-400" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400">Email</p>
-                      <a href="mailto:hello@scribe.com" className="text-white hover:text-blue-400 transition-colors">
+                      <p className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>Email</p>
+                      <a href="mailto:hello@scribe.com" className={`${theme === 'light' ? 'text-gray-800 hover:text-blue-600' : 'text-white hover:text-blue-400'} transition-colors`}>
                         hello@scribe.com
                       </a>
                     </div>
                   </li>
                   <li className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gray-800/50 flex items-center justify-center flex-shrink-0">
+                    <div className={`w-8 h-8 rounded-lg ${theme === 'light' ? 'bg-gray-200/50' : 'bg-gray-800/50'} flex items-center justify-center flex-shrink-0`}>
                       <FiFeather className="w-4 h-4 text-purple-400" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400">Office</p>
-                      <p className="text-white">123 Story Street<br />Creative City, CC 10001</p>
+                      <p className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>Office</p>
+                      <p className={`${theme === 'light' ? 'text-gray-800' : 'text-white'}`}>123 Story Street<br />Creative City, CC 10001</p>
                     </div>
                   </li>
                 </ul>
@@ -289,9 +291,9 @@ const Footer = () => {
           </div>
 
           {/* Bottom Bar */}
-          <div className="mt-12 pt-8 border-t border-gray-700/50">
+          <div className={`mt-12 pt-8 border-t ${theme === 'light' ? 'border-gray-300/50' : 'border-gray-700/50'}`}>
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <div className="flex items-center gap-2 text-gray-400 text-sm">
+              <div className={`flex items-center gap-2 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-sm`}>
                 <p>
                   © {new Date().getFullYear()} Scribe. All rights reserved.
                 </p>
@@ -301,19 +303,19 @@ const Footer = () => {
                 </p>
               </div>
               
-              <div className="flex flex-wrap gap-4 justify-center text-sm text-gray-500">
-                <a href="#" className="hover:text-white transition-colors">Cookies Policy</a>
+              <div className={`flex flex-wrap gap-4 justify-center text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-500'}`}>
+                <a href="#" className={`${theme === 'light' ? 'hover:text-gray-800' : 'hover:text-white'} transition-colors`}>Cookies Policy</a>
                 <span className="hidden md:inline">•</span>
-                <a href="#" className="hover:text-white transition-colors">Accessibility</a>
+                <a href="#" className={`${theme === 'light' ? 'hover:text-gray-800' : 'hover:text-white'} transition-colors`}>Accessibility</a>
                 <span className="hidden md:inline">•</span>
-                <a href="#" className="hover:text-white transition-colors">Sitemap</a>
+                <a href="#" className={`${theme === 'light' ? 'hover:text-gray-800' : 'hover:text-white'} transition-colors`}>Sitemap</a>
                 <span className="hidden md:inline">•</span>
                 <span>v2.1.0</span>
               </div>
             </div>
             
             {/* Stats */}
-            <div className="mt-6 pt-6 border-t border-gray-700/30">
+            <div className={`mt-6 pt-6 border-t ${theme === 'light' ? 'border-gray-300/30' : 'border-gray-700/30'}`}>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 {[
                   { label: "Active Writers", value: "10K+" },
@@ -322,8 +324,8 @@ const Footer = () => {
                   { label: "Monthly Readers", value: "1M+" },
                 ].map((stat, index) => (
                   <div key={index} className="text-center">
-                    <div className="text-2xl font-bold text-white mb-1">{stat.value}</div>
-                    <div className="text-xs text-gray-400 uppercase tracking-wider">{stat.label}</div>
+                    <div className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-1`}>{stat.value}</div>
+                    <div className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} uppercase tracking-wider`}>{stat.label}</div>
                   </div>
                 ))}
               </div>

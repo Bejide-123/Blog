@@ -18,9 +18,11 @@ import personalGrowth from "../../Images/PersonalGrowth.jpg";
 import education from "../../Images/Education.jpg";
 import web from "../../Images/Web.jpg"; 
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "../../Context/themeContext";
 
 const Posts = () => {
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const [hoveredPost, setHoveredPost] = useState(null);
   const [activeFilter, setActiveFilter] = useState("all");
 
@@ -131,23 +133,23 @@ const Posts = () => {
   };
 
   return (
-    <section id="posts" className="relative py-20 bg-gradient-to-b from-white via-gray-50/30 to-white">
+    <section id="posts" className={`relative py-20 ${theme === 'light' ? 'bg-gradient-to-b from-white via-gray-50/30 to-white' : 'bg-gradient-to-b from-gray-900 via-gray-800/30 to-gray-900'}`}>
       {/* Background Elements */}
-      <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-blue-50/30 to-transparent" />
+      <div className={`absolute top-0 left-0 w-full h-32 ${theme === 'light' ? 'bg-gradient-to-b from-blue-50/30 to-transparent' : 'bg-gradient-to-b from-blue-900/30 to-transparent'}`} />
       <div className="absolute top-1/4 right-0 w-64 h-64 bg-blue-100/20 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 left-0 w-64 h-64 bg-purple-100/20 rounded-full blur-3xl" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <span className="inline-block px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold mb-4">
+          <span className={`inline-block px-4 py-2 rounded-full ${theme === 'light' ? 'bg-blue-100 text-blue-700' : 'bg-blue-900/50 text-blue-300'} text-sm font-semibold mb-4`}>
             📚 Featured Stories
           </span>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+          <h2 className={`text-4xl md:text-5xl lg:text-6xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-6`}>
             Discover <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Inspiring</span> Content
           </h2>
           <div className="w-24 h-1.5 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mb-8 rounded-full"></div>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+          <p className={`text-xl ${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} max-w-2xl mx-auto leading-relaxed`}>
             Explore thought-provoking articles and stories from our talented community of writers
           </p>
         </div>
@@ -162,7 +164,7 @@ const Posts = () => {
                 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300
                 ${activeFilter === category.id 
                   ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
-                  : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:shadow-md'
+                  : `${theme === 'light' ? 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:shadow-md' : 'bg-gray-800 text-gray-300 border border-gray-700 hover:border-gray-600 hover:shadow-md'}`
                 }
                 flex items-center gap-2
               `}
@@ -172,7 +174,7 @@ const Posts = () => {
                 px-2 py-0.5 rounded-full text-xs
                 ${activeFilter === category.id 
                   ? 'bg-white/20' 
-                  : 'bg-gray-100'
+                  : `${theme === 'light' ? 'bg-gray-100' : 'bg-gray-700'}`
                 }
               `}>
                 {category.count}
@@ -186,7 +188,7 @@ const Posts = () => {
           {filteredPosts.map((post) => (
             <article 
               key={post.id}
-              className="group relative bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-200/50"
+              className={`group relative ${theme === 'light' ? 'bg-white' : 'bg-gray-800'} rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden border ${theme === 'light' ? 'border-gray-200/50' : 'border-gray-700/50'}`}
               onMouseEnter={() => setHoveredPost(post.id)}
               onMouseLeave={() => setHoveredPost(null)}
             >
@@ -217,7 +219,7 @@ const Posts = () => {
 
               {/* Post Content */}
               <div className="p-6">
-                <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
+                <div className={`flex items-center gap-4 text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} mb-3`}>
                   <div className="flex items-center gap-1">
                     <FiUser className="w-3.5 h-3.5" />
                     <span>{post.author}</span>
@@ -232,17 +234,17 @@ const Posts = () => {
                   </div>
                 </div>
 
-                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300 line-clamp-2 leading-tight">
+                <h3 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 group-hover:text-blue-600 transition-colors duration-300 line-clamp-2 leading-tight`}>
                   {post.title}
                 </h3>
                 
-                <p className="text-gray-600 mb-4 line-clamp-3 leading-relaxed">
+                <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} mb-4 line-clamp-3 leading-relaxed`}>
                   {post.excerpt}
                 </p>
 
                 {/* Engagement Stats */}
                 <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                  <div className={`flex items-center gap-4 text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                     <div className="flex items-center gap-1">
                       <FiEye className="w-4 h-4" />
                       <span>{post.views}</span>
@@ -253,11 +255,11 @@ const Posts = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                      <FiBookmark className="w-4 h-4 text-gray-500" />
+                    <button className={`p-2 rounded-lg ${theme === 'light' ? 'hover:bg-gray-100' : 'hover:bg-gray-700'} transition-colors`}>
+                      <FiBookmark className={`w-4 h-4 ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`} />
                     </button>
-                    <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                      <FiShare2 className="w-4 h-4 text-gray-500" />
+                    <button className={`p-2 rounded-lg ${theme === 'light' ? 'hover:bg-gray-100' : 'hover:bg-gray-700'} transition-colors`}>
+                      <FiShare2 className={`w-4 h-4 ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`} />
                     </button>
                   </div>
                 </div>
@@ -265,11 +267,11 @@ const Posts = () => {
                 {/* Read More Button */}
                 <button 
                   onClick={() => handlePostClick(post.id)}
-                  className="w-full group/btn flex items-center justify-between p-3 rounded-xl 
-                           bg-gradient-to-r from-gray-50 to-white border border-gray-200 
-                           hover:border-blue-300 hover:shadow-md transition-all duration-300"
+                  className={`w-full group/btn flex items-center justify-between p-3 rounded-xl 
+                           ${theme === 'light' ? 'bg-gradient-to-r from-gray-50 to-white border border-gray-200 hover:border-blue-300' : 'bg-gradient-to-r from-gray-700 to-gray-800 border border-gray-600 hover:border-blue-500'} 
+                           hover:shadow-md transition-all duration-300`}
                 >
-                  <span className="font-semibold text-gray-700 group-hover/btn:text-blue-600 transition-colors">
+                  <span className={`font-semibold ${theme === 'light' ? 'text-gray-700 group-hover/btn:text-blue-600' : 'text-gray-300 group-hover/btn:text-blue-400'} transition-colors`}>
                     Read Full Story
                   </span>
                   <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white 
@@ -305,20 +307,20 @@ const Posts = () => {
               </span>
             </button>
             
-            <p className="text-gray-500 text-sm">
+            <p className={`${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} text-sm`}>
               Join thousands of readers discovering new insights daily
             </p>
           </div>
         </div>
 
         {/* Featured Writer Banner */}
-        <div className="mt-20 bg-gradient-to-r from-blue-50/50 to-purple-50/50 rounded-2xl p-8 border border-blue-100/50">
+        <div className={`mt-20 ${theme === 'light' ? 'bg-gradient-to-r from-blue-50/50 to-purple-50/50' : 'bg-gradient-to-r from-blue-900/50 to-purple-900/50'} rounded-2xl p-8 border ${theme === 'light' ? 'border-blue-100/50' : 'border-blue-800/50'}`}>
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              <h3 className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2`}>
                 Want to share your own stories?
               </h3>
-              <p className="text-gray-600">
+              <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-300'}`}>
                 Join our community of writers and reach thousands of engaged readers
               </p>
             </div>

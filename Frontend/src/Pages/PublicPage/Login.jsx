@@ -14,8 +14,10 @@ import { ButtonLoader } from "../../Components/Private/Loader";
 import { signUp, signIn } from "../../Services/api";
 import { useUser } from "../../Context/userContext";
 import { supabase } from "../../lib/supabase";
+import { useTheme } from "../../Context/themeContext";
 
 const Auth = () => {
+  const { theme } = useTheme();
   const [searchParams] = useSearchParams();
   const mode = searchParams.get("mode");
   const nav = useNavigate();
@@ -143,7 +145,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className={`min-h-screen bg-gradient-to-b ${theme === 'light' ? 'from-gray-50 via-white to-white' : 'from-slate-900 via-slate-900 to-slate-950'} flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8`}>
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
@@ -155,10 +157,10 @@ const Auth = () => {
               Scribe
             </h1>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <h2 className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2`}>
             {isLogin ? "Welcome back!" : "Join the community"}
           </h2>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
             {isLogin
               ? "Sign in to continue your journey"
               : "Create your account to get started"}
@@ -166,15 +168,15 @@ const Auth = () => {
         </div>
 
         {/* Auth Card */}
-        <div className="relative bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-2xl border border-gray-200/50 dark:border-slate-700/50 shadow-xl p-8">
+        <div className={`relative ${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg rounded-2xl border ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} shadow-xl p-8`}>
           {/* Toggle Tabs - Modern Design */}
-          <div className="flex items-center gap-1 mb-8 p-1 bg-gradient-to-r from-gray-100 to-gray-50 dark:from-slate-800 dark:to-slate-900 rounded-2xl">
+          <div className={`flex items-center gap-1 mb-8 p-1 bg-gradient-to-r ${theme === 'light' ? 'from-gray-100 to-gray-50' : 'from-slate-800 to-slate-900'} rounded-2xl`}>
             <button
               onClick={() => setIsLogin(true)}
               className={`flex-1 px-6 py-3.5 rounded-xl font-semibold transition-all duration-300 ${
                 isLogin
                   ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
-                  : "text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-700"
+                  : `${theme === 'light' ? 'text-gray-700 hover:text-gray-900 hover:bg-gray-100' : 'text-gray-300 hover:text-white hover:bg-slate-700'}`
               }`}
             >
               Login
@@ -184,7 +186,7 @@ const Auth = () => {
               className={`flex-1 px-6 py-3.5 rounded-xl font-semibold transition-all duration-300 ${
                 !isLogin
                   ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
-                  : "text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-700"
+                  : `${theme === 'light' ? 'text-gray-700 hover:text-gray-900 hover:bg-gray-100' : 'text-gray-300 hover:text-white hover:bg-slate-700'}`
               }`}
             >
               Sign Up
@@ -198,14 +200,14 @@ const Auth = () => {
               <div>
                 <label
                   htmlFor="name"
-                  className="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
+                  className={`block text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2`}
                 >
                   Full Name
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                   <div className="relative">
-                    <FiUser className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
+                    <FiUser className={`absolute left-4 top-1/2 transform -translate-y-1/2 ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'} w-5 h-5`} />
                     <input
                       type="text"
                       id="name"
@@ -213,14 +215,14 @@ const Auth = () => {
                       value={formData.name}
                       onChange={handleChange}
                       placeholder="John Doe"
-                      className={`w-full pl-12 pr-4 py-3.5 bg-gray-50 dark:bg-slate-700 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all ${
+                      className={`w-full pl-12 pr-4 py-3.5 ${theme === 'light' ? 'bg-gray-50 text-gray-900 placeholder-gray-400' : 'bg-slate-700 text-white placeholder-gray-500'} border-0 rounded-xl focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500' : 'focus:ring-blue-400'} transition-all ${
                         errors.name ? "ring-2 ring-red-500" : ""
                       }`}
                     />
                   </div>
                 </div>
                 {errors.name && (
-                  <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                  <p className={`mt-2 text-sm ${theme === 'light' ? 'text-red-600' : 'text-red-400'} flex items-center gap-1`}>
                     <span>⚠</span> {errors.name}
                   </p>
                 )}
@@ -232,14 +234,14 @@ const Auth = () => {
               <div>
                 <label
                   htmlFor="username"
-                  className="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
+                  className={`block text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2`}
                 >
                   Username
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 text-lg font-medium">
+                    <span className={`absolute left-4 top-1/2 transform -translate-y-1/2 ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'} text-lg font-medium`}>
                       @
                     </span>
                     <input
@@ -249,14 +251,14 @@ const Auth = () => {
                       value={formData.username}
                       onChange={handleChange}
                       placeholder="johndoe"
-                      className={`w-full pl-11 pr-4 py-3.5 bg-gray-50 dark:bg-slate-700 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all ${
+                      className={`w-full pl-11 pr-4 py-3.5 ${theme === 'light' ? 'bg-gray-50 text-gray-900 placeholder-gray-400' : 'bg-slate-700 text-white placeholder-gray-500'} border-0 rounded-xl focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500' : 'focus:ring-blue-400'} transition-all ${
                         errors.username ? "ring-2 ring-red-500" : ""
                       }`}
                     />
                   </div>
                 </div>
                 {errors.username && (
-                  <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                  <p className={`mt-2 text-sm ${theme === 'light' ? 'text-red-600' : 'text-red-400'} flex items-center gap-1`}>
                     <span>⚠</span> {errors.username}
                   </p>
                 )}
@@ -267,14 +269,14 @@ const Auth = () => {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
+                className={`block text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2`}
               >
                 {isLogin ? "Email or Username" : "Email Address"}
               </label>
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                 <div className="relative">
-                  <FiMail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
+                  <FiMail className={`absolute left-4 top-1/2 transform -translate-y-1/2 ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'} w-5 h-5`} />
                   <input
                     type={isLogin ? "text" : "email"}
                     id="email"
@@ -286,14 +288,14 @@ const Auth = () => {
                         ? "email@example.com or @username"
                         : "you@example.com"
                     }
-                    className={`w-full pl-12 pr-4 py-3.5 bg-gray-50 dark:bg-slate-700 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all ${
+                    className={`w-full pl-12 pr-4 py-3.5 ${theme === 'light' ? 'bg-gray-50 text-gray-900 placeholder-gray-400' : 'bg-slate-700 text-white placeholder-gray-500'} border-0 rounded-xl focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500' : 'focus:ring-blue-400'} transition-all ${
                       errors.email ? "ring-2 ring-red-500" : ""
                     }`}
                   />
                 </div>
               </div>
               {errors.email && (
-                <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                <p className={`mt-2 text-sm ${theme === 'light' ? 'text-red-600' : 'text-red-400'} flex items-center gap-1`}>
                   <span>⚠</span> {errors.email}
                 </p>
               )}
@@ -303,14 +305,14 @@ const Auth = () => {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
+                className={`block text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2`}
               >
                 Password
               </label>
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                 <div className="relative">
-                  <FiLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
+                  <FiLock className={`absolute left-4 top-1/2 transform -translate-y-1/2 ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'} w-5 h-5`} />
                   <input
                     type={showPassword ? "text" : "password"}
                     id="password"
@@ -318,14 +320,14 @@ const Auth = () => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className={`w-full pl-12 pr-12 py-3.5 bg-gray-50 dark:bg-slate-700 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all ${
+                    className={`w-full pl-12 pr-12 py-3.5 ${theme === 'light' ? 'bg-gray-50 text-gray-900 placeholder-gray-400' : 'bg-slate-700 text-white placeholder-gray-500'} border-0 rounded-xl focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500' : 'focus:ring-blue-400'} transition-all ${
                       errors.password ? "ring-2 ring-red-500" : ""
                     }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    className={`absolute right-4 top-1/2 transform -translate-y-1/2 ${theme === 'light' ? 'text-gray-400 hover:text-gray-600' : 'text-gray-500 hover:text-gray-300'} transition-colors`}
                   >
                     {showPassword ? (
                       <FiEyeOff className="w-5 h-5" />
@@ -336,7 +338,7 @@ const Auth = () => {
                 </div>
               </div>
               {errors.password && (
-                <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                <p className={`mt-2 text-sm ${theme === 'light' ? 'text-red-600' : 'text-red-400'} flex items-center gap-1`}>
                   <span>⚠</span> {errors.password}
                 </p>
               )}
@@ -347,14 +349,14 @@ const Auth = () => {
               <div>
                 <label
                   htmlFor="confirmPassword"
-                  className="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
+                  className={`block text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2`}
                 >
                   Confirm Password
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                   <div className="relative">
-                    <FiLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
+                    <FiLock className={`absolute left-4 top-1/2 transform -translate-y-1/2 ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'} w-5 h-5`} />
                     <input
                       type={showPassword ? "text" : "password"}
                       id="confirmPassword"
@@ -362,14 +364,14 @@ const Auth = () => {
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       placeholder="••••••••"
-                      className={`w-full pl-12 pr-4 py-3.5 bg-gray-50 dark:bg-slate-700 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all ${
+                      className={`w-full pl-12 pr-4 py-3.5 ${theme === 'light' ? 'bg-gray-50 text-gray-900 placeholder-gray-400' : 'bg-slate-700 text-white placeholder-gray-500'} border-0 rounded-xl focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500' : 'focus:ring-blue-400'} transition-all ${
                         errors.confirmPassword ? "ring-2 ring-red-500" : ""
                       }`}
                     />
                   </div>
                 </div>
                 {errors.confirmPassword && (
-                  <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                  <p className={`mt-2 text-sm ${theme === 'light' ? 'text-red-600' : 'text-red-400'} flex items-center gap-1`}>
                     <span>⚠</span> {errors.confirmPassword}
                   </p>
                 )}
@@ -394,11 +396,11 @@ const Auth = () => {
 
           {/* Divider */}
           <div className="relative my-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300 dark:border-slate-700"></div>
+            <div className={`absolute inset-0 flex items-center`}>
+              <div className={`w-full border-t ${theme === 'light' ? 'border-gray-300' : 'border-slate-700'}`}></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400">
+              <span className={`px-4 ${theme === 'light' ? 'bg-white text-gray-500' : 'bg-slate-800 text-gray-400'}`}>
                 Or continue with
               </span>
             </div>
@@ -406,23 +408,23 @@ const Auth = () => {
 
           {/* Social Login Buttons */}
           <div className="grid grid-cols-2 gap-3">
-            <button className="flex items-center justify-center gap-3 py-3 px-4 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-600 transition-all duration-300 font-medium text-gray-700 dark:text-gray-300 cursor-pointer group">
+            <button className={`flex items-center justify-center gap-3 py-3 px-4 ${theme === 'light' ? 'bg-white border-gray-300 hover:bg-gray-50 text-gray-700' : 'bg-slate-700 border-slate-600 hover:bg-slate-600 text-gray-300'} border rounded-xl transition-all duration-300 font-medium cursor-pointer group`}>
               <FcGoogle className="w-5 h-5" />
               <span>Google</span>
             </button>
 
-            <button className="flex items-center justify-center gap-3 py-3 px-4 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-600 transition-all duration-300 font-medium text-gray-700 dark:text-gray-300 cursor-pointer group">
+            <button className={`flex items-center justify-center gap-3 py-3 px-4 ${theme === 'light' ? 'bg-white border-gray-300 hover:bg-gray-50 text-gray-700' : 'bg-slate-700 border-slate-600 hover:bg-slate-600 text-gray-300'} border rounded-xl transition-all duration-300 font-medium cursor-pointer group`}>
               <FiGithub className="w-5 h-5" />
               <span>GitHub</span>
             </button>
           </div>
 
           {/* Footer */}
-          <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
+          <p className={`mt-8 text-center text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
             {isLogin ? "Don't have an account? " : "Already have an account? "}
             <button
               onClick={toggleMode}
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold cursor-pointer"
+              className={`${theme === 'light' ? 'text-blue-600 hover:text-blue-700' : 'text-blue-400 hover:text-blue-300'} font-semibold cursor-pointer`}
             >
               {isLogin ? "Sign up now" : "Login here"}
             </button>
@@ -430,7 +432,7 @@ const Auth = () => {
         </div>
 
         {/* Footer Note */}
-        <p className="text-center text-xs text-gray-500 dark:text-gray-500">
+        <p className={`text-center text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-500'}`}>
           By continuing, you agree to our Terms of Service and Privacy Policy
         </p>
       </div>

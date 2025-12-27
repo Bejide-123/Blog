@@ -9,48 +9,35 @@ import {
   LogOut,
   LayoutDashboard,
   Settings,
-  Moon,
-  Sun,
   Feather,
   X,
   Sparkles,
   TrendingUp,
   BookOpen,
   Hash,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router";
 import NotificationDropdown from "./Notification";
 import MobileNotificationModal from "./mobileNotification";
 import { useUser } from "../../Context/userContext";
 import { signOut } from "../../Services/api";
+import { useTheme } from "../../Context/themeContext";
 
 export default function NavbarPrivate() {
   const { user, logout } = useUser();
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
   const [currentPath, setCurrentPath] = useState(location.pathname);
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [notificationCount] = useState(3); // Example count
-  const [isDarkMode, setIsDarkMode] = useState(
-    localStorage.getItem("theme") === "light" ||
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-  );
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const [activeTab, setActiveTab] = useState("feed");
   const nav = useNavigate();
-
-  // Initialize dark mode
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [isDarkMode]);
 
   // Update current path on location change
   useEffect(() => {
@@ -108,10 +95,6 @@ export default function NavbarPrivate() {
     }
   };
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
   // Search suggestions (example)
   const searchSuggestions = [
     { icon: <Hash className="w-4 h-4" />, text: "#react", type: "tag" },
@@ -141,9 +124,9 @@ export default function NavbarPrivate() {
   ];
 
   return (
-    <div className="bg-gray-50 dark:bg-slate-900">
+    <div className={theme === 'light' ? "bg-gray-50" : "bg-slate-900"}>
       {/* Desktop/Tablet Top Navbar */}
-      <nav className="hidden md:block fixed top-0 left-0 right-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg border-b border-gray-200/50 dark:border-slate-700/50 shadow-sm dark:shadow-slate-900/30 z-50">
+      <nav className={`hidden md:block fixed top-0 left-0 right-0 ${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg border-b ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} shadow-sm ${theme === 'light' ? '' : 'dark:shadow-slate-900/30'} z-50`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Left: Logo */}
@@ -154,9 +137,9 @@ export default function NavbarPrivate() {
               >
                 <div className="relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg blur opacity-30 group-hover:opacity-50 transition-opacity" />
-                  <Feather className="relative w-8 h-8 text-blue-600 dark:text-blue-500" />
+                  <Feather className={`relative w-8 h-8 ${theme === 'light' ? 'text-blue-600' : 'text-blue-500'}`} />
                 </div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 bg-clip-text text-transparent">
+                <h1 className={`text-2xl font-bold bg-gradient-to-r ${theme === 'light' ? 'from-blue-600 to-purple-600' : 'from-blue-500 to-purple-500'} bg-clip-text text-transparent`}>
                   Scribe
                 </h1>
                 <Sparkles className="w-4 h-4 text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -170,8 +153,8 @@ export default function NavbarPrivate() {
                     onClick={() => handleNavClick(item.path)}
                     className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       item.active
-                        ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20"
-                        : "text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-slate-700/50"
+                        ? `${theme === 'light' ? 'text-blue-600 bg-blue-50' : 'text-blue-400 bg-blue-900/20'}`
+                        : `${theme === 'light' ? 'text-gray-600 hover:text-blue-600 hover:bg-gray-50' : 'text-gray-400 hover:text-blue-400 hover:bg-slate-700/50'}`
                     }`}
                   >
                     {item.label}
@@ -197,13 +180,13 @@ export default function NavbarPrivate() {
                     onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
                     onFocus={() => searchQuery.length > 0 && setShowSearchSuggestions(true)}
                     placeholder="Search stories, topics, authors..."
-                    className="w-full pl-12 pr-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-full bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200 group-hover:bg-white dark:group-hover:bg-slate-600"
+                    className={`w-full pl-12 pr-4 py-2.5 border ${theme === 'light' ? 'border-gray-300 bg-gray-50 text-gray-900 placeholder:text-gray-400 group-hover:bg-white' : 'border-slate-600 bg-slate-700 text-white placeholder:text-slate-500 group-hover:bg-slate-600'} rounded-full focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500/50 focus:border-blue-500' : 'focus:ring-blue-400/50 focus:border-blue-400'} transition-all duration-200`}
                   />
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-slate-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors" />
+                  <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${theme === 'light' ? 'text-gray-400 group-hover:text-blue-500' : 'text-slate-500 group-hover:text-blue-400'} transition-colors`} />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery("")}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors"
+                      className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 ${theme === 'light' ? 'text-gray-400 hover:text-gray-600' : 'text-slate-500 hover:text-slate-300'} transition-colors`}
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -212,9 +195,9 @@ export default function NavbarPrivate() {
 
                 {/* Search Suggestions */}
                 {showSearchSuggestions && searchQuery && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 border border-gray-200 dark:border-slate-700 py-2 z-20">
-                    <div className="px-4 py-2 border-b border-gray-100 dark:border-slate-700">
-                      <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+                  <div className={`absolute top-full left-0 right-0 mt-2 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-xl shadow-lg ${theme === 'light' ? '' : 'dark:shadow-slate-900/50'} border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} py-2 z-20`}>
+                    <div className={`px-4 py-2 border-b ${theme === 'light' ? 'border-gray-100' : 'border-slate-700'}`}>
+                      <p className={`text-xs font-semibold ${theme === 'light' ? 'text-gray-500' : 'text-slate-400'} uppercase tracking-wider`}>
                         Quick Search
                       </p>
                     </div>
@@ -222,11 +205,11 @@ export default function NavbarPrivate() {
                       <button
                         key={index}
                         onClick={() => setSearchQuery(suggestion.text)}
-                        className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-left"
+                        className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm ${theme === 'light' ? 'text-gray-700 hover:bg-gray-50 hover:text-blue-600' : 'text-gray-300 hover:bg-slate-700/50 hover:text-blue-400'} transition-colors text-left`}
                       >
                         {suggestion.icon}
                         <span>{suggestion.text}</span>
-                        <span className="ml-auto text-xs px-2 py-1 bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400 rounded-full">
+                        <span className={`ml-auto text-xs px-2 py-1 ${theme === 'light' ? 'bg-gray-100 text-gray-500' : 'bg-slate-700 text-slate-400'} rounded-full`}>
                           {suggestion.type}
                         </span>
                       </button>
@@ -240,24 +223,24 @@ export default function NavbarPrivate() {
             <div className="flex items-center gap-2">
               {/* Dark Mode Toggle */}
               <button
-                onClick={toggleDarkMode}
-                className="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-slate-700/50 transition-colors relative group"
-                title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+                onClick={toggleTheme}
+                className={`p-2 rounded-lg ${theme === 'light' ? 'text-gray-600 hover:text-blue-600 hover:bg-gray-100' : 'text-gray-400 hover:text-blue-400 hover:bg-slate-700/50'} transition-colors relative group`}
+                title={theme === 'dark' ? "Switch to light mode" : "Switch to dark mode"}
               >
-                {isDarkMode ? (
+                {theme === 'dark' ? (
                   <Sun className="w-5 h-5" />
                 ) : (
                   <Moon className="w-5 h-5" />
                 )}
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-900 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                  {isDarkMode ? "Light mode" : "Dark mode"}
+                <div className={`absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 ${theme === 'light' ? 'bg-gray-900 text-white' : 'bg-slate-700 text-slate-200'} text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none`}>
+                  {theme === 'dark' ? "Light mode" : "Dark mode"}
                 </div>
               </button>
 
               {/* Create Post Button */}
               <button
                 onClick={() => handleNavClick("/create")}
-                className="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 dark:hover:from-blue-600 dark:hover:to-purple-600 active:scale-95 transition-all duration-200 font-semibold shadow-md hover:shadow-lg"
+                className={`hidden sm:flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' : 'from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'} text-white rounded-lg active:scale-95 transition-all duration-200 font-semibold shadow-md hover:shadow-lg`}
               >
                 <PlusCircle className="w-5 h-5" />
                 <span>Create Story</span>
@@ -267,7 +250,7 @@ export default function NavbarPrivate() {
               <div className="relative">
                 <button
                   onClick={() => setIsNotificationModalOpen(!isNotificationModalOpen)}
-                  className="relative p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-slate-700/50 transition-colors group"
+                  className={`relative p-2 rounded-lg ${theme === 'light' ? 'text-gray-600 hover:text-blue-600 hover:bg-gray-100' : 'text-gray-400 hover:text-blue-400 hover:bg-slate-700/50'} transition-colors group`}
                   title="Notifications"
                 >
                   <Bell className="w-5 h-5" />
@@ -276,7 +259,7 @@ export default function NavbarPrivate() {
                       {notificationCount}
                     </span>
                   )}
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-900 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                  <div className={`absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 ${theme === 'light' ? 'bg-gray-900 text-white' : 'bg-slate-700 text-slate-200'} text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none`}>
                     Notifications
                   </div>
                 </button>
@@ -290,7 +273,7 @@ export default function NavbarPrivate() {
               <div className="relative">
                 <button
                   onClick={() => setShowAvatarMenu(!showAvatarMenu)}
-                  className="w-10 h-10 rounded-full border-2 border-transparent hover:border-blue-500 dark:hover:border-blue-400 overflow-hidden transition-all duration-200 hover:scale-105 active:scale-95 group"
+                  className={`w-10 h-10 rounded-full border-2 border-transparent ${theme === 'light' ? 'hover:border-blue-500' : 'hover:border-blue-400'} overflow-hidden transition-all duration-200 hover:scale-105 active:scale-95 group`}
                   title="Profile menu"
                 >
                   <img
@@ -308,12 +291,12 @@ export default function NavbarPrivate() {
                       className="fixed inset-0 z-10"
                       onClick={() => setShowAvatarMenu(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl dark:shadow-slate-900/50 border border-gray-200 dark:border-slate-700 py-2 z-20 animate-in slide-in-from-top-2">
-                      <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    <div className={`absolute right-0 mt-2 w-64 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-xl shadow-xl ${theme === 'light' ? '' : 'dark:shadow-slate-900/50'} border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} py-2 z-20 animate-in slide-in-from-top-2`}>
+                      <div className={`px-4 py-3 border-b ${theme === 'light' ? 'border-gray-100' : 'border-slate-700'}`}>
+                        <p className={`text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                           @{getDisplayUsername()}
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                        <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-slate-400'} mt-1`}>
                           {user?.email || "Welcome to Scribe!"}
                         </p>
                       </div>
@@ -324,7 +307,7 @@ export default function NavbarPrivate() {
                             handleNavClick("/profile");
                             setShowAvatarMenu(false);
                           }}
-                          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-left"
+                          className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm ${theme === 'light' ? 'text-gray-700 hover:bg-gray-50 hover:text-blue-600' : 'text-gray-300 hover:bg-slate-700/50 hover:text-blue-400'} transition-colors text-left`}
                         >
                           <User className="w-4 h-4" />
                           <span>My Profile</span>
@@ -334,7 +317,7 @@ export default function NavbarPrivate() {
                             handleNavClick("/dashboard");
                             setShowAvatarMenu(false);
                           }}
-                          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-left"
+                          className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm ${theme === 'light' ? 'text-gray-700 hover:bg-gray-50 hover:text-blue-600' : 'text-gray-300 hover:bg-slate-700/50 hover:text-blue-400'} transition-colors text-left`}
                         >
                           <LayoutDashboard className="w-4 h-4" />
                           <span>Dashboard</span>
@@ -344,17 +327,17 @@ export default function NavbarPrivate() {
                             handleNavClick("/settings");
                             setShowAvatarMenu(false);
                           }}
-                          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-left"
+                          className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm ${theme === 'light' ? 'text-gray-700 hover:bg-gray-50 hover:text-blue-600' : 'text-gray-300 hover:bg-slate-700/50 hover:text-blue-400'} transition-colors text-left`}
                         >
                           <Settings className="w-4 h-4" />
                           <span>Settings</span>
                         </button>
                       </div>
                       
-                      <div className="border-t border-gray-100 dark:border-slate-700 pt-2">
+                      <div className={`border-t ${theme === 'light' ? 'border-gray-100' : 'border-slate-700'} pt-2`}>
                         <button
                           onClick={handleLogout}
-                          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
+                          className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm ${theme === 'light' ? 'text-red-600 hover:bg-red-50' : 'text-red-400 hover:bg-red-900/20'} transition-colors text-left`}
                         >
                           <LogOut className="w-4 h-4" />
                           <span>Log Out</span>
@@ -370,15 +353,15 @@ export default function NavbarPrivate() {
       </nav>
 
       {/* Mobile Top Bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg border-b border-gray-200/50 dark:border-slate-700/50 shadow-sm dark:shadow-slate-900/30 z-50">
+      <div className={`md:hidden fixed top-0 left-0 right-0 ${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg border-b ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} shadow-sm ${theme === 'light' ? '' : 'dark:shadow-slate-900/30'} z-50`}>
         <div className="flex items-center justify-between px-4 h-14">
           {/* Logo */}
           <button
             onClick={() => handleNavClick("/feed")}
             className="group flex items-center gap-2"
           >
-            <Feather className="w-6 h-6 text-blue-600 dark:text-blue-500" />
-            <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 bg-clip-text text-transparent">
+            <Feather className={`w-6 h-6 ${theme === 'light' ? 'text-blue-600' : 'text-blue-500'}`} />
+            <h1 className={`text-lg font-bold bg-gradient-to-r ${theme === 'light' ? 'from-blue-600 to-purple-600' : 'from-blue-500 to-purple-500'} bg-clip-text text-transparent`}>
               Scribe
             </h1>
           </button>
@@ -387,14 +370,14 @@ export default function NavbarPrivate() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowSearchModal(true)}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
+              className={`p-2 ${theme === 'light' ? 'text-gray-600 hover:text-blue-600 hover:bg-gray-100' : 'text-gray-400 hover:text-blue-500 hover:bg-slate-700/50'} rounded-lg transition-colors`}
               title="Search"
             >
               <Search className="w-5 h-5" />
             </button>
             <button
               onClick={() => setShowAvatarMenu(!showAvatarMenu)}
-              className="w-8 h-8 rounded-full border-2 border-transparent hover:border-blue-500 dark:hover:border-blue-400 overflow-hidden transition-colors"
+              className={`w-8 h-8 rounded-full border-2 border-transparent ${theme === 'light' ? 'hover:border-blue-500' : 'hover:border-blue-400'} overflow-hidden transition-colors`}
             >
               <img
                 src={getAvatarUrl()}
@@ -409,12 +392,12 @@ export default function NavbarPrivate() {
         {showAvatarMenu && (
           <>
             <div
-              className="fixed inset-0 bg-black/30 dark:bg-black/50 backdrop-blur-sm z-40"
+              className={`fixed inset-0 ${theme === 'light' ? 'bg-black/30' : 'bg-black/50'} backdrop-blur-sm z-40`}
               onClick={() => setShowAvatarMenu(false)}
             />
-            <div className="absolute right-4 top-14 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl dark:shadow-slate-900/50 border border-gray-200 dark:border-slate-700 py-2 z-50 animate-in slide-in-from-top-2">
-              <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+            <div className={`absolute right-4 top-14 w-56 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-xl shadow-xl ${theme === 'light' ? '' : 'dark:shadow-slate-900/50'} border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} py-2 z-50 animate-in slide-in-from-top-2`}>
+              <div className={`px-4 py-3 border-b ${theme === 'light' ? 'border-gray-100' : 'border-slate-700'}`}>
+                <p className={`text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                   @{getDisplayUsername()}
                 </p>
               </div>
@@ -424,7 +407,7 @@ export default function NavbarPrivate() {
                     handleNavClick("/profile");
                     setShowAvatarMenu(false);
                   }}
-                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-left"
+                  className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm ${theme === 'light' ? 'text-gray-700 hover:bg-gray-50 hover:text-blue-600' : 'text-gray-300 hover:bg-slate-700/50 hover:text-blue-400'} transition-colors text-left`}
                 >
                   <User className="w-4 h-4" />
                   My Profile
@@ -434,7 +417,7 @@ export default function NavbarPrivate() {
                     handleNavClick("/dashboard");
                     setShowAvatarMenu(false);
                   }}
-                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-left"
+                  className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm ${theme === 'light' ? 'text-gray-700 hover:bg-gray-50 hover:text-blue-600' : 'text-gray-300 hover:bg-slate-700/50 hover:text-blue-400'} transition-colors text-left`}
                 >
                   <LayoutDashboard className="w-4 h-4" />
                   Dashboard
@@ -444,16 +427,16 @@ export default function NavbarPrivate() {
                     handleNavClick("/settings");
                     setShowAvatarMenu(false);
                   }}
-                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-left"
+                  className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm ${theme === 'light' ? 'text-gray-700 hover:bg-gray-50 hover:text-blue-600' : 'text-gray-300 hover:bg-slate-700/50 hover:text-blue-400'} transition-colors text-left`}
                 >
                   <Settings className="w-4 h-4" />
                   Settings
                 </button>
               </div>
-              <div className="border-t border-gray-100 dark:border-slate-700 pt-2">
+              <div className={`border-t ${theme === 'light' ? 'border-gray-100' : 'border-slate-700'} pt-2`}>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
+                  className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm ${theme === 'light' ? 'text-red-600 hover:bg-red-50' : 'text-red-400 hover:bg-red-900/20'} transition-colors text-left`}
                 >
                   <LogOut className="w-4 h-4" />
                   Logout
@@ -466,11 +449,11 @@ export default function NavbarPrivate() {
 
       {/* Mobile Search Modal */}
       {showSearchModal && (
-        <div className="md:hidden fixed inset-0 bg-white dark:bg-slate-900 z-50 flex flex-col animate-in slide-in-from-top">
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+        <div className={`md:hidden fixed inset-0 ${theme === 'light' ? 'bg-white' : 'bg-slate-900'} z-50 flex flex-col animate-in slide-in-from-top`}>
+          <div className={`flex items-center gap-3 px-4 py-3 border-b ${theme === 'light' ? 'border-gray-200 bg-white' : 'border-slate-700 bg-slate-800'}`}>
             <button
               onClick={() => setShowSearchModal(false)}
-              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium transition-colors"
+              className={`${theme === 'light' ? 'text-gray-600 hover:text-gray-900' : 'text-gray-400 hover:text-white'} font-medium transition-colors`}
             >
               Cancel
             </button>
@@ -482,14 +465,14 @@ export default function NavbarPrivate() {
                 onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
                 placeholder="Search stories, topics, authors..."
                 autoFocus
-                className="w-full px-4 py-3 bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                className={`w-full px-4 py-3 ${theme === 'light' ? 'bg-gray-100 text-gray-900 placeholder:text-gray-400' : 'bg-slate-700 text-white placeholder:text-slate-500'} rounded-xl focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500' : 'focus:ring-blue-400'}`}
               />
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-slate-500" />
+              <Search className={`absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 ${theme === 'light' ? 'text-gray-400' : 'text-slate-500'}`} />
             </div>
           </div>
           {/* Search Suggestions */}
           <div className="flex-1 overflow-y-auto p-4">
-            <p className="text-sm font-semibold text-gray-500 dark:text-slate-400 mb-3">
+            <p className={`text-sm font-semibold ${theme === 'light' ? 'text-gray-500' : 'text-slate-400'} mb-3`}>
               Trending Searches
             </p>
             <div className="space-y-2">
@@ -500,10 +483,10 @@ export default function NavbarPrivate() {
                     setSearchQuery(suggestion.text);
                     handleSearch({ preventDefault: () => {} });
                   }}
-                  className="flex items-center gap-3 w-full p-3 rounded-lg bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-left"
+                  className={`flex items-center gap-3 w-full p-3 rounded-lg ${theme === 'light' ? 'bg-gray-50 hover:bg-gray-100' : 'bg-slate-800 hover:bg-slate-700'} transition-colors text-left`}
                 >
                   {suggestion.icon}
-                  <span className="text-gray-700 dark:text-gray-300">{suggestion.text}</span>
+                  <span className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>{suggestion.text}</span>
                 </button>
               ))}
             </div>
@@ -512,7 +495,7 @@ export default function NavbarPrivate() {
       )}
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg border-t border-gray-200/50 dark:border-slate-700/50 shadow-lg dark:shadow-slate-900/30 z-50">
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 ${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg border-t ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} shadow-lg ${theme === 'light' ? '' : 'dark:shadow-slate-900/30'} z-50`}>
         <div className="flex items-center justify-around px-2 py-3">
           {mobileNavItems.map(({ path, icon: Icon, label, isCenter, badge, isNotification }) => (
             <button
@@ -526,12 +509,12 @@ export default function NavbarPrivate() {
               }}
               className={`relative flex flex-col items-center justify-center transition-all duration-200 ${
                 isCenter
-                  ? "w-16 h-16 -mt-6 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
-                  : "flex-1 py-2 hover:text-blue-600 dark:hover:text-blue-400"
+                  ? `w-16 h-16 -mt-6 bg-gradient-to-r ${theme === 'light' ? 'from-blue-600 to-purple-600' : 'from-blue-500 to-purple-500'} text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95`
+                  : `flex-1 py-2 ${theme === 'light' ? 'hover:text-blue-600' : 'hover:text-blue-400'}`
               } ${
                 currentPath === path && !isCenter
-                  ? "text-blue-600 dark:text-blue-400"
-                  : "text-gray-600 dark:text-gray-400"
+                  ? `${theme === 'light' ? 'text-blue-600' : 'text-blue-400'}`
+                  : `${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`
               }`}
             >
               <div className="relative">

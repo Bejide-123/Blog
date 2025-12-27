@@ -4,10 +4,12 @@ import {
   FiChevronRight, FiCheck, FiAward, FiGlobe, FiZap 
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom"; 
+import { useTheme } from "../../Context/themeContext";
 
 const About = () => {
   const navigate = useNavigate();
   const [hoveredIndex, setHoveredIndex] = useState(null);
+  const { theme } = useTheme();
   
   const features = [
     {
@@ -65,23 +67,23 @@ const About = () => {
   ];
 
   return (
-    <section id="about" className="relative overflow-hidden py-20 bg-gradient-to-b from-white via-gray-50/50 to-white">
+    <section id="about" className={`relative overflow-hidden py-20 ${theme === 'light' ? 'bg-gradient-to-b from-white via-gray-50/50 to-white' : 'bg-gradient-to-b from-gray-900 via-gray-800/50 to-gray-900'}`}>
       {/* Background Elements */}
-      <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-blue-50/50 to-transparent" />
+      <div className={`absolute top-0 left-0 w-full h-32 ${theme === 'light' ? 'bg-gradient-to-b from-blue-50/50 to-transparent' : 'bg-gradient-to-b from-blue-900/50 to-transparent'}`} />
       <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200/20 rounded-full blur-3xl" />
       <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200/20 rounded-full blur-3xl" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <div className="text-center mb-16">
-          <span className="inline-block px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold mb-4">
+          <span className={`inline-block px-4 py-2 rounded-full ${theme === 'light' ? 'bg-blue-100 text-blue-700' : 'bg-blue-900/50 text-blue-300'} text-sm font-semibold mb-4`}>
             ✨ Platform Features
           </span>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+          <h2 className={`text-4xl md:text-5xl lg:text-6xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-6`}>
             Why Writers Love <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Scribe</span>
           </h2>
           <div className="w-24 h-1.5 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mb-8 rounded-full"></div>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          <p className={`text-xl ${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} max-w-3xl mx-auto leading-relaxed`}>
             A modern platform designed for storytellers who want to share their voice and connect with engaged readers worldwide.
           </p>
         </div>
@@ -91,30 +93,30 @@ const About = () => {
           {stats.map((stat, index) => (
             <div 
               key={index}
-              className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+              className={`${theme === 'light' ? 'bg-white/80' : 'bg-gray-800/80'} backdrop-blur-sm rounded-2xl p-6 border ${theme === 'light' ? 'border-gray-200/50' : 'border-gray-700/50'} shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1`}
             >
               <div className="flex items-center justify-between mb-4">
-                <div className="p-3 rounded-xl bg-gray-100 text-gray-600">
+                <div className={`p-3 rounded-xl ${theme === 'light' ? 'bg-gray-100 text-gray-600' : 'bg-gray-700 text-gray-300'}`}>
                   {stat.icon}
                 </div>
-                <span className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                <span className={`text-3xl font-bold bg-gradient-to-r ${theme === 'light' ? 'from-gray-900 to-gray-700' : 'from-white to-gray-300'} bg-clip-text text-transparent`}>
                   {stat.value}
                 </span>
               </div>
-              <p className="text-gray-600 font-medium">{stat.label}</p>
+              <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} font-medium`}>{stat.label}</p>
             </div>
           ))}
         </div>
 
         {/* Main Description */}
         <div className="mb-16">
-          <div className="relative bg-gradient-to-br from-white to-gray-50 rounded-2xl p-8 md:p-10 shadow-xl border border-gray-200/50 overflow-hidden">
+          <div className={`relative ${theme === 'light' ? 'bg-gradient-to-br from-white to-gray-50' : 'bg-gradient-to-br from-gray-800 to-gray-900'} rounded-2xl p-8 md:p-10 shadow-xl border ${theme === 'light' ? 'border-gray-200/50' : 'border-gray-700/50'} overflow-hidden`}>
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-500/5 to-purple-500/5 rounded-full -translate-y-16 translate-x-16" />
             <div className="relative">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              <h3 className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-4`}>
                 More Than Just a Blogging Platform
               </h3>
-              <div className="space-y-4 text-lg text-gray-700">
+              <div className={`space-y-4 text-lg ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
                 <p className="leading-relaxed">
                   <span className="font-semibold text-blue-600">Scribe</span> redefines digital storytelling by combining powerful writing tools with a thriving community. We believe every voice deserves to be heard, and every story deserves an audience.
                 </p>
@@ -129,10 +131,10 @@ const About = () => {
         {/* Features Grid */}
         <div className="mb-16">
           <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-gray-900 mb-3">
+            <h3 className={`text-3xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3`}>
               Everything You Need to Succeed
             </h3>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} max-w-2xl mx-auto`}>
               Powerful features designed to help you write better, reach further, and grow faster.
             </p>
           </div>
@@ -151,12 +153,12 @@ const About = () => {
                 `} />
                 
                 <div className={`
-                  relative bg-white rounded-2xl p-7 border border-gray-200/50 
+                  relative ${theme === 'light' ? 'bg-white' : 'bg-gray-800'} rounded-2xl p-7 border ${theme === 'light' ? 'border-gray-200/50' : 'border-gray-700/50'} 
                   transition-all duration-500 hover:-translate-y-2
                   ${hoveredIndex === index ? 'shadow-2xl scale-[1.02]' : 'shadow-sm hover:shadow-lg'}
                   overflow-hidden
                 `}>
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gray-200 to-gray-200 group-hover:from-blue-500 group-hover:to-purple-500 transition-all duration-500" />
+                  <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${theme === 'light' ? 'from-gray-200 to-gray-200' : 'from-gray-700 to-gray-700'} group-hover:from-blue-500 group-hover:to-purple-500 transition-all duration-500`} />
                   
                   <div className={`
                     w-14 h-14 rounded-xl flex items-center justify-center mb-6
@@ -166,15 +168,15 @@ const About = () => {
                     {feature.icon}
                   </div>
                   
-                  <h4 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-gray-800 transition-colors">
+                  <h4 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 group-hover:text-gray-800 transition-colors`}>
                     {feature.title}
                   </h4>
                   
-                  <p className="text-gray-600 leading-relaxed mb-4">
+                  <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} leading-relaxed mb-4`}>
                     {feature.description}
                   </p>
                   
-                  <div className="flex items-center text-sm font-medium text-gray-500 group-hover:text-blue-600 transition-colors">
+                  <div className={`flex items-center text-sm font-medium ${theme === 'light' ? 'text-gray-500 group-hover:text-blue-600' : 'text-gray-400 group-hover:text-blue-400'} transition-colors`}>
                     <span>Learn more</span>
                     <FiChevronRight className="ml-1 w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
                   </div>
@@ -186,21 +188,21 @@ const About = () => {
 
         {/* Benefits List */}
         <div className="mb-16">
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 border border-blue-100/50">
+          <div className={`${theme === 'light' ? 'bg-gradient-to-r from-blue-50 to-purple-50' : 'bg-gradient-to-r from-blue-900/50 to-purple-900/50'} rounded-2xl p-8 border ${theme === 'light' ? 'border-blue-100/50' : 'border-blue-800/50'}`}>
             <div className="max-w-3xl mx-auto">
-              <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
+              <h3 className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-center mb-8`}>
                 What You Get With Scribe
               </h3>
               <div className="grid md:grid-cols-2 gap-4">
                 {benefits.map((benefit, index) => (
                   <div 
                     key={index}
-                    className="flex items-start space-x-3 p-3 rounded-lg hover:bg-white/50 transition-colors"
+                    className={`flex items-start space-x-3 p-3 rounded-lg ${theme === 'light' ? 'hover:bg-white/50' : 'hover:bg-gray-800/50'} transition-colors`}
                   >
                     <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
                       <FiCheck className="w-4 h-4 text-green-600" />
                     </div>
-                    <span className="text-gray-700 font-medium">{benefit}</span>
+                    <span className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} font-medium`}>{benefit}</span>
                   </div>
                 ))}
               </div>
@@ -211,10 +213,10 @@ const About = () => {
         {/* CTA Section */}
         <div className="text-center">
           <div className="max-w-2xl mx-auto mb-10">
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">
+            <h3 className={`text-3xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-4`}>
               Ready to Start Your Writing Journey?
             </h3>
-            <p className="text-gray-600 text-lg">
+            <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} text-lg`}>
               Join thousands of writers who've found their voice on Scribe. No experience required—just your passion for storytelling.
             </p>
           </div>
@@ -236,16 +238,15 @@ const About = () => {
             
             <button 
               onClick={() => navigate("/login?mode=login")}
-              className="px-8 py-4 rounded-xl font-semibold text-lg 
-                       text-gray-700 bg-white border-2 border-gray-300 
-                       hover:border-gray-400 hover:bg-gray-50 
-                       transition-all duration-300 active:scale-95 shadow-sm"
+              className={`px-8 py-4 rounded-xl font-semibold text-lg 
+                       ${theme === 'light' ? 'text-gray-700 bg-white border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50' : 'text-gray-300 bg-gray-800 border-2 border-gray-600 hover:border-gray-500 hover:bg-gray-700'} 
+                       transition-all duration-300 active:scale-95 shadow-sm`}
             >
               Sign In to Continue
             </button>
           </div>
           
-          <p className="mt-6 text-gray-500 text-sm">
+          <p className={`mt-6 ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} text-sm`}>
             No credit card required • 14-day free trial • Cancel anytime
           </p>
         </div>

@@ -12,8 +12,10 @@ import {
   FiAlertCircle,
   FiLoader
 } from "react-icons/fi";
+import { useTheme } from "../../Context/themeContext";
 
 const ContactSection = () => {
+  const { theme } = useTheme();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -151,23 +153,23 @@ const ContactSection = () => {
   ];
 
   return (
-    <section id="contact" className="relative py-20 overflow-hidden bg-gradient-to-b from-white via-gray-50/50 to-white">
+    <section id="contact" className={`relative py-20 overflow-hidden ${theme === 'light' ? 'bg-gradient-to-b from-white via-gray-50/50 to-white' : 'bg-gradient-to-b from-gray-900 via-gray-800/50 to-gray-900'}`}>
       {/* Background Elements */}
-      <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-blue-50/30 to-transparent" />
+      <div className={`absolute top-0 left-0 w-full h-32 ${theme === 'light' ? 'bg-gradient-to-b from-blue-50/30 to-transparent' : 'bg-gradient-to-b from-blue-900/30 to-transparent'}`} />
       <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200/20 rounded-full blur-3xl" />
       <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200/20 rounded-full blur-3xl" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <div className="text-center mb-16">
-          <span className="inline-block px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold mb-4">
+          <span className={`inline-block px-4 py-2 rounded-full ${theme === 'light' ? 'bg-blue-100 text-blue-700' : 'bg-blue-900/50 text-blue-300'} text-sm font-semibold mb-4`}>
             📬 Contact Us
           </span>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+          <h2 className={`text-4xl md:text-5xl lg:text-6xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-6`}>
             Let's <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Connect</span>
           </h2>
           <div className="w-24 h-1.5 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mb-8 rounded-full"></div>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+          <p className={`text-xl ${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} max-w-2xl mx-auto leading-relaxed`}>
             Have questions, feedback, or want to collaborate? We'd love to hear from you.
           </p>
         </div>
@@ -175,8 +177,8 @@ const ContactSection = () => {
         <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Contact Information */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-200/50 h-full">
-              <h3 className="text-2xl font-bold text-gray-900 mb-8">
+            <div className={`${theme === 'light' ? 'bg-white' : 'bg-gray-800'} rounded-2xl p-8 shadow-xl border ${theme === 'light' ? 'border-gray-200/50' : 'border-gray-700/50'} h-full`}>
+              <h3 className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-8`}>
                 Get in Touch
               </h3>
               
@@ -184,24 +186,24 @@ const ContactSection = () => {
                 {contactInfo.map((item, index) => (
                   <div 
                     key={index}
-                    className="flex items-start gap-4 p-4 rounded-xl hover:bg-gray-50/50 transition-colors duration-300"
+                    className={`flex items-start gap-4 p-4 rounded-xl ${theme === 'light' ? 'hover:bg-gray-50/50' : 'hover:bg-gray-700/50'} transition-colors duration-300`}
                   >
                     <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white shadow-lg">
                       {item.icon}
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 mb-1">
+                      <h4 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-1`}>
                         {item.title}
                       </h4>
                       {item.link ? (
                         <a 
                           href={item.link}
-                          className="text-gray-600 hover:text-blue-600 transition-colors"
+                          className={`${theme === 'light' ? 'text-gray-600 hover:text-blue-600' : 'text-gray-400 hover:text-blue-400'} transition-colors`}
                         >
                           {item.info}
                         </a>
                       ) : (
-                        <p className="text-gray-600">{item.info}</p>
+                        <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>{item.info}</p>
                       )}
                     </div>
                   </div>
@@ -210,14 +212,14 @@ const ContactSection = () => {
 
               {/* Follow Us */}
               <div>
-                <h4 className="font-semibold text-gray-900 mb-4">
+                <h4 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-4`}>
                   Follow Our Journey
                 </h4>
                 <div className="flex gap-3">
                   {['Twitter', 'LinkedIn', 'Instagram', 'YouTube'].map((social) => (
                     <button
                       key={social}
-                      className="flex-1 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors duration-300"
+                      className={`flex-1 py-3 rounded-lg ${theme === 'light' ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'} font-medium transition-colors duration-300`}
                     >
                       {social}
                     </button>
@@ -229,11 +231,11 @@ const ContactSection = () => {
 
           {/* Contact Form */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-200/50">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+            <div className={`${theme === 'light' ? 'bg-white' : 'bg-gray-800'} rounded-2xl p-8 shadow-xl border ${theme === 'light' ? 'border-gray-200/50' : 'border-gray-700/50'}`}>
+              <h3 className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2`}>
                 Send us a message
               </h3>
-              <p className="text-gray-600 mb-8">
+              <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mb-8`}>
                 Fill out the form below and we'll get back to you as soon as possible.
               </p>
 
@@ -241,7 +243,7 @@ const ContactSection = () => {
                 <div className="grid md:grid-cols-2 gap-6">
                   {/* Name Field */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className={`block text-sm font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} mb-2`}>
                       <span className="flex items-center gap-2">
                         <FiUser className="w-4 h-4" />
                         Full Name *
@@ -254,8 +256,8 @@ const ContactSection = () => {
                       onChange={handleChange}
                       placeholder="John Doe"
                       className={`w-full px-4 py-3 rounded-xl border ${
-                        errors.name ? 'border-red-300' : 'border-gray-300'
-                      } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300`}
+                        errors.name ? 'border-red-300' : theme === 'light' ? 'border-gray-300' : 'border-gray-600'
+                      } ${theme === 'light' ? 'bg-white' : 'bg-gray-700 text-white'} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300`}
                     />
                     {errors.name && (
                       <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
@@ -267,7 +269,7 @@ const ContactSection = () => {
 
                   {/* Email Field */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className={`block text-sm font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} mb-2`}>
                       <span className="flex items-center gap-2">
                         <FiMail className="w-4 h-4" />
                         Email Address *
@@ -280,8 +282,8 @@ const ContactSection = () => {
                       onChange={handleChange}
                       placeholder="john@example.com"
                       className={`w-full px-4 py-3 rounded-xl border ${
-                        errors.email ? 'border-red-300' : 'border-gray-300'
-                      } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300`}
+                        errors.email ? 'border-red-300' : theme === 'light' ? 'border-gray-300' : 'border-gray-600'
+                      } ${theme === 'light' ? 'bg-white' : 'bg-gray-700 text-white'} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300`}
                     />
                     {errors.email && (
                       <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
@@ -295,7 +297,7 @@ const ContactSection = () => {
                 {/* Phone Field */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className={`block text-sm font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} mb-2`}>
                       Phone Number
                     </label>
                     <input
@@ -305,8 +307,8 @@ const ContactSection = () => {
                       onChange={handleChange}
                       placeholder="+1 (555) 123-4567"
                       className={`w-full px-4 py-3 rounded-xl border ${
-                        errors.phone ? 'border-red-300' : 'border-gray-300'
-                      } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300`}
+                        errors.phone ? 'border-red-300' : theme === 'light' ? 'border-gray-300' : 'border-gray-600'
+                      } ${theme === 'light' ? 'bg-white' : 'bg-gray-700 text-white'} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300`}
                     />
                     {errors.phone && (
                       <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
@@ -317,14 +319,14 @@ const ContactSection = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className={`block text-sm font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} mb-2`}>
                       Subject
                     </label>
                     <select
                       name="subject"
                       value={formData.subject}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                      className={`w-full px-4 py-3 rounded-xl border ${theme === 'light' ? 'border-gray-300' : 'border-gray-600'} ${theme === 'light' ? 'bg-white' : 'bg-gray-700 text-white'} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300`}
                     >
                       <option value="">Select a subject</option>
                       <option value="general">General Inquiry</option>
@@ -338,7 +340,7 @@ const ContactSection = () => {
 
                 {/* Message Field */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className={`block text-sm font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} mb-2`}>
                     <span className="flex items-center gap-2">
                       <FiMessageSquare className="w-4 h-4" />
                       Your Message *
@@ -351,8 +353,8 @@ const ContactSection = () => {
                     onChange={handleChange}
                     placeholder="Tell us what's on your mind..."
                     className={`w-full px-4 py-3 rounded-xl border ${
-                      errors.message ? 'border-red-300' : 'border-gray-300'
-                    } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 resize-none`}
+                      errors.message ? 'border-red-300' : theme === 'light' ? 'border-gray-300' : 'border-gray-600'
+                    } ${theme === 'light' ? 'bg-white' : 'bg-gray-700 text-white'} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 resize-none`}
                   />
                   {errors.message && (
                     <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
@@ -361,7 +363,7 @@ const ContactSection = () => {
                     </p>
                   )}
                   <div className="flex justify-between items-center mt-2">
-                    <span className="text-sm text-gray-500">
+                    <span className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                       {formData.message.length}/500 characters
                     </span>
                     {formData.message.length > 500 && (
@@ -415,7 +417,7 @@ const ContactSection = () => {
                 </div>
 
                 {/* Privacy Notice */}
-                <p className="text-sm text-gray-500 text-center">
+                <p className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} text-center`}>
                   By submitting this form, you agree to our{' '}
                   <a href="#" className="text-blue-600 hover:underline">Privacy Policy</a>
                   {' '}and{' '}
@@ -428,14 +430,14 @@ const ContactSection = () => {
 
         {/* FAQ CTA */}
         <div className="mt-16 text-center">
-          <div className="inline-block bg-gradient-to-r from-blue-50/50 to-purple-50/50 rounded-2xl p-8 border border-blue-100/50">
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">
+          <div className={`inline-block ${theme === 'light' ? 'bg-gradient-to-r from-blue-50/50 to-purple-50/50' : 'bg-gradient-to-r from-blue-900/50 to-purple-900/50'} rounded-2xl p-8 border ${theme === 'light' ? 'border-blue-100/50' : 'border-blue-800/50'}`}>
+            <h3 className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3`}>
               Frequently Asked Questions
             </h3>
-            <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+            <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} mb-6 max-w-2xl mx-auto`}>
               Check out our FAQ section for quick answers to common questions.
             </p>
-            <button className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-gray-700 bg-white border border-gray-300 hover:border-gray-400 hover:shadow-md transition-all duration-300">
+            <button className={`group inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold ${theme === 'light' ? 'text-gray-700 bg-white border border-gray-300 hover:border-gray-400 hover:shadow-md' : 'text-gray-300 bg-gray-800 border border-gray-600 hover:border-gray-500 hover:shadow-md'} transition-all duration-300`}>
               Visit FAQ
               <FiChevronRight className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
             </button>

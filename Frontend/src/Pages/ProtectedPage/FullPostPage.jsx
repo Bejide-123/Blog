@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react'
 import NavbarPrivate from '../../Components/Private/Navbarprivate'
 import FeedContent from '../../Components/Private/PostCards'
 import { PageLoader } from '../../Components/Private/Loader'
+import { useTheme } from '../../Context/themeContext'
 
 const FullPostPage = () => {
+  const { theme } = useTheme();
   const [isPageLoading, setIsPageLoading] = useState(true)
   
   useEffect(() => {
@@ -18,7 +20,7 @@ const FullPostPage = () => {
   return (
     <>
       {isPageLoading ? <PageLoader /> : (
-        <div>
+        <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-900'}`}>
           <NavbarPrivate />
           <FeedContent />
         </div>

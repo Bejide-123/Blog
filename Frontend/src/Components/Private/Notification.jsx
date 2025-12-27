@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
+import { useTheme } from "../../Context/themeContext";
 
 export default function NotificationDropdown({ isOpen, onClose }) {
   const navigate = useNavigate(); 
+  const { theme } = useTheme();
   const sampleNotifications = [
     {
       id: 1,
@@ -38,9 +40,9 @@ export default function NotificationDropdown({ isOpen, onClose }) {
       {/* Click outside overlay */}
       <div className="fixed inset-0 z-10" onClick={onClose} />
 
-      <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 z-20">
-        <div className="px-4 py-2 border-b border-gray-200 dark:border-slate-700">
-          <p className="text-sm font-semibold text-slate-900 dark:text-white">
+      <div className={`absolute right-0 mt-2 w-80 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-lg shadow-lg border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} z-20`}>
+        <div className={`px-4 py-2 border-b ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
+          <p className={`text-sm font-semibold ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
             Notifications
           </p>
         </div>
@@ -48,29 +50,29 @@ export default function NotificationDropdown({ isOpen, onClose }) {
           {sampleNotifications.map((n) => (
             <div
               key={n.id}
-              className="flex items-start px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+              className={`flex items-start px-4 py-3 ${theme === 'light' ? 'hover:bg-gray-50' : 'hover:bg-slate-700'} transition-colors`}
             >
               {/* Avatar */}
               <img
                 src={n.avatar}
-                className="w-11 h-11 rounded-full border-2 border-gray-200 dark:border-slate-700 mr-3"
+                className={`w-11 h-11 rounded-full border-2 ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} mr-3`}
                 alt="avatar"
               />
 
               {/* Message + Time stacked */}
               <div>
-                <p className="text-sm text-slate-800 dark:text-slate-200">
+                <p className={`text-sm ${theme === 'light' ? 'text-slate-800' : 'text-slate-200'}`}>
                   {n.message}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <p className={`text-xs ${theme === 'light' ? 'text-slate-500' : 'text-slate-400'} mt-1`}>
                   {n.time}
                 </p>
               </div>
             </div>
           ))}
         </div>
-        <div onClick={() => navigate("/notifications")} className="border-t border-gray-200 dark:border-slate-700 px-4 py-2 text-center">
-          <button className="text-sm text-blue-600 dark:text-blue-500 hover:underline">
+        <div onClick={() => navigate("/notifications")} className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} px-4 py-2 text-center`}>
+          <button className={`text-sm ${theme === 'light' ? 'text-blue-600' : 'text-blue-500'} hover:underline`}>
             View all
           </button>
         </div>
