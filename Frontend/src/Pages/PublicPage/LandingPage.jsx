@@ -81,7 +81,7 @@ const LandingPage = () => {
                   <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                   <span className="relative flex items-center justify-center gap-2">
                     <FiFeather className="w-5 h-5" />
-                    Start Writing Free
+                    Start Writing
                   </span>
                 </Link>
                 
