@@ -12,6 +12,7 @@ import SettingsPage from "./Pages/ProtectedPage/Settings";
 import Notifications from "./Pages/ProtectedPage/Notifications";
 import { useTheme } from "./Context/themeContext";
 import { Toaster } from "react-hot-toast";
+import PostDetailsPage from "./Pages/PublicPage/PostDetails";
 
 const App = () => {
   const { theme } = useTheme();
@@ -32,6 +33,7 @@ const App = () => {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/post/:id" element={<PostDetailsPage />} />
         </Routes>
       </UserProvider>
     </div>

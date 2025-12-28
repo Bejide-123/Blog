@@ -18,6 +18,7 @@ import {
   Trash2,
   UserPlus,
   Flag,
+  Send,
 } from "lucide-react";
 import NavbarPrivate from "../../Components/Private/Navbarprivate";
 import { useNavigate } from "react-router-dom";
@@ -26,7 +27,12 @@ import {
   getSavedPostsWithDetails, 
   toggleSavePost, 
   togglePostLike,
-  getUserLikedPosts // Add this import
+  getUserLikedPosts,
+  getPostComments,
+  addComment,
+  deleteComment,
+  toggleCommentLike,
+  getUserCommentLikes
 } from "../../Services/post";
 import { useUser } from "../../Context/userContext";
 import { useTheme } from "../../Context/themeContext";
@@ -35,23 +41,27 @@ export default function SavedPage() {
   const { theme } = useTheme();
   const [savedPosts, setSavedPosts] = useState([]);
   const [likedPosts, setLikedPosts] = useState(new Set());
+  const [likedComments, setLikedComments] = useState(new Set());
   const [pageLoading, setPageLoading] = useState(true);
   const [activeMenuPost, setActiveMenuPost] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedTags, setSelectedTags] = useState([]);
   const [sortBy, setSortBy] = useState("recent");
   const [activeCommentPost, setActiveCommentPost] = useState(null);
-  const [newComment, setNewComment] = useState("");
-  const [comments, setComments] = useState({});
+  const [postComments, setPostComments] = useState({});
   const [followedUsers, setFollowedUsers] = useState(new Set());
   const [expandedPostId, setExpandedPostId] = useState(null);
   const [showTrendingSidebar, setShowTrendingSidebar] = useState(true);
   const [error, setError] = useState(null);
+  const [commentInputs, setCommentInputs] = useState({});
   const nav = useNavigate();
   const { user } = useUser();
 
   useEffect(() => {
     fetchSavedPosts();
+    if (user?.id) {
+      fetchUserCommentLikes();
+    }
   }, [user]);
 
   const fetchSavedPosts = async () => {
@@ -59,11 +69,9 @@ export default function SavedPage() {
       setPageLoading(true);
       if (!user?.id) return;
       
-      // Fetch saved posts with details
       const savedPostsData = await getSavedPostsWithDetails(user.id);
       setSavedPosts(savedPostsData || []);
       
-      // Fetch user's liked posts
       const likedPostIds = await getUserLikedPosts(user.id);
       setLikedPosts(new Set(likedPostIds));
       
@@ -72,6 +80,16 @@ export default function SavedPage() {
       setError('Failed to load saved posts. Please try again.');
     } finally {
       setPageLoading(false);
+    }
+  };
+
+  const fetchUserCommentLikes = async () => {
+    try {
+      if (!user?.id) return;
+      const likedCommentIds = await getUserCommentLikes(user.id);
+      setLikedComments(new Set(likedCommentIds));
+    } catch (error) {
+      console.error('Error fetching user comment likes:', error);
     }
   };
 
@@ -85,7 +103,6 @@ export default function SavedPage() {
     try {
       const { liked, count } = await togglePostLike(postId, user.id);
       
-      // Update liked posts set
       setLikedPosts(prev => {
         const newSet = new Set(prev);
         if (liked) {
@@ -96,7 +113,6 @@ export default function SavedPage() {
         return newSet;
       });
       
-      // Update the post in the saved posts list with new likes count
       setSavedPosts(prevPosts => 
         prevPosts.map(post => 
           post.id === postId 
@@ -121,26 +137,12 @@ export default function SavedPage() {
       const { saved } = await toggleSavePost(postId, user.id);
       
       if (!saved) {
-        // Remove from saved posts list when unsaved
         setSavedPosts(prev => prev.filter(post => post.id !== postId));
-        
-        // Optional: Remove from liked posts if you want to keep them separate
-        // If you want to keep track of which saved posts were liked, keep this
-        // If you want to keep liking independent, remove this line
         setLikedPosts(prev => {
           const newSet = new Set(prev);
           newSet.delete(postId);
           return newSet;
         });
-      }
-      
-      // Optional: Show feedback
-      if (saved) {
-        console.log('Post saved successfully');
-        // If you want to refetch the list after saving (in case they save from elsewhere)
-        // fetchSavedPosts();
-      } else {
-        console.log('Post removed from saved');
       }
     } catch (error) {
       console.error('Error toggling save:', error);
@@ -148,56 +150,133 @@ export default function SavedPage() {
     }
   };
 
-  const toggleComments = (postId) => {
+  // ========== COMMENT FUNCTIONS ==========
+  const toggleComments = async (postId) => {
     if (activeCommentPost === postId) {
       setActiveCommentPost(null);
     } else {
       setActiveCommentPost(postId);
+      // Fetch comments for this post
+      try {
+        const comments = await getPostComments(postId);
+        setPostComments(prev => ({
+          ...prev,
+          [postId]: comments
+        }));
+      } catch (error) {
+        console.error('Error fetching comments:', error);
+      }
     }
   };
 
-  const handleSendComment = (postId) => {
-    if (newComment.trim()) {
-      const comment = {
-        id: Date.now(),
-        author: {
-          name: user?.full_name || "You",
-          username: user?.username || "currentuser",
-          avatar: user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser",
-        },
-        content: newComment,
-        timestamp: "Just now",
-        likes: 0,
-        isLiked: false,
-      };
-
-      setComments((prev) => ({
+  const handleSendComment = async (postId) => {
+    const commentText = commentInputs[postId] || "";
+    
+    if (!commentText.trim() || !user?.id) {
+      if (!user?.id) nav('/login');
+      return;
+    }
+    
+    try {
+      // Add comment to database
+      const comment = await addComment(postId, user.id, commentText.trim());
+      
+      // Update comments for this post
+      setPostComments(prev => ({
         ...prev,
-        [postId]: [...(prev[postId] || []), comment],
+        [postId]: [comment, ...(prev[postId] || [])]
       }));
-      setNewComment("");
+      
+      // Clear comment input
+      setCommentInputs(prev => ({
+        ...prev,
+        [postId]: ""
+      }));
+      
+      // Update post comment count
+      setSavedPosts(prevPosts => 
+        prevPosts.map(post => 
+          post.id === postId 
+            ? { 
+                ...post, 
+                comments_count: (post.comments_count || 0) + 1 
+              } 
+            : post
+        )
+      );
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      alert('Failed to add comment. Please try again.');
     }
   };
 
-  const toggleCommentLike = (postId, commentId) => {
-    setComments((prev) => {
-      const postComments = prev[postId] || [];
-      const updatedComments = postComments.map((comment) => {
-        if (comment.id === commentId) {
-          return {
-            ...comment,
-            likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
-            isLiked: !comment.isLiked,
-          };
-        }
-        return comment;
-      });
-
-      return {
+  const handleDeleteComment = async (postId, commentId) => {
+    if (!window.confirm('Are you sure you want to delete this comment?')) {
+      return;
+    }
+    
+    try {
+      await deleteComment(commentId, user.id);
+      
+      // Remove comment from state
+      setPostComments(prev => ({
         ...prev,
-        [postId]: updatedComments,
-      };
-    });
+        [postId]: (prev[postId] || []).filter(comment => comment.id !== commentId)
+      }));
+      
+      // Update post comment count
+      setSavedPosts(prevPosts => 
+        prevPosts.map(post => 
+          post.id === postId 
+            ? { 
+                ...post, 
+                comments_count: Math.max(0, (post.comments_count || 0) - 1)
+              } 
+            : post
+        )
+      );
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      alert('Failed to delete comment. Please try again.');
+    }
+  };
+
+  const handleCommentLike = async (postId, commentId) => {
+    if (!user?.id) {
+      nav('/login');
+      return;
+    }
+    
+    try {
+      const { liked } = await toggleCommentLike(commentId, user.id);
+      
+      // Update liked comments state
+      setLikedComments(prev => {
+        const newSet = new Set(prev);
+        if (liked) {
+          newSet.add(commentId);
+        } else {
+          newSet.delete(commentId);
+        }
+        return newSet;
+      });
+      
+      // Update comment in state
+      setPostComments(prev => ({
+        ...prev,
+        [postId]: (prev[postId] || []).map(comment => {
+          if (comment.id === commentId) {
+            return {
+              ...comment,
+              likes_count: liked ? (comment.likes_count || 0) + 1 : Math.max(0, (comment.likes_count || 0) - 1)
+            };
+          }
+          return comment;
+        })
+      }));
+    } catch (error) {
+      console.error('Error toggling comment like:', error);
+    }
   };
 
   const toggleMenu = (postId) => {
@@ -246,6 +325,12 @@ export default function SavedPage() {
     } else {
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
+  };
+
+  // Format comment date
+  const formatCommentDate = (dateString) => {
+    if (!dateString) return '';
+    return formatDate(dateString);
   };
 
   // Sample data for sidebar
@@ -521,6 +606,8 @@ export default function SavedPage() {
                     const isMenuOpen = activeMenuPost === post.id;
                     const isFollowing = followedUsers.has(post.author?.username);
                     const isContentExpanded = expandedPostId === post.id;
+                    const comments = postComments[post.id] || [];
+                    const commentText = commentInputs[post.id] || "";
 
                     return (
                       <article
@@ -700,7 +787,7 @@ export default function SavedPage() {
 
                             {/* Action Buttons */}
                             <div className="flex items-center gap-1">
-                              {/* Like Button - From FeedContent */}
+                              {/* Like Button */}
                               <button
                                 onClick={() => toggleLike(post.id)}
                                 disabled={!user?.id}
@@ -736,7 +823,7 @@ export default function SavedPage() {
                                 </span>
                               </button>
 
-                              {/* Save Button - From FeedContent but always saved in SavedPage */}
+                              {/* Save Button - Always saved in SavedPage */}
                               <button
                                 onClick={() => toggleSave(post.id)}
                                 disabled={!user?.id}
@@ -758,66 +845,85 @@ export default function SavedPage() {
                           <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} bg-gradient-to-b ${theme === 'light' ? 'from-gray-50/50 to-transparent' : 'from-slate-900/50 to-transparent'}`}>
                             <div className="p-6 space-y-6 max-h-80 overflow-y-auto">
                               {/* Existing Comments */}
-                              {comments[post.id]?.map((comment) => (
-                                <div key={comment.id} className="flex gap-4">
-                                  <img
-                                    src={comment.author.avatar}
-                                    alt={comment.author.name}
-                                    className={`w-10 h-10 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} flex-shrink-0`}
-                                  />
-                                  <div className="flex-1">
-                                    <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl p-4 shadow-sm`}>
-                                      <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center gap-2">
-                                          <span className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm`}>
-                                            {comment.author.name}
-                                          </span>
-                                          <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                            {comment.timestamp}
-                                          </span>
+                              {comments.length > 0 ? (
+                                comments.map((comment) => (
+                                  <div key={comment.id} className="flex gap-4">
+                                    <img
+                                      src={comment.author?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.author?.username || 'anonymous'}`}
+                                      alt={comment.author?.full_name || 'Anonymous'}
+                                      className={`w-10 h-10 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} flex-shrink-0`}
+                                    />
+                                    <div className="flex-1">
+                                      <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl p-4 shadow-sm`}>
+                                        <div className="flex items-center justify-between mb-2">
+                                          <div className="flex items-center gap-2">
+                                            <span className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm`}>
+                                              {comment.author?.full_name || 'Anonymous'}
+                                            </span>
+                                            <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                              @{comment.author?.username || 'anonymous'}
+                                            </span>
+                                            <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                              • {formatCommentDate(comment.created_at)}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <button
+                                              onClick={() => handleCommentLike(post.id, comment.id)}
+                                              className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors ${
+                                                likedComments.has(comment.id)
+                                                  ? `${theme === 'light' ? 'text-red-600 bg-red-50' : 'text-red-400 bg-red-900/20'}`
+                                                  : `${theme === 'light' ? 'text-gray-500 hover:text-red-500 hover:bg-gray-100' : 'text-gray-400 hover:text-red-400 hover:bg-slate-700'}`
+                                              }`}
+                                            >
+                                              <Heart
+                                                className={`w-3.5 h-3.5 ${
+                                                  likedComments.has(comment.id) ? "fill-current" : ""
+                                                }`}
+                                              />
+                                              <span className="text-xs font-medium">
+                                                {comment.likes_count || 0}
+                                              </span>
+                                            </button>
+                                            {user?.id === comment.user_id && (
+                                              <button
+                                                onClick={() => handleDeleteComment(post.id, comment.id)}
+                                                className={`p-1.5 ${theme === 'light' ? 'text-gray-400 hover:text-red-500 hover:bg-red-50' : 'text-gray-400 hover:text-red-400 hover:bg-red-900/20'} rounded-lg transition-colors`}
+                                                title="Delete comment"
+                                              >
+                                                <Trash2 className="w-4 h-4" />
+                                              </button>
+                                            )}
+                                          </div>
                                         </div>
-                                        <button
-                                          onClick={() =>
-                                            toggleCommentLike(post.id, comment.id)
-                                          }
-                                          className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors ${
-                                            comment.isLiked
-                                              ? `${theme === 'light' ? 'text-red-600 bg-red-50' : 'text-red-400 bg-red-900/20'}`
-                                              : `${theme === 'light' ? 'text-gray-500 hover:text-red-500 hover:bg-gray-100' : 'text-gray-400 hover:text-red-400 hover:bg-slate-700'}`
-                                          }`}
-                                        >
-                                          <Heart
-                                            className={`w-3.5 h-3.5 ${
-                                              comment.isLiked ? "fill-current" : ""
-                                            }`}
-                                          />
-                                          <span className="text-xs font-medium">
-                                            {comment.likes}
-                                          </span>
-                                        </button>
+                                        <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-sm leading-relaxed`}>
+                                          {comment.content}
+                                        </p>
                                       </div>
-                                      <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-sm leading-relaxed`}>
-                                        {comment.content}
-                                      </p>
                                     </div>
                                   </div>
+                                ))
+                              ) : (
+                                <div className={`text-center py-4 ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                  No comments yet. Be the first to comment!
                                 </div>
-                              ))}
+                              )}
 
                               {/* New Comment Input */}
                               <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-4`}>
                                 <div className="flex items-end gap-4">
                                   <img
-                                    src={user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser"}
+                                    src={user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'user'}`}
                                     alt="You"
                                     className={`w-10 h-10 rounded-full border-2 ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} flex-shrink-0`}
                                   />
                                   <div className="flex-1">
                                     <textarea
-                                      value={newComment}
-                                      onChange={(e) =>
-                                        setNewComment(e.target.value)
-                                      }
+                                      value={commentText}
+                                      onChange={(e) => setCommentInputs(prev => ({
+                                        ...prev,
+                                        [post.id]: e.target.value
+                                      }))}
                                       placeholder="Share your thoughts..."
                                       className={`w-full px-4 py-3 ${theme === 'light' ? 'bg-gray-50 text-gray-900 placeholder:text-gray-400' : 'bg-slate-700 text-white placeholder:text-slate-500'} rounded-xl resize-none focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500' : 'focus:ring-blue-400'}`}
                                       rows="2"
@@ -828,9 +934,9 @@ export default function SavedPage() {
                                       </div>
                                       <button
                                         onClick={() => handleSendComment(post.id)}
-                                        disabled={!newComment.trim()}
+                                        disabled={!commentText.trim()}
                                         className={`px-6 py-2 rounded-xl font-medium transition-all ${
-                                          newComment.trim()
+                                          commentText.trim()
                                             ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl"
                                             : `${theme === 'light' ? 'bg-gray-200 text-gray-400' : 'bg-slate-700 text-slate-500'} cursor-not-allowed`
                                         }`}
@@ -864,9 +970,9 @@ export default function SavedPage() {
               )}
             </div>
 
-            {/* Right Sidebar */}
+            {/* Right Sidebar - Remains the same */}
             <div className={`lg:col-span-1 space-y-6 md:space-y-8 ${showTrendingSidebar ? "block" : "hidden"} lg:block`}>
-              {/* Trending Topics - Simplified */}
+              {/* Trending Topics */}
               <div className={`relative ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-5 shadow-lg transition-all duration-300`}>
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-3">
@@ -921,7 +1027,7 @@ export default function SavedPage() {
                 </div>
               </div>
 
-              {/* Recommended Authors - Stacked layout */}
+              {/* Recommended Authors */}
               <div className={`relative ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-5 shadow-lg transition-all duration-300`}>
                 <div className="flex items-center gap-3 mb-5">
                   <div className="p-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg">
@@ -977,7 +1083,7 @@ export default function SavedPage() {
                 </div>
               </div>
 
-              {/* Quick Stats - Compact */}
+              {/* Quick Stats */}
               <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-500 to-purple-600 rounded-2xl p-5 text-white shadow-xl">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20" />
 

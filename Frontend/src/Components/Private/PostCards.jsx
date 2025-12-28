@@ -1,8 +1,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 // Import the new services
-import { getPublicPosts, togglePostLike, toggleSavePost, getUserLikedPosts, getUserSavedPosts } from "../../Services/post";
-import { useUser } from "../../Context/userContext"; // Your user context
+import { 
+  getPublicPosts, 
+  togglePostLike, 
+  toggleSavePost, 
+  getUserLikedPosts, 
+  getUserSavedPosts,
+  getPostComments,
+  addComment,
+  deleteComment,
+  toggleCommentLike,
+  getUserCommentLikes
+} from "../../Services/post";
+import { useUser } from "../../Context/userContext";
 import {
   Heart,
   MessageCircle,
@@ -20,6 +31,8 @@ import {
   Repeat2,
   BookOpen,
   Hash,
+  Trash2,
+  Send,
 } from "lucide-react";
 import { useTheme } from "../../Context/themeContext";
 
@@ -27,20 +40,21 @@ export default function FeedContent() {
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState("forYou");
   const navigate = useNavigate();
-  const { user } = useUser(); // Changed from useAuth to useUser
+  const { user } = useUser();
   
   const [likedPosts, setLikedPosts] = useState(new Set());
-  const [savedPosts, setSavedPosts] = useState(new Set()); // Changed from bookmarkedPosts to savedPosts
+  const [savedPosts, setSavedPosts] = useState(new Set());
   const [expandedPostId, setExpandedPostId] = useState(null);
   const [activeCommentPost, setActiveCommentPost] = useState(null);
   const [newComment, setNewComment] = useState("");
-  const [comments, setComments] = useState({});
+  const [postComments, setPostComments] = useState({}); // Changed from comments to postComments
   const [activeMenuPost, setActiveMenuPost] = useState(null);
   const [followedUsers, setFollowedUsers] = useState(new Set());
   const [hiddenPosts, setHiddenPosts] = useState(new Set());
   const [repostedPosts, setRepostedPosts] = useState(new Set());
   const [showTrendingSidebar, setShowTrendingSidebar] = useState(true);
   const [likedComments, setLikedComments] = useState(new Set());
+  const [commentInputs, setCommentInputs] = useState({}); // For storing comment input per post
   
   // Add state for real posts
   const [posts, setPosts] = useState([]);
@@ -56,10 +70,10 @@ export default function FeedContent() {
   // Fetch posts and user data on component mount
   useEffect(() => {
     fetchPosts();
-    if (user?.id) { // Check if user has id property
+    if (user?.id) {
       fetchUserData();
     }
-  }, [activeTab, user]); // Re-fetch when tab changes or user changes
+  }, [activeTab, user]);
 
   const fetchPosts = async (page = 1) => {
     try {
@@ -73,7 +87,7 @@ export default function FeedContent() {
       // Configure options based on active tab
       switch(activeTab) {
         case 'trending':
-          options.sortBy = 'likescount'; // Changed to sort by likes for trending
+          options.sortBy = 'likescount';
           options.sortOrder = 'desc';
           break;
         case 'latest':
@@ -120,6 +134,10 @@ export default function FeedContent() {
       
       const savedPostIds = await getUserSavedPosts(user.id);
       setSavedPosts(new Set(savedPostIds));
+
+      // Fetch user's liked comments
+      const likedCommentIds = await getUserCommentLikes(user.id);
+      setLikedComments(new Set(likedCommentIds));
     } catch (error) {
       console.error('Error fetching user data:', error);
     }
@@ -127,7 +145,7 @@ export default function FeedContent() {
 
   // ========== LIKE FUNCTIONALITY ==========
   const toggleLike = async (postId) => {
-    if (!user?.id) { // Check for user.id
+    if (!user?.id) {
       navigate('/login');
       return;
     }
@@ -135,7 +153,6 @@ export default function FeedContent() {
     try {
       const { liked, count } = await togglePostLike(postId, user.id);
       
-      // Update liked posts set
       setLikedPosts(prev => {
         const newSet = new Set(prev);
         if (liked) {
@@ -146,7 +163,6 @@ export default function FeedContent() {
         return newSet;
       });
       
-      // Update the post in the list with new likes count
       setPosts(prevPosts => 
         prevPosts.map(post => 
           post.id === postId 
@@ -162,7 +178,7 @@ export default function FeedContent() {
 
   // ========== SAVE FUNCTIONALITY ==========
   const toggleSave = async (postId) => {
-    if (!user?.id) { // Check for user.id
+    if (!user?.id) {
       navigate('/login');
       return;
     }
@@ -170,7 +186,6 @@ export default function FeedContent() {
     try {
       const { saved } = await toggleSavePost(postId, user.id);
       
-      // Update saved posts set
       setSavedPosts(prev => {
         const newSet = new Set(prev);
         if (saved) {
@@ -181,7 +196,6 @@ export default function FeedContent() {
         return newSet;
       });
       
-      // Optional: Show feedback
       if (saved) {
         console.log('Post saved successfully');
       } else {
@@ -190,6 +204,136 @@ export default function FeedContent() {
     } catch (error) {
       console.error('Error toggling save:', error);
       alert('Failed to update saved post. Please try again.');
+    }
+  };
+
+  // ========== COMMENT FUNCTIONS ==========
+  const toggleComments = async (postId) => {
+    if (activeCommentPost === postId) {
+      setActiveCommentPost(null);
+    } else {
+      setActiveCommentPost(postId);
+      // Fetch comments for this post
+      try {
+        const comments = await getPostComments(postId);
+        setPostComments(prev => ({
+          ...prev,
+          [postId]: comments
+        }));
+      } catch (error) {
+        console.error('Error fetching comments:', error);
+      }
+    }
+  };
+
+  const handleSendComment = async (postId) => {
+    const commentText = commentInputs[postId] || newComment;
+    
+    if (!commentText.trim() || !user?.id) {
+      if (!user?.id) navigate('/login');
+      return;
+    }
+    
+    try {
+      // Add comment to database
+      const comment = await addComment(postId, user.id, commentText.trim());
+      
+      // Update comments for this post
+      setPostComments(prev => ({
+        ...prev,
+        [postId]: [comment, ...(prev[postId] || [])]
+      }));
+      
+      // Clear comment input
+      setCommentInputs(prev => ({
+        ...prev,
+        [postId]: ""
+      }));
+      setNewComment("");
+      
+      // Update post comment count
+      setPosts(prevPosts => 
+        prevPosts.map(post => 
+          post.id === postId 
+            ? { 
+                ...post, 
+                comments_count: (post.comments_count || 0) + 1 
+              } 
+            : post
+        )
+      );
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      alert('Failed to add comment. Please try again.');
+    }
+  };
+
+  const handleDeleteComment = async (postId, commentId) => {
+    if (!window.confirm('Are you sure you want to delete this comment?')) {
+      return;
+    }
+    
+    try {
+      await deleteComment(commentId, user.id);
+      
+      // Remove comment from state
+      setPostComments(prev => ({
+        ...prev,
+        [postId]: (prev[postId] || []).filter(comment => comment.id !== commentId)
+      }));
+      
+      // Update post comment count
+      setPosts(prevPosts => 
+        prevPosts.map(post => 
+          post.id === postId 
+            ? { 
+                ...post, 
+                comments_count: Math.max(0, (post.comments_count || 0) - 1)
+              } 
+            : post
+        )
+      );
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      alert('Failed to delete comment. Please try again.');
+    }
+  };
+
+  const handleCommentLike = async (postId, commentId) => {
+    if (!user?.id) {
+      navigate('/login');
+      return;
+    }
+    
+    try {
+      const { liked } = await toggleCommentLike(commentId, user.id);
+      
+      // Update liked comments state
+      setLikedComments(prev => {
+        const newSet = new Set(prev);
+        if (liked) {
+          newSet.add(commentId);
+        } else {
+          newSet.delete(commentId);
+        }
+        return newSet;
+      });
+      
+      // Update comment in state
+      setPostComments(prev => ({
+        ...prev,
+        [postId]: (prev[postId] || []).map(comment => {
+          if (comment.id === commentId) {
+            return {
+              ...comment,
+              likes_count: liked ? (comment.likes_count || 0) + 1 : Math.max(0, (comment.likes_count || 0) - 1)
+            };
+          }
+          return comment;
+        })
+      }));
+    } catch (error) {
+      console.error('Error toggling comment like:', error);
     }
   };
 
@@ -207,58 +351,6 @@ export default function FeedContent() {
   ];
 
   // ========== OTHER FUNCTIONS ==========
-  const toggleComments = (postId) => {
-    if (activeCommentPost === postId) {
-      setActiveCommentPost(null);
-    } else {
-      setActiveCommentPost(postId);
-    }
-  };
-
-  const handleSendComment = (postId) => {
-    if (newComment.trim()) {
-      const comment = {
-        id: Date.now(),
-        author: {
-          name: user?.full_name || "You",
-          username: user?.username || "currentuser",
-          avatar: user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser",
-        },
-        content: newComment,
-        timestamp: "Just now",
-        likes: 0,
-        isLiked: false,
-      };
-
-      setComments((prev) => ({
-        ...prev,
-        [postId]: [...(prev[postId] || []), comment],
-      }));
-      setNewComment("");
-    }
-  };
-
-  const toggleCommentLike = (postId, commentId) => {
-    setComments((prev) => {
-      const postComments = prev[postId] || [];
-      const updatedComments = postComments.map((comment) => {
-        if (comment.id === commentId) {
-          return {
-            ...comment,
-            likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
-            isLiked: !comment.isLiked,
-          };
-        }
-        return comment;
-      });
-
-      return {
-        ...prev,
-        [postId]: updatedComments,
-      };
-    });
-  };
-
   const toggleMenu = (postId) => {
     if (activeMenuPost === postId) {
       setActiveMenuPost(null);
@@ -322,6 +414,12 @@ export default function FeedContent() {
     } else {
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
+  };
+
+  // Format comment date
+  const formatCommentDate = (dateString) => {
+    if (!dateString) return '';
+    return formatDate(dateString);
   };
 
   // Sample data for sidebar
@@ -448,11 +546,19 @@ export default function FeedContent() {
                   const isMenuOpen = activeMenuPost === post.id;
                   const isFollowing = followedUsers.has(post.author?.username);
                   const isReposted = repostedPosts.has(post.id);
+                  const comments = postComments[post.id] || [];
+                  const commentText = commentInputs[post.id] || "";
 
                   return (
                     <article
                       key={post.id}
-                      className={`group relative ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} shadow-lg hover:shadow-2xl ${theme === 'light' ? '' : 'dark:hover:shadow-slate-900/50'} transition-all duration-300 hover:-translate-y-1 overflow-hidden`}
+                      className={`group relative ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} shadow-lg hover:shadow-2xl ${theme === 'light' ? '' : 'dark:hover:shadow-slate-900/50'} transition-all duration-300 hover:-translate-y-1 overflow-hidden cursor-pointer`}
+                      onClick={(e) => {
+                        // Only navigate if clicking on the article itself, not buttons inside
+                        if (!e.target.closest('button') && !e.target.closest('a')) {
+                          navigate(`/post/${post.id}`);
+                        }
+                      }}
                     >
                       {/* Post Header */}
                       <div className="p-6 pb-4">
@@ -487,7 +593,10 @@ export default function FeedContent() {
 
                           {/* Follow Button */}
                           <button
-                            onClick={() => toggleFollow(post.author?.username)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleFollow(post.author?.username);
+                            }}
                             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                               isFollowing
                                 ? `${theme === 'light' ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`
@@ -500,7 +609,10 @@ export default function FeedContent() {
 
                         {/* Post Title */}
                         <h2 
-                          onClick={() => navigate(`/post/${post.id}`)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/post/${post.id}`);
+                          }}
                           className={`text-2xl md:text-3xl font-bold ${theme === 'light' ? 'text-gray-900 hover:text-blue-600' : 'text-white hover:text-blue-500'} mb-3 transition-colors cursor-pointer leading-tight`}
                         >
                           {post.title}
@@ -513,7 +625,10 @@ export default function FeedContent() {
                               {post.content}
                             </p>
                             <button
-                              onClick={() => setExpandedPostId(null)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedPostId(null);
+                              }}
                               className={`${theme === 'light' ? 'text-blue-600' : 'text-blue-500'} hover:underline font-medium text-sm`}
                             >
                               Show less
@@ -528,7 +643,10 @@ export default function FeedContent() {
                               {post.content && post.content.length > 150 && (
                                 <div className={`absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t ${theme === 'light' ? 'from-white' : 'from-slate-800'} to-transparent flex items-end justify-center`}>
                                   <button
-                                    onClick={() => setExpandedPostId(post.id)}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setExpandedPostId(post.id);
+                                    }}
                                     className={`relative -bottom-2 px-4 py-1.5 ${theme === 'light' ? 'bg-white border-gray-200 text-blue-600 hover:text-blue-700 hover:bg-gray-50' : 'bg-slate-800 border-slate-700 text-blue-500 hover:text-blue-400 hover:bg-slate-700'} border font-medium text-sm rounded-full shadow-sm transition-colors`}
                                   >
                                     Read full story
@@ -547,7 +665,10 @@ export default function FeedContent() {
                             src={post.featured_image}
                             alt={post.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
-                            onClick={() => navigate(`/post/${post.id}`)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/post/${post.id}`);
+                            }}
                           />
                         </div>
                       )}
@@ -561,6 +682,10 @@ export default function FeedContent() {
                               <span
                                 key={index}
                                 className={`px-3 py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50 text-blue-700 hover:from-blue-100 hover:to-purple-100' : 'from-blue-900/20 to-purple-900/20 text-blue-400 hover:from-blue-900/30 hover:to-purple-900/30'} text-sm font-medium rounded-full transition-all cursor-pointer`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // You could add tag filtering here
+                                }}
                               >
                                 #{tag}
                               </span>
@@ -580,9 +705,12 @@ export default function FeedContent() {
 
                           {/* Action Buttons */}
                           <div className="flex items-center gap-1">
-                            {/* Like Button - UPDATED */}
+                            {/* Like Button */}
                             <button
-                              onClick={() => toggleLike(post.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleLike(post.id);
+                              }}
                               disabled={!user?.id}
                               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 ${
                                 isLiked
@@ -603,7 +731,10 @@ export default function FeedContent() {
 
                             {/* Comment */}
                             <button
-                              onClick={() => toggleComments(post.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleComments(post.id);
+                              }}
                               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 ${
                                 isCommentsOpen
                                   ? `bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-cyan-50 text-blue-600' : 'from-blue-900/20 to-cyan-900/20 text-blue-400'} shadow-sm`
@@ -616,9 +747,12 @@ export default function FeedContent() {
                               </span>
                             </button>
 
-                            {/* Save Button - UPDATED */}
+                            {/* Save Button */}
                             <button
-                              onClick={() => toggleSave(post.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleSave(post.id);
+                              }}
                               disabled={!user?.id}
                               className={`p-2.5 rounded-xl transition-all duration-300 ${
                                 isSaved
@@ -639,72 +773,95 @@ export default function FeedContent() {
 
                       {/* ========== COMMENTS SECTION ========== */}
                       {isCommentsOpen && (
-                        <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} bg-gradient-to-b ${theme === 'light' ? 'from-gray-50/50 to-transparent' : 'from-slate-900/50 to-transparent'}`}>
+                        <div 
+                          className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} bg-gradient-to-b ${theme === 'light' ? 'from-gray-50/50 to-transparent' : 'from-slate-900/50 to-transparent'}`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <div className="p-6 space-y-6 max-h-80 overflow-y-auto">
                             {/* Existing Comments */}
-                            {comments[post.id]?.map((comment) => (
-                              <div key={comment.id} className="flex gap-4">
-                                <img
-                                  src={comment.author.avatar}
-                                  alt={comment.author.name}
-                                  className={`w-10 h-10 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} flex-shrink-0`}
-                                />
-                                <div className="flex-1">
-                                  <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl p-4 shadow-sm`}>
-                                    <div className="flex items-center justify-between mb-2">
-                                      <div className="flex items-center gap-2">
-                                        <span className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm`}>
-                                          {comment.author.name}
-                                        </span>
-                                        <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                          {comment.timestamp}
-                                        </span>
+                            {comments.length > 0 ? (
+                              comments.map((comment) => (
+                                <div key={comment.id} className="flex gap-4">
+                                  <img
+                                    src={comment.author?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.author?.username || 'anonymous'}`}
+                                    alt={comment.author?.full_name || 'Anonymous'}
+                                    className={`w-10 h-10 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} flex-shrink-0`}
+                                  />
+                                  <div className="flex-1">
+                                    <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl p-4 shadow-sm`}>
+                                      <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-2">
+                                          <span className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm`}>
+                                            {comment.author?.full_name || 'Anonymous'}
+                                          </span>
+                                          <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                            @{comment.author?.username || 'anonymous'}
+                                          </span>
+                                          <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                            • {formatCommentDate(comment.created_at)}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <button
+                                            onClick={() => handleCommentLike(post.id, comment.id)}
+                                            className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors ${
+                                              likedComments.has(comment.id)
+                                                ? `${theme === 'light' ? 'text-red-600 bg-red-50' : 'text-red-400 bg-red-900/20'}`
+                                                : `${theme === 'light' ? 'text-gray-500 hover:text-red-500 hover:bg-gray-100' : 'text-gray-400 hover:text-red-400 hover:bg-slate-700'}`
+                                            }`}
+                                          >
+                                            <Heart
+                                              className={`w-3.5 h-3.5 ${
+                                                likedComments.has(comment.id) ? "fill-current" : ""
+                                              }`}
+                                            />
+                                            <span className="text-xs font-medium">
+                                              {comment.likes_count || 0}
+                                            </span>
+                                          </button>
+                                          {user?.id === comment.user_id && (
+                                            <button
+                                              onClick={() => handleDeleteComment(post.id, comment.id)}
+                                              className={`p-1.5 ${theme === 'light' ? 'text-gray-400 hover:text-red-500 hover:bg-red-50' : 'text-gray-400 hover:text-red-400 hover:bg-red-900/20'} rounded-lg transition-colors`}
+                                              title="Delete comment"
+                                            >
+                                              <Trash2 className="w-4 h-4" />
+                                            </button>
+                                          )}
+                                        </div>
                                       </div>
-                                      <button
-                                        onClick={() =>
-                                          toggleCommentLike(post.id, comment.id)
-                                        }
-                                        className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors ${
-                                          comment.isLiked
-                                            ? `${theme === 'light' ? 'text-red-600 bg-red-50' : 'text-red-400 bg-red-900/20'}`
-                                            : `${theme === 'light' ? 'text-gray-500 hover:text-red-500 hover:bg-gray-100' : 'text-gray-400 hover:text-red-400 hover:bg-slate-700'}`
-                                        }`}
-                                      >
-                                        <Heart
-                                          className={`w-3.5 h-3.5 ${
-                                            comment.isLiked ? "fill-current" : ""
-                                          }`}
-                                        />
-                                        <span className="text-xs font-medium">
-                                          {comment.likes}
-                                        </span>
-                                      </button>
+                                      <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-sm leading-relaxed`}>
+                                        {comment.content}
+                                      </p>
                                     </div>
-                                    <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-sm leading-relaxed`}>
-                                      {comment.content}
-                                    </p>
                                   </div>
                                 </div>
+                              ))
+                            ) : (
+                              <div className={`text-center py-4 ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                No comments yet. Be the first to comment!
                               </div>
-                            ))}
+                            )}
 
                             {/* New Comment Input */}
                             <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-4`}>
                               <div className="flex items-end gap-4">
                                 <img
-                                  src={user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser"}
+                                  src={user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'user'}`}
                                   alt="You"
                                   className={`w-10 h-10 rounded-full border-2 ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} flex-shrink-0`}
                                 />
                                 <div className="flex-1">
                                   <textarea
-                                    value={newComment}
-                                    onChange={(e) =>
-                                      setNewComment(e.target.value)
-                                    }
+                                    value={commentText}
+                                    onChange={(e) => setCommentInputs(prev => ({
+                                      ...prev,
+                                      [post.id]: e.target.value
+                                    }))}
                                     placeholder="Share your thoughts..."
                                     className={`w-full px-4 py-3 ${theme === 'light' ? 'bg-gray-50 text-gray-900 placeholder:text-gray-400' : 'bg-slate-700 text-white placeholder:text-slate-500'} rounded-xl resize-none focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500' : 'focus:ring-blue-400'}`}
                                     rows="2"
+                                    onClick={(e) => e.stopPropagation()}
                                   />
                                   <div className="flex items-center justify-between mt-3">
                                     <div className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
@@ -712,9 +869,9 @@ export default function FeedContent() {
                                     </div>
                                     <button
                                       onClick={() => handleSendComment(post.id)}
-                                      disabled={!newComment.trim()}
+                                      disabled={!commentText.trim()}
                                       className={`px-6 py-2 rounded-xl font-medium transition-all ${
-                                        newComment.trim()
+                                        commentText.trim()
                                           ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl"
                                           : `${theme === 'light' ? 'bg-gray-200 text-gray-400' : 'bg-slate-700 text-slate-500'} cursor-not-allowed`
                                       }`}
