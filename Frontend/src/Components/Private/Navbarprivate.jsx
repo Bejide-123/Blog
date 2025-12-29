@@ -146,7 +146,7 @@ export default function NavbarPrivate() {
               </button>
 
               {/* Desktop Navigation Links */}
-              <div className="hidden lg:flex items-center gap-1 ml-8">
+              <div className="hidden md:flex items-center gap-1 ml-8">
                 {desktopNavItems.map((item) => (
                   <button
                     key={item.path}
@@ -167,7 +167,7 @@ export default function NavbarPrivate() {
             </div>
 
             {/* Center: Search Bar */}
-            <div className="flex-1 max-w-xl mx-8">
+            <div className="flex-1 max-w-xl mx-8 hidden lg:flex">
               <div className="relative">
                 <div className="relative group">
                   <input

@@ -561,7 +561,7 @@ export default function FeedContent() {
                       }}
                     >
                       {/* Post Header */}
-                      <div className="p-6 pb-4">
+                      <div className="p-4 sm:p-6 pb-4">
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center gap-3">
                             <div className="relative">
@@ -597,7 +597,7 @@ export default function FeedContent() {
                               e.stopPropagation();
                               toggleFollow(post.author?.username);
                             }}
-                            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                            className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg text-sm font-medium transition-all ${
                               isFollowing
                                 ? `${theme === 'light' ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`
                                 : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-sm"
@@ -613,7 +613,7 @@ export default function FeedContent() {
                             e.stopPropagation();
                             navigate(`/post/${post.id}`);
                           }}
-                          className={`text-2xl md:text-3xl font-bold ${theme === 'light' ? 'text-gray-900 hover:text-blue-600' : 'text-white hover:text-blue-500'} mb-3 transition-colors cursor-pointer leading-tight`}
+                          className={`text-xl sm:text-2xl md:text-3xl font-bold ${theme === 'light' ? 'text-gray-900 hover:text-blue-600' : 'text-white hover:text-blue-500'} mb-3 transition-colors cursor-pointer leading-tight`}
                         >
                           {post.title}
                         </h2>
@@ -660,7 +660,7 @@ export default function FeedContent() {
 
                       {/* Featured Image */}
                       {post.featured_image && (
-                        <div className="w-full h-72 md:h-80 overflow-hidden">
+                        <div className="w-full h-64 sm:h-72 md:h-80 overflow-hidden">
                           <img
                             src={post.featured_image}
                             alt={post.title}
@@ -674,14 +674,14 @@ export default function FeedContent() {
                       )}
 
                       {/* Post Footer */}
-                      <div className="p-6 pt-4">
+                      <div className="p-4 sm:p-6 pt-4">
                         {/* Tags */}
                         {post.tags && post.tags.length > 0 && (
                           <div className="flex flex-wrap gap-2 mb-4">
                             {post.tags.map((tag, index) => (
                               <span
                                 key={index}
-                                className={`px-3 py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50 text-blue-700 hover:from-blue-100 hover:to-purple-100' : 'from-blue-900/20 to-purple-900/20 text-blue-400 hover:from-blue-900/30 hover:to-purple-900/30'} text-sm font-medium rounded-full transition-all cursor-pointer`}
+                                className={`px-3 py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50 text-blue-700 hover:from-blue-100 hover:to-purple-100' : 'from-blue-900/20 to-purple-900/20 text-blue-400 hover:from-blue-900/30 hover:to-purple-900/30'} text-xs sm:text-sm font-medium rounded-full transition-all cursor-pointer`}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   // You could add tag filtering here
@@ -694,9 +694,9 @@ export default function FeedContent() {
                         )}
 
                         {/* Stats & Actions */}
-                        <div className={`flex items-center justify-between pt-4 border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
+                        <div className={`flex items-center justify-between flex-wrap gap-4 pt-4 border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
                           {/* Stats */}
-                          <div className={`flex items-center gap-6 text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                          <div className={`flex items-center gap-4 sm:gap-6 text-xs sm:text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
                             <div className="flex items-center gap-1">
                               <Clock className="w-4 h-4" />
                               <span>{post.read_time || 5} min read</span>
@@ -712,7 +712,7 @@ export default function FeedContent() {
                                 toggleLike(post.id);
                               }}
                               disabled={!user?.id}
-                              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 ${
+                              className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all duration-300 ${
                                 isLiked
                                   ? `bg-gradient-to-r ${theme === 'light' ? 'from-red-50 to-pink-50 text-red-600' : 'from-red-900/20 to-pink-900/20 text-red-400'} shadow-sm`
                                   : `${theme === 'light' ? 'text-gray-600 hover:text-red-500 hover:bg-red-50' : 'text-gray-400 hover:text-red-400 hover:bg-red-900/20'}`
@@ -724,7 +724,7 @@ export default function FeedContent() {
                                   isLiked ? "fill-current" : ""
                                 }`}
                               />
-                              <span className="font-medium">
+                              <span className="font-medium text-xs sm:text-sm">
                                 {post.likescount || 0}
                               </span>
                             </button>
@@ -735,14 +735,14 @@ export default function FeedContent() {
                                 e.stopPropagation();
                                 toggleComments(post.id);
                               }}
-                              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 ${
+                              className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all duration-300 ${
                                 isCommentsOpen
                                   ? `bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-cyan-50 text-blue-600' : 'from-blue-900/20 to-cyan-900/20 text-blue-400'} shadow-sm`
                                   : `${theme === 'light' ? 'text-gray-600 hover:text-blue-500 hover:bg-blue-50' : 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/20'}`
                               }`}
                             >
                               <MessageCircle className="w-5 h-5" />
-                              <span className="font-medium">
+                              <span className="font-medium text-xs sm:text-sm">
                                 {post.comments_count || 0}
                               </span>
                             </button>
@@ -754,7 +754,7 @@ export default function FeedContent() {
                                 toggleSave(post.id);
                               }}
                               disabled={!user?.id}
-                              className={`p-2.5 rounded-xl transition-all duration-300 ${
+                              className={`p-2 sm:p-2.5 rounded-xl transition-all duration-300 ${
                                 isSaved
                                   ? `bg-gradient-to-r ${theme === 'light' ? 'from-yellow-50 to-amber-50 text-yellow-600' : 'from-yellow-900/20 to-amber-900/20 text-yellow-400'} shadow-sm`
                                   : `${theme === 'light' ? 'text-gray-600 hover:text-yellow-500 hover:bg-yellow-50' : 'text-gray-400 hover:text-yellow-400 hover:bg-yellow-900/20'}`
@@ -777,31 +777,31 @@ export default function FeedContent() {
                           className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} bg-gradient-to-b ${theme === 'light' ? 'from-gray-50/50 to-transparent' : 'from-slate-900/50 to-transparent'}`}
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="p-6 space-y-6 max-h-80 overflow-y-auto">
+                          <div className="p-4 sm:p-6 space-y-6 max-h-80 overflow-y-auto">
                             {/* Existing Comments */}
                             {comments.length > 0 ? (
                               comments.map((comment) => (
-                                <div key={comment.id} className="flex gap-4">
+                                <div key={comment.id} className="flex gap-3">
                                   <img
                                     src={comment.author?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.author?.username || 'anonymous'}`}
                                     alt={comment.author?.full_name || 'Anonymous'}
-                                    className={`w-10 h-10 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} flex-shrink-0`}
+                                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} flex-shrink-0`}
                                   />
                                   <div className="flex-1">
-                                    <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl p-4 shadow-sm`}>
+                                    <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl p-3 sm:p-4 shadow-sm`}>
                                       <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center gap-2">
-                                          <span className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm`}>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                          <span className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-xs sm:text-sm`}>
                                             {comment.author?.full_name || 'Anonymous'}
                                           </span>
                                           <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                                             @{comment.author?.username || 'anonymous'}
                                           </span>
-                                          <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                            • {formatCommentDate(comment.created_at)}
-                                          </span>
                                         </div>
                                         <div className="flex items-center gap-2">
+                                        <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} ml-auto`}>
+                                            {formatCommentDate(comment.created_at)}
+                                          </span>
                                           <button
                                             onClick={() => handleCommentLike(post.id, comment.id)}
                                             className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors ${
@@ -830,7 +830,7 @@ export default function FeedContent() {
                                           )}
                                         </div>
                                       </div>
-                                      <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-sm leading-relaxed`}>
+                                      <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-sm leading-relaxed font-medium`}>
                                         {comment.content}
                                       </p>
                                     </div>
@@ -845,11 +845,11 @@ export default function FeedContent() {
 
                             {/* New Comment Input */}
                             <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-4`}>
-                              <div className="flex items-end gap-4">
+                              <div className="flex items-end gap-3 sm:gap-4">
                                 <img
                                   src={user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'user'}`}
                                   alt="You"
-                                  className={`w-10 h-10 rounded-full border-2 ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} flex-shrink-0`}
+                                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} flex-shrink-0`}
                                 />
                                 <div className="flex-1">
                                   <textarea
@@ -859,18 +859,19 @@ export default function FeedContent() {
                                       [post.id]: e.target.value
                                     }))}
                                     placeholder="Share your thoughts..."
-                                    className={`w-full px-4 py-3 ${theme === 'light' ? 'bg-gray-50 text-gray-900 placeholder:text-gray-400' : 'bg-slate-700 text-white placeholder:text-slate-500'} rounded-xl resize-none focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500' : 'focus:ring-blue-400'}`}
+                                    className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${theme === 'light' ? 'bg-gray-50 text-gray-900 placeholder:text-gray-400' : 'bg-slate-700 text-white placeholder:text-slate-500'} rounded-xl resize-none focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500' : 'focus:ring-blue-400'}`}
                                     rows="2"
                                     onClick={(e) => e.stopPropagation()}
                                   />
                                   <div className="flex items-center justify-between mt-3">
-                                    <div className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                    <div className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} hidden sm:block`}>
                                       Press Enter to post • Shift+Enter for new line
                                     </div>
+                                    <div className="ml-auto">
                                     <button
                                       onClick={() => handleSendComment(post.id)}
                                       disabled={!commentText.trim()}
-                                      className={`px-6 py-2 rounded-xl font-medium transition-all ${
+                                      className={`px-4 sm:px-6 py-2 rounded-xl font-medium transition-all ${
                                         commentText.trim()
                                           ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl"
                                           : `${theme === 'light' ? 'bg-gray-200 text-gray-400' : 'bg-slate-700 text-slate-500'} cursor-not-allowed`
@@ -878,6 +879,7 @@ export default function FeedContent() {
                                     >
                                       Post Comment
                                     </button>
+                                    </div>
                                   </div>
                                 </div>
                               </div>

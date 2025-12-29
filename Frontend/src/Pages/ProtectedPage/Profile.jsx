@@ -326,24 +326,24 @@ export default function ProfilePage() {
           {/* Profile Header - Enhanced Design */}
           <div className={`relative ${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg border ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} rounded-2xl shadow-lg hover:shadow-xl ${theme === 'light' ? '' : 'dark:hover:shadow-slate-900/50'} transition-all duration-300 mb-8 overflow-hidden`}>
             {/* Cover Photo */}
-            <div className={`h-40 md:h-52 bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 ${theme === 'dark' ? 'dark:from-blue-700 dark:via-blue-600 dark:to-purple-700' : ''} relative`}>
+            <div className={`h-32 sm:h-40 md:h-52 bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 ${theme === 'dark' ? 'dark:from-blue-700 dark:via-blue-600 dark:to-purple-700' : ''} relative`}>
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </div>
 
             {/* Profile Info */}
-            <div className="relative px-6 pb-8">
-              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between -mt-20 sm:-mt-24">
+            <div className="relative px-4 sm:px-6 pb-6 sm:pb-8">
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between -mt-16 sm:-mt-20 md:-mt-24">
                 {/* Avatar Container */}
                 <div className="relative">
-                  <div className={`relative w-32 h-32 sm:w-40 sm:h-40 rounded-2xl border-4 ${theme === 'light' ? 'border-white' : 'border-slate-800'} shadow-xl overflow-hidden bg-gradient-to-br from-blue-500 to-purple-500 p-1`}>
+                  <div className={`relative w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-2xl border-4 ${theme === 'light' ? 'border-white' : 'border-slate-800'} shadow-xl overflow-hidden bg-gradient-to-br from-blue-500 to-purple-500 p-1`}>
                     <img
                       src={profile.avatar}
                       alt={profile.name}
                       className="w-full h-full rounded-xl object-cover"
                     />
                     {profile.verified && (
-                      <div className={`absolute -bottom-2 -right-2 w-8 h-8 bg-blue-500 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} flex items-center justify-center`}>
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <div className={`absolute -bottom-1 -right-1 w-7 h-7 sm:w-8 sm:h-8 bg-blue-500 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} flex items-center justify-center`}>
+                        <svg className="w-2 h-2 sm:w-3 sm:h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                         </svg>
                       </div>
@@ -356,7 +356,7 @@ export default function ProfilePage() {
                   {isOwnProfile ? (
                     <button
                       onClick={() => setIsEditModalOpen(true)}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl"
+                      className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl text-sm"
                     >
                       <Edit3 className="w-4 h-4" />
                       Edit Profile
@@ -365,7 +365,7 @@ export default function ProfilePage() {
                     <>
                       <button
                         onClick={() => setIsFollowing(!isFollowing)}
-                        className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-300 ${
+                        className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-semibold transition-all duration-300 text-sm ${
                           isFollowing
                             ? `${theme === 'light' ? 'bg-gray-200 text-gray-700 hover:bg-gray-300 border-gray-300' : 'bg-slate-700 text-gray-300 hover:bg-slate-600 border-slate-600'} border`
                             : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl"
@@ -373,7 +373,7 @@ export default function ProfilePage() {
                       >
                         {isFollowing ? "Following" : "Follow"}
                       </button>
-                      <button className={`p-2.5 ${theme === 'light' ? 'bg-gray-100 text-gray-700 hover:text-blue-500 hover:bg-blue-50' : 'bg-slate-700 text-gray-300 hover:text-blue-400 hover:bg-blue-900/20'} rounded-xl transition-all duration-300`}>
+                      <button className={`p-2 sm:p-2.5 ${theme === 'light' ? 'bg-gray-100 text-gray-700 hover:text-blue-500 hover:bg-blue-50' : 'bg-slate-700 text-gray-300 hover:text-blue-400 hover:bg-blue-900/20'} rounded-xl transition-all duration-300`}>
                         <MoreHorizontal className="w-5 h-5" />
                       </button>
                     </>
@@ -385,60 +385,60 @@ export default function ProfilePage() {
               <div className="mt-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
-                    <h1 className={`text-2xl md:text-3xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                    <h1 className={`text-xl sm:text-2xl md:text-3xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                       {profile.name}
                     </h1>
-                    <p className={`${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} text-sm md:text-base mt-1`}>
+                    <p className={`${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} text-sm md:text-base mt-0.5`}>
                       @{profile.username}
                     </p>
                   </div>
-                  <button className={`flex items-center gap-2 px-4 py-2 ${theme === 'light' ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'} rounded-xl transition-all duration-300 self-start sm:self-center`}>
+                  <button className={`flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 ${theme === 'light' ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'} rounded-xl transition-all duration-300 self-start sm:self-center text-sm`}>
                     <Share2 className="w-4 h-4" />
                     <span className="font-medium">Share</span>
                   </button>
                 </div>
 
-                <p className={`mt-4 ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-sm md:text-base leading-relaxed`}>
+                <p className={`mt-3 sm:mt-4 ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-sm md:text-base leading-relaxed`}>
                   {profile.bio}
                 </p>
 
                 {/* Profile Stats */}
-                <div className={`flex items-center gap-6 mt-5 pt-5 border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
+                <div className={`flex flex-wrap items-center gap-4 sm:gap-6 mt-4 sm:mt-5 pt-4 sm:pt-5 border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
                   <div className="flex items-center gap-1.5 cursor-pointer group">
-                    <div className="p-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg">
-                      <FileText className="w-4 h-4 text-blue-500" />
+                    <div className="p-1.5 sm:p-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg">
+                      <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500" />
                     </div>
                     <div>
-                      <span className={`font-bold ${theme === 'light' ? 'text-gray-900 group-hover:text-blue-600' : 'text-white group-hover:text-blue-500'} text-lg transition-colors`}>
+                      <span className={`font-bold ${theme === 'light' ? 'text-gray-900 group-hover:text-blue-600' : 'text-white group-hover:text-blue-500'} text-base sm:text-lg transition-colors`}>
                         {profile.stats.posts}
                       </span>
-                      <span className={`ml-1.5 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-sm`}>
+                      <span className={`ml-1.5 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-xs sm:text-sm`}>
                         Posts
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 cursor-pointer group">
-                    <div className="p-2 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg">
-                      <Users className="w-4 h-4 text-green-500" />
+                    <div className="p-1.5 sm:p-2 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg">
+                      <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500" />
                     </div>
                     <div>
-                      <span className={`font-bold ${theme === 'light' ? 'text-gray-900 group-hover:text-green-600' : 'text-white group-hover:text-green-500'} text-lg transition-colors`}>
+                      <span className={`font-bold ${theme === 'light' ? 'text-gray-900 group-hover:text-green-600' : 'text-white group-hover:text-green-500'} text-base sm:text-lg transition-colors`}>
                         {profile.stats.followers}
                       </span>
-                      <span className={`ml-1.5 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-sm`}>
+                      <span className={`ml-1.5 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-xs sm:text-sm`}>
                         Followers
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 cursor-pointer group">
-                    <div className="p-2 bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-lg">
-                      <Users className="w-4 h-4 text-orange-500" />
+                    <div className="p-1.5 sm:p-2 bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-lg">
+                      <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500" />
                     </div>
                     <div>
-                      <span className={`font-bold ${theme === 'light' ? 'text-gray-900 group-hover:text-orange-600' : 'text-white group-hover:text-orange-500'} text-lg transition-colors`}>
+                      <span className={`font-bold ${theme === 'light' ? 'text-gray-900 group-hover:text-orange-600' : 'text-white group-hover:text-orange-500'} text-base sm:text-lg transition-colors`}>
                         {profile.stats.following}
                       </span>
-                      <span className={`ml-1.5 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-sm`}>
+                      <span className={`ml-1.5 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-xs sm:text-sm`}>
                         Following
                       </span>
                     </div>
@@ -446,10 +446,10 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Profile Meta Info */}
-                <div className={`flex flex-wrap items-center gap-4 mt-4 text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                <div className={`flex flex-wrap items-center gap-3 sm:gap-4 mt-4 text-xs sm:text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
                   {profile.location && (
-                    <div className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50' : 'from-blue-900/20 to-purple-900/20'} rounded-full`}>
-                      <MapPin className="w-3.5 h-3.5 text-blue-500" />
+                    <div className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50' : 'from-blue-900/20 to-purple-900/20'} rounded-full`}>
+                      <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-500" />
                       <span>{profile.location}</span>
                     </div>
                   )}
@@ -458,14 +458,14 @@ export default function ProfilePage() {
                       href={`https://${profile.website}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100' : 'from-blue-900/20 to-purple-900/20 hover:from-blue-900/30 hover:to-purple-900/30'} rounded-full transition-all`}
+                      className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100' : 'from-blue-900/20 to-purple-900/20 hover:from-blue-900/30 hover:to-purple-900/30'} rounded-full transition-all`}
                     >
-                      <Link2 className="w-3.5 h-3.5 text-blue-500" />
+                      <Link2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-500" />
                       <span>{profile.website}</span>
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   )}
-                  <div className={`flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50' : 'from-blue-900/20 to-purple-900/20'} rounded-full`}>
+                  <div className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50' : 'from-blue-900/20 to-purple-900/20'} rounded-full`}>
                     <Calendar className="w-3.5 h-3.5 text-blue-500" />
                     <span>Joined {profile.joinedDate}</span>
                   </div>
