@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import {
-  Settings,
   MapPin,
   Calendar,
   Link2,
@@ -27,16 +27,35 @@ import EditProfileModal from "./EditProfile";
 import { PageLoader } from "../../Components/Private/Loader";
 import { UserContext } from "../../Context/userContext";
 import { useTheme } from "../../Context/themeContext";
+import {
+  getUserProfileById,
+  getUserPosts,
+  getUserStats,
+  checkFollowStatus,
+  toggleFollowUser,
+  getUserFollowers,
+  getUserFollowing
+} from "../../Services/user.js";
 
 export default function ProfilePage() {
-  const { user } = useContext(UserContext);
+  const { userId } = useParams(); // Get userId from URL params
+  const navigate = useNavigate();
+  const { user: currentUser } = useContext(UserContext);
   const { theme } = useTheme();
-  const [activeTab, setActiveTab] = useState("posts");
+  
+  const [profileUser, setProfileUser] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [followers, setFollowers] = useState([]);
+  const [following, setFollowing] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
-  const [likedPosts, setLikedPosts] = useState(new Set([1, 3]));
-  const [bookmarkedPosts, setBookmarkedPosts] = useState(new Set([2]));
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("posts");
+  const [stats, setStats] = useState({ posts: 0, followers: 0, following: 0 });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isPageLoading, setIsPageLoading] = useState(true);
+  
+  // Post interaction states
+  const [likedPosts, setLikedPosts] = useState(new Set());
+  const [bookmarkedPosts, setBookmarkedPosts] = useState(new Set());
   const [expandedPostId, setExpandedPostId] = useState(null);
   const [activeCommentPost, setActiveCommentPost] = useState(null);
   const [newComment, setNewComment] = useState("");
@@ -44,159 +63,144 @@ export default function ProfilePage() {
   const [activeMenuPost, setActiveMenuPost] = useState(null);
   const [repostedPosts, setRepostedPosts] = useState(new Set());
 
+  const isOwnProfile = currentUser?.id === userId || !userId;
+
   useEffect(() => {
-    setTimeout(() => {
-      setIsPageLoading(false);
-    }, 3000);
-  }, []);
+    fetchUserProfile();
+  }, [userId]);
 
-  const isOwnProfile = true;
+  useEffect(() => {
+    if (activeTab === "followers" && followers.length === 0) {
+      fetchFollowers();
+    }
+  }, [activeTab, followers.length]);
 
-  // Generate avatar URL for the profile
-  const getAvatarUrl = () => {
-    if (!user) return "https://api.dicebear.com/7.x/avataaars/svg?seed=default";
-    return user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || user?.email || "user"}`;
+  useEffect(() => {
+    if (activeTab === "following" && following.length === 0) {
+      fetchFollowing();
+    }
+  }, [activeTab, following.length]);
+
+  const fetchUserProfile = async () => {
+    try {
+      setLoading(true);
+      
+      // Determine which user ID to fetch
+      const targetUserId = userId || currentUser?.id;
+      
+      if (!targetUserId) {
+        navigate('/login');
+        return;
+      }
+
+      const [profileData, postsData, statsData] = await Promise.all([
+        getUserProfileById(targetUserId),
+        getUserPosts(targetUserId),
+        getUserStats(targetUserId)
+      ]);
+
+      if (!profileData) {
+        navigate('/404');
+        return;
+      }
+      
+      setProfileUser(profileData);
+      setPosts(postsData);
+      setStats(statsData);
+      
+      // Only try to check follow status if user is logged in and it's not own profile
+      if (currentUser && currentUser.id !== targetUserId) {
+        try {
+          const followStatus = await checkFollowStatus(targetUserId);
+          setIsFollowing(followStatus.isFollowing);
+        } catch (followError) {
+          console.warn("Could not check follow status (follows table may not be set up):", followError);
+          setIsFollowing(false); // Default to not following
+        }
+      } else {
+        setIsFollowing(false);
+      }
+      
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      navigate('/404');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Get display name
-  const getDisplayName = () => {
-    if (!user) return "User";
-    return user?.name || user?.username || user?.email?.split('@')[0] || "User";
+  const handleFollowToggle = async () => {
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+    
+    try {
+      const targetUserId = userId || currentUser.id;
+      const { isFollowing: newIsFollowing, action } = await toggleFollowUser(targetUserId);
+      setIsFollowing(newIsFollowing);
+      
+      // Update local stats
+      setStats(prev => ({
+        ...prev,
+        followers: action === 'followed' ? prev.followers + 1 : prev.followers - 1
+      }));
+      
+      // Also update the profileUser data if we have it
+      if (profileUser) {
+        setProfileUser(prev => ({
+          ...prev,
+          followers_count: action === 'followed' ? prev.followers_count + 1 : Math.max(prev.followers_count - 1, 0)
+        }));
+      }
+      
+    } catch (error) {
+      console.error("Error toggling follow:", error);
+      // Show a user-friendly error message
+      alert("Unable to follow/unfollow at this time. The follow system may not be fully set up yet.");
+    }
   };
 
-  // Get display username
-  const getDisplayUsername = () => {
-    if (!user) return "user";
-    return user?.username || user?.email?.split('@')[0] || "user";
+  const fetchFollowers = async () => {
+    try {
+      const targetUserId = userId || currentUser?.id;
+      const followersData = await getUserFollowers(targetUserId);
+      setFollowers(followersData);
+    } catch (error) {
+      console.error("Error fetching followers:", error);
+    }
   };
 
-  // Profile data using user context
-  const profile = {
-    name: getDisplayName(),
-    username: getDisplayUsername(),
-    avatar: getAvatarUrl(),
-    bio: "Full-stack developer passionate about React, Node.js, and building cool stuff. Writing about web dev, tech, and life. ☕️💻",
-    location: "Lagos, Nigeria",
-    website: "johndoe.dev",
-    joinedDate: "January 2024",
-    stats: {
-      posts: 24,
-      followers: 1234,
-      following: 567,
-    },
-    badges: ["React Pro", "Open Source", "Tech Writer"],
-    topics: ["React", "JavaScript", "Node.js", "TypeScript", "Web Development"],
-    verified: true,
-    followers: "1.2K",
+  const fetchFollowing = async () => {
+    try {
+      const targetUserId = userId || currentUser?.id;
+      const followingData = await getUserFollowing(targetUserId);
+      setFollowing(followingData);
+    } catch (error) {
+      console.error("Error fetching following:", error);
+    }
   };
 
-  const userPosts = [
-    {
-      id: 1,
-      author: {
-        name: getDisplayName(),
-        username: getDisplayUsername(),
-        avatar: getAvatarUrl(),
-        verified: true,
-        followers: "1.2K",
-      },
-      title: "Getting Started with React Hooks",
-      content:
-        "React Hooks have revolutionized the way we write React components. In this comprehensive guide, we will explore useState, useEffect, and custom hooks to build better applications...",
-      excerpt:
-        "React Hooks have revolutionized the way we write React components. In this comprehensive guide, we will explore useState, useEffect, and custom hooks...",
-      image:
-        "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&h=400&fit=crop",
-      tags: ["React", "JavaScript", "Web Dev"],
-      readTime: "5 min read",
-      date: "2 days ago",
-      likes: 124,
-      comments: 18,
-      shares: 45,
-      views: "2.3K",
-      trending: true,
-      isSponsored: false,
-    },
-    {
-      id: 2,
-      author: {
-        name: getDisplayName(),
-        username: getDisplayUsername(),
-        avatar: getAvatarUrl(),
-        verified: true,
-        followers: "1.2K",
-      },
-      title: "Building Scalable REST APIs",
-      content: "Learn how to build production-ready REST APIs using Node.js, Express, and MongoDB. This tutorial covers authentication, error handling, rate limiting, and best practices for API design that will help you create robust backend services.",
-      excerpt: "Learn how to build production-ready REST APIs using Node.js, Express, and MongoDB. This tutorial covers authentication, error handling, rate limiting...",
-      image:
-        "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&h=400&fit=crop",
-      tags: ["Node.js", "Backend", "API"],
-      readTime: "8 min read",
-      date: "5 days ago",
-      likes: 256,
-      comments: 34,
-      shares: 89,
-      views: "5.6K",
-      trending: true,
-      isSponsored: false,
-    },
-    {
-      id: 3,
-      author: {
-        name: getDisplayName(),
-        username: getDisplayUsername(),
-        avatar: getAvatarUrl(),
-        verified: true,
-        followers: "1.2K",
-      },
-      title: "My Journey Learning TypeScript",
-      content:
-        "After years of writing JavaScript, I decided to dive deep into TypeScript. Here is what I learned along the way and why I think every JavaScript developer should consider making the switch to TypeScript for better code quality and developer experience.",
-      excerpt:
-        "After years of writing JavaScript, I decided to dive deep into TypeScript. Here is what I learned along the way and why I think every JavaScript developer should...",
-      image:
-        "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=800&h=400&fit=crop",
-      tags: ["TypeScript", "Learning", "JavaScript"],
-      readTime: "6 min read",
-      date: "1 week ago",
-      likes: 312,
-      comments: 45,
-      shares: 124,
-      views: "8.9K",
-      trending: false,
-      isSponsored: false,
-    },
-    {
-      id: 4,
-      author: {
-        name: getDisplayName(),
-        username: getDisplayUsername(),
-        avatar: getAvatarUrl(),
-        verified: true,
-        followers: "1.2K",
-      },
-      title: "CSS Grid vs Flexbox",
-      content: "Understanding when to use CSS Grid vs Flexbox in modern web development.",
-      excerpt: "Understanding when to use CSS Grid vs Flexbox in modern web development.",
-      image: null,
-      tags: ["CSS", "Frontend", "Web Design"],
-      readTime: "4 min read",
-      date: "2 weeks ago",
-      likes: 178,
-      comments: 23,
-      shares: 67,
-      views: "3.2K",
-      trending: false,
-      isSponsored: false,
-    },
-  ];
+  const handleTabClick = async (tabId) => {
+    setActiveTab(tabId);
+    
+    const targetUserId = userId || currentUser?.id;
+    if (!targetUserId) return;
+    
+    try {
+      if (tabId === "followers") {
+        const followersData = await getUserFollowers(targetUserId);
+        setFollowers(followersData);
+      } else if (tabId === "following") {
+        const followingData = await getUserFollowing(targetUserId);
+        setFollowing(followingData);
+      }
+    } catch (error) {
+      console.error(`Error fetching ${tabId}:`, error);
+    }
+  };
 
-  const tabs = [
-    { id: "posts", label: "Posts", count: profile.stats.posts, icon: <FileText className="w-4 h-4" /> },
-    { id: "about", label: "About", icon: <Users className="w-4 h-4" /> },
-  ];
-
+  // Post interaction functions
   const toggleLike = (postId) => {
     setLikedPosts((prev) => {
       const newSet = new Set(prev);
@@ -237,27 +241,14 @@ export default function ProfilePage() {
     }
   };
 
-  const toggleRepost = (postId) => {
-    setRepostedPosts((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(postId)) {
-        newSet.delete(postId);
-      } else {
-        newSet.add(postId);
-      }
-      return newSet;
-    });
-    setActiveMenuPost(null);
-  };
-
   const handleSendComment = (postId) => {
     if (newComment.trim()) {
       const comment = {
         id: Date.now(),
         author: {
-          name: "You",
-          username: "currentuser",
-          avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser",
+          name: currentUser?.full_name || "You",
+          username: currentUser?.username || "currentuser",
+          avatar: currentUser?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser",
         },
         content: newComment,
         timestamp: "Just now",
@@ -294,27 +285,77 @@ export default function ProfilePage() {
     });
   };
 
-  // If no user and still loading, show loading state
-  if (isPageLoading) {
-    return <PageLoader />;
+  // Format date
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Recently';
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = (now - date) / (1000 * 60 * 60);
+    
+    if (diffInHours < 1) {
+      return `${Math.floor(diffInHours * 60)} minutes ago`;
+    } else if (diffInHours < 24) {
+      return `${Math.floor(diffInHours)} hours ago`;
+    } else if (diffInHours < 168) {
+      return `${Math.floor(diffInHours / 24)} days ago`;
+    } else {
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+  };
+
+  const formatJoinDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  const getAvatarUrl = () => {
+    if (!profileUser) return "https://api.dicebear.com/7.x/avataaars/svg?seed=default";
+    return profileUser.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profileUser.username || "user"}`;
+  };
+
+  const tabs = [
+    { id: "posts", label: "Posts", count: stats.posts, icon: <FileText className="w-4 h-4" /> },
+    { id: "about", label: "About", icon: <Users className="w-4 h-4" /> },
+    { id: "followers", label: "Followers", count: stats.followers, icon: <Users className="w-4 h-4" /> },
+    { id: "following", label: "Following", count: stats.following, icon: <Users className="w-4 h-4" /> },
+  ];
+
+  if (loading) {
+    return (
+      <>
+        <NavbarPrivate />
+        <div className={`min-h-screen ${theme === 'light' ? 'bg-gray-50' : 'bg-slate-900'} pt-16 md:pt-20`}>
+          <div className="max-w-5xl mx-auto px-4 py-8">
+            <div className="animate-pulse">
+              <div className={`h-52 ${theme === 'light' ? 'bg-gray-200' : 'bg-slate-700'} rounded-2xl mb-8`}></div>
+              <div className={`h-96 ${theme === 'light' ? 'bg-gray-200' : 'bg-slate-700'} rounded-2xl`}></div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
   }
 
-  // If no user after loading, redirect or show message
-  if (!user) {
+  if (!profileUser) {
     return (
-      <div className={`min-h-screen bg-gradient-to-b ${theme === 'light' ? 'from-gray-50 via-white to-white' : 'from-slate-900 via-slate-900 to-slate-950'} flex items-center justify-center`}>
-        <div className="text-center">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-            Please log in to view profile
-          </h2>
-          <button
-            onClick={() => window.location.href = "/login"}
-            className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
-          >
-            Go to Login
-          </button>
+      <>
+        <NavbarPrivate />
+        <div className={`min-h-screen ${theme === 'light' ? 'bg-gray-50' : 'bg-slate-900'} pt-16 md:pt-20`}>
+          <div className="max-w-5xl mx-auto px-4 py-8 text-center">
+            <h2 className="text-2xl font-bold text-gray-600 dark:text-gray-400 mb-4">
+              User not found
+            </h2>
+            <button
+              onClick={() => navigate('/home')}
+              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg"
+            >
+              Go Home
+            </button>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -323,10 +364,10 @@ export default function ProfilePage() {
       <NavbarPrivate />
       <div className={`min-h-screen bg-gradient-to-b ${theme === 'light' ? 'from-gray-50 via-white to-white' : 'from-slate-900 via-slate-900 to-slate-950'} pt-16 md:pt-20`}>
         <div className="max-w-5xl mx-auto px-4 py-8">
-          {/* Profile Header - Enhanced Design */}
-          <div className={`relative ${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg border ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} rounded-2xl shadow-lg hover:shadow-xl ${theme === 'light' ? '' : 'dark:hover:shadow-slate-900/50'} transition-all duration-300 mb-8 overflow-hidden`}>
+          {/* Profile Header */}
+          <div className={`relative ${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg border ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 mb-8 overflow-hidden`}>
             {/* Cover Photo */}
-            <div className={`h-32 sm:h-40 md:h-52 bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 ${theme === 'dark' ? 'dark:from-blue-700 dark:via-blue-600 dark:to-purple-700' : ''} relative`}>
+            <div className={`h-32 sm:h-40 md:h-52 bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 relative`}>
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </div>
 
@@ -337,17 +378,10 @@ export default function ProfilePage() {
                 <div className="relative">
                   <div className={`relative w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-2xl border-4 ${theme === 'light' ? 'border-white' : 'border-slate-800'} shadow-xl overflow-hidden bg-gradient-to-br from-blue-500 to-purple-500 p-1`}>
                     <img
-                      src={profile.avatar}
-                      alt={profile.name}
+                      src={getAvatarUrl()}
+                      alt={profileUser.full_name || profileUser.username}
                       className="w-full h-full rounded-xl object-cover"
                     />
-                    {profile.verified && (
-                      <div className={`absolute -bottom-1 -right-1 w-7 h-7 sm:w-8 sm:h-8 bg-blue-500 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} flex items-center justify-center`}>
-                        <svg className="w-2 h-2 sm:w-3 sm:h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                        </svg>
-                      </div>
-                    )}
                   </div>
                 </div>
 
@@ -364,7 +398,7 @@ export default function ProfilePage() {
                   ) : (
                     <>
                       <button
-                        onClick={() => setIsFollowing(!isFollowing)}
+                        onClick={handleFollowToggle}
                         className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-semibold transition-all duration-300 text-sm ${
                           isFollowing
                             ? `${theme === 'light' ? 'bg-gray-200 text-gray-700 hover:bg-gray-300 border-gray-300' : 'bg-slate-700 text-gray-300 hover:bg-slate-600 border-slate-600'} border`
@@ -386,10 +420,10 @@ export default function ProfilePage() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
                     <h1 className={`text-xl sm:text-2xl md:text-3xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                      {profile.name}
+                      {profileUser.full_name || profileUser.username}
                     </h1>
                     <p className={`${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} text-sm md:text-base mt-0.5`}>
-                      @{profile.username}
+                      @{profileUser.username}
                     </p>
                   </div>
                   <button className={`flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 ${theme === 'light' ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'} rounded-xl transition-all duration-300 self-start sm:self-center text-sm`}>
@@ -398,45 +432,47 @@ export default function ProfilePage() {
                   </button>
                 </div>
 
-                <p className={`mt-3 sm:mt-4 ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-sm md:text-base leading-relaxed`}>
-                  {profile.bio}
-                </p>
+                {profileUser.bio && (
+                  <p className={`mt-3 sm:mt-4 ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-sm md:text-base leading-relaxed`}>
+                    {profileUser.bio}
+                  </p>
+                )}
 
                 {/* Profile Stats */}
                 <div className={`flex flex-wrap items-center gap-4 sm:gap-6 mt-4 sm:mt-5 pt-4 sm:pt-5 border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
-                  <div className="flex items-center gap-1.5 cursor-pointer group">
+                  <div className="flex items-center gap-1.5">
                     <div className="p-1.5 sm:p-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg">
                       <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500" />
                     </div>
                     <div>
-                      <span className={`font-bold ${theme === 'light' ? 'text-gray-900 group-hover:text-blue-600' : 'text-white group-hover:text-blue-500'} text-base sm:text-lg transition-colors`}>
-                        {profile.stats.posts}
+                      <span className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-base sm:text-lg`}>
+                        {stats.posts}
                       </span>
                       <span className={`ml-1.5 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-xs sm:text-sm`}>
                         Posts
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5 cursor-pointer group">
+                  <div className="flex items-center gap-1.5">
                     <div className="p-1.5 sm:p-2 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg">
                       <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500" />
                     </div>
                     <div>
-                      <span className={`font-bold ${theme === 'light' ? 'text-gray-900 group-hover:text-green-600' : 'text-white group-hover:text-green-500'} text-base sm:text-lg transition-colors`}>
-                        {profile.stats.followers}
+                      <span className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-base sm:text-lg`}>
+                        {stats.followers}
                       </span>
                       <span className={`ml-1.5 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-xs sm:text-sm`}>
                         Followers
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5 cursor-pointer group">
+                  <div className="flex items-center gap-1.5">
                     <div className="p-1.5 sm:p-2 bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-lg">
                       <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500" />
                     </div>
                     <div>
-                      <span className={`font-bold ${theme === 'light' ? 'text-gray-900 group-hover:text-orange-600' : 'text-white group-hover:text-orange-500'} text-base sm:text-lg transition-colors`}>
-                        {profile.stats.following}
+                      <span className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-base sm:text-lg`}>
+                        {stats.following}
                       </span>
                       <span className={`ml-1.5 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-xs sm:text-sm`}>
                         Following
@@ -447,49 +483,31 @@ export default function ProfilePage() {
 
                 {/* Profile Meta Info */}
                 <div className={`flex flex-wrap items-center gap-3 sm:gap-4 mt-4 text-xs sm:text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                  {profile.location && (
+                  {profileUser.location && (
                     <div className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50' : 'from-blue-900/20 to-purple-900/20'} rounded-full`}>
                       <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-500" />
-                      <span>{profile.location}</span>
+                      <span>{profileUser.location}</span>
                     </div>
                   )}
-                  {profile.website && (
+                  {profileUser.website_url && (
                     <a
-                      href={`https://${profile.website}`}
+                      href={profileUser.website_url.startsWith('http') ? profileUser.website_url : `https://${profileUser.website_url}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100' : 'from-blue-900/20 to-purple-900/20 hover:from-blue-900/30 hover:to-purple-900/30'} rounded-full transition-all`}
                     >
                       <Link2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-500" />
-                      <span>{profile.website}</span>
+                      <span>{profileUser.website_url}</span>
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   )}
-                  <div className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50' : 'from-blue-900/20 to-purple-900/20'} rounded-full`}>
-                    <Calendar className="w-3.5 h-3.5 text-blue-500" />
-                    <span>Joined {profile.joinedDate}</span>
-                  </div>
-                </div>
-
-                {/* Badges */}
-                {profile.badges && profile.badges.length > 0 && (
-                  <div className="mt-5">
-                    <h3 className={`text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2`}>
-                      Badges & Achievements
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {profile.badges.map((badge, index) => (
-                        <span
-                          key={index}
-                          className={`px-3 py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-yellow-50 to-amber-50 text-yellow-700 border-yellow-200' : 'from-yellow-900/20 to-amber-900/20 text-yellow-400 border-yellow-800/30'} text-sm font-medium rounded-full border`}
-                        >
-                          <Star className="w-3 h-3 inline mr-1" />
-                          {badge}
-                        </span>
-                      ))}
+                  {profileUser.created_at && (
+                    <div className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50' : 'from-blue-900/20 to-purple-900/20'} rounded-full`}>
+                      <Calendar className="w-3.5 h-3.5 text-blue-500" />
+                      <span>Joined {formatJoinDate(profileUser.created_at)}</span>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -500,7 +518,7 @@ export default function ProfilePage() {
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => handleTabClick(tab.id)}
                   className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold whitespace-nowrap transition-all duration-300 ${
                     activeTab === tab.id
                       ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
@@ -523,97 +541,60 @@ export default function ProfilePage() {
           <div className="space-y-8">
             {activeTab === "posts" && (
               <>
-                {userPosts.length > 0 ? (
-                  userPosts.map((post) => {
+                {posts.length > 0 ? (
+                  posts.map((post) => {
                     const isLiked = likedPosts.has(post.id);
                     const isBookmarked = bookmarkedPosts.has(post.id);
                     const isCommentsOpen = activeCommentPost === post.id;
                     const isMenuOpen = activeMenuPost === post.id;
-                    const isReposted = repostedPosts.has(post.id);
 
                     return (
                       <article
                         key={post.id}
-                        className={`group relative ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} shadow-lg hover:shadow-2xl ${theme === 'light' ? '' : 'dark:hover:shadow-slate-900/50'} transition-all duration-300 hover:-translate-y-1 overflow-hidden`}
+                        className={`group relative ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 overflow-hidden`}
                       >
                         {/* Post Header */}
                         <div className="p-6 pb-4">
                           <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center gap-3">
-                              <div className="relative">
+                              <Link to={`/profile/${profileUser.id}`}>
                                 <img
-                                  src={post.author.avatar}
-                                  alt={post.author.name}
-                                  className={`w-12 h-12 rounded-xl border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} shadow-sm`}
+                                  src={getAvatarUrl()}
+                                  alt={profileUser.full_name || profileUser.username}
+                                  className={`w-12 h-12 rounded-xl border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} shadow-sm cursor-pointer hover:opacity-90 transition-opacity`}
                                 />
-                                {post.author.verified && (
-                                  <div className={`absolute -bottom-1 -right-1 w-5 h-5 bg-blue-500 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} flex items-center justify-center`}>
-                                    <svg
-                                      className="w-2 h-2 text-white"
-                                      fill="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                                    </svg>
-                                  </div>
-                                )}
-                              </div>
+                              </Link>
                               <div>
                                 <div className="flex items-center gap-2">
-                                  <h3 className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm`}>
-                                    {post.author.name}
-                                  </h3>
+                                  <Link 
+                                    to={`/profile/${profileUser.id}`}
+                                    className="hover:underline"
+                                  >
+                                    <h3 className={`font-bold ${theme === 'light' ? 'text-gray-900 hover:text-blue-600' : 'text-white hover:text-blue-500'} text-sm transition-colors`}>
+                                      {profileUser.full_name || profileUser.username}
+                                    </h3>
+                                  </Link>
                                   <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                                     •
                                   </span>
                                   <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                    {post.date}
+                                    {formatDate(post.createdat)}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                    @{post.author.username}
-                                  </p>
-                                  <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                    •
-                                  </span>
-                                  <div className={`flex items-center gap-1 text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                    <Users className="w-3 h-3" />
-                                    <span>{post.author.followers}</span>
-                                  </div>
+                                  <Link 
+                                    to={`/profile/${profileUser.id}`}
+                                    className="hover:underline"
+                                  >
+                                    <p className={`text-xs ${theme === 'light' ? 'text-gray-500 hover:text-blue-600' : 'text-gray-400 hover:text-blue-500'} transition-colors`}>
+                                      @{profileUser.username}
+                                    </p>
+                                  </Link>
                                 </div>
                               </div>
                             </div>
 
-                            {/* Right side container for badges and menu button */}
                             <div className="flex items-center gap-2">
-                              {/* Badges container */}
-                              <div className="flex flex-wrap justify-end gap-1">
-                                {post.trending && (
-                                  <span className="px-2 py-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full flex items-center gap-1 shadow-lg">
-                                    <TrendingUp className="w-3 h-3" />
-                                    Trending
-                                  </span>
-                                )}
-
-                                {post.isSponsored && (
-                                  <span className="px-2 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full flex items-center gap-1 shadow-lg">
-                                    <Star className="w-3 h-3" />
-                                    Sponsored
-                                  </span>
-                                )}
-
-                                {isReposted && (
-                                  <div className={`flex items-center gap-1 text-xs ${theme === 'light' ? 'text-slate-500 bg-white/90' : 'text-slate-400 bg-slate-800/90'} backdrop-blur-sm px-2 py-1 rounded-full shadow-lg`}>
-                                    <Repeat2 className="w-3 h-3 text-green-500" />
-                                    <span className={`font-medium ${theme === 'light' ? 'text-green-600' : 'text-green-400'}`}>
-                                      You reposted
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Menu Button */}
                               <button
                                 onClick={() => toggleMenu(post.id)}
                                 className={`p-2 ${theme === 'light' ? 'text-gray-600 hover:text-blue-500 hover:bg-blue-50' : 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/20'} rounded-xl transition-all duration-300`}
@@ -624,9 +605,11 @@ export default function ProfilePage() {
                           </div>
 
                           {/* Post Title */}
-                          <h2 className={`text-2xl md:text-3xl font-bold ${theme === 'light' ? 'text-gray-900 hover:text-blue-600' : 'text-white hover:text-blue-500'} mb-3 transition-colors cursor-pointer leading-tight`}>
-                            {post.title}
-                          </h2>
+                          <Link to={`/post/${post.id}`}>
+                            <h2 className={`text-2xl md:text-3xl font-bold ${theme === 'light' ? 'text-gray-900 hover:text-blue-600' : 'text-white hover:text-blue-500'} mb-3 transition-colors cursor-pointer leading-tight`}>
+                              {post.title}
+                            </h2>
+                          </Link>
 
                           {/* Post Content */}
                           {expandedPostId === post.id ? (
@@ -645,9 +628,9 @@ export default function ProfilePage() {
                             <div className="relative">
                               <div className="relative mb-3">
                                 <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} line-clamp-2 leading-relaxed pr-4`}>
-                                  {post.excerpt || post.content}
+                                  {post.content?.substring(0, 150)}...
                                 </p>
-                                {(post.excerpt || post.content.length > 150) && (
+                                {post.content && post.content.length > 150 && (
                                   <div className={`absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t ${theme === 'light' ? 'from-white' : 'from-slate-800'} to-transparent flex items-end justify-center`}>
                                     <button
                                       onClick={() => setExpandedPostId(post.id)}
@@ -663,29 +646,33 @@ export default function ProfilePage() {
                         </div>
 
                         {/* Featured Image */}
-                        {post.image && (
-                          <div className="w-full h-72 md:h-80 overflow-hidden">
-                            <img
-                              src={post.image}
-                              alt={post.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
-                            />
-                          </div>
+                        {post.featured_image && (
+                          <Link to={`/post/${post.id}`}>
+                            <div className="w-full h-72 md:h-80 overflow-hidden">
+                              <img
+                                src={post.featured_image}
+                                alt={post.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+                              />
+                            </div>
+                          </Link>
                         )}
 
                         {/* Post Footer */}
                         <div className="p-6 pt-4">
                           {/* Tags */}
-                          <div className="flex flex-wrap gap-2 mb-4">
-                            {post.tags.map((tag, index) => (
-                              <span
-                                key={index}
-                                className={`px-3 py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50 text-blue-700 hover:from-blue-100 hover:to-purple-100' : 'from-blue-900/20 to-purple-900/20 text-blue-400 hover:from-blue-900/30 hover:to-purple-900/30'} text-sm font-medium rounded-full transition-all cursor-pointer`}
-                              >
-                                #{tag}
-                              </span>
-                            ))}
-                          </div>
+                          {post.tags && post.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {post.tags.map((tag, index) => (
+                                <span
+                                  key={index}
+                                  className={`px-3 py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50 text-blue-700 hover:from-blue-100 hover:to-purple-100' : 'from-blue-900/20 to-purple-900/20 text-blue-400 hover:from-blue-900/30 hover:to-purple-900/30'} text-sm font-medium rounded-full transition-all cursor-pointer`}
+                                >
+                                  #{tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
 
                           {/* Stats & Actions */}
                           <div className={`flex items-center justify-between pt-4 border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
@@ -693,12 +680,14 @@ export default function ProfilePage() {
                             <div className={`flex items-center gap-6 text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
                               <div className="flex items-center gap-1">
                                 <Clock className="w-4 h-4" />
-                                <span>{post.readTime}</span>
+                                <span>{post.read_time || '5 min'}</span>
                               </div>
-                              <div className="flex items-center gap-1">
-                                <Eye className="w-4 h-4" />
-                                <span>{post.views}</span>
-                              </div>
+                              {post.viewscount > 0 && (
+                                <div className="flex items-center gap-1">
+                                  <Eye className="w-4 h-4" />
+                                  <span>{post.viewscount}</span>
+                                </div>
+                              )}
                             </div>
 
                             {/* Action Buttons */}
@@ -718,7 +707,7 @@ export default function ProfilePage() {
                                   }`}
                                 />
                                 <span className="font-medium">
-                                  {post.likes + (isLiked ? 1 : 0)}
+                                  {post.likescount || 0}
                                 </span>
                               </button>
 
@@ -733,16 +722,8 @@ export default function ProfilePage() {
                               >
                                 <MessageCircle className="w-5 h-5" />
                                 <span className="font-medium">
-                                  {post.comments + (comments[post.id]?.length || 0)}
+                                  {post.comments_count || 0}
                                 </span>
-                              </button>
-
-                              {/* Share */}
-                              <button
-                                onClick={() => toggleMenu(post.id)}
-                                className={`p-2.5 ${theme === 'light' ? 'text-gray-600 hover:text-blue-500 hover:bg-blue-50' : 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/20'} rounded-xl transition-all duration-300`}
-                              >
-                                <ShareIcon className="w-5 h-5" />
                               </button>
 
                               {/* Bookmark */}
@@ -819,7 +800,7 @@ export default function ProfilePage() {
                               <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-4`}>
                                 <div className="flex items-end gap-4">
                                   <img
-                                    src="https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser"
+                                    src={currentUser?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser"}
                                     alt="You"
                                     className={`w-10 h-10 rounded-full border-2 ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} flex-shrink-0`}
                                   />
@@ -867,10 +848,13 @@ export default function ProfilePage() {
                       No posts yet
                     </h3>
                     <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mb-6 max-w-md mx-auto`}>
-                      Share your thoughts and experiences with the community
+                      {isOwnProfile ? "Share your thoughts and experiences with the community" : "This user hasn't posted anything yet"}
                     </p>
                     {isOwnProfile && (
-                      <button className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      <button 
+                        onClick={() => navigate('/create')}
+                        className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+                      >
                         <Zap className="w-4 h-4 inline mr-2" />
                         Write your first post
                       </button>
@@ -881,141 +865,141 @@ export default function ProfilePage() {
             )}
 
             {activeTab === "about" && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* About Card */}
-                <div className="lg:col-span-2">
-                  <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-6 shadow-lg transition-all duration-300`}>
-                    <h3 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-4`}>
-                      About {profile.name}
-                    </h3>
-                    
-                    <div className="space-y-6">
-                      <div>
-                        <h4 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 text-sm uppercase tracking-wider ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                          Bio
-                        </h4>
-                        <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} leading-relaxed`}>
-                          {profile.bio}
-                        </p>
-                      </div>
-
-                      {/* Topics of Interest */}
-                      <div>
-                        <h4 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 text-sm uppercase tracking-wider ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                          Topics of Interest
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {profile.topics.map((topic, index) => (
-                            <span
-                              key={index}
-                              className={`px-4 py-2 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50 text-blue-700 hover:from-blue-100 hover:to-purple-100' : 'from-blue-900/20 to-purple-900/20 text-blue-400 hover:from-blue-900/30 hover:to-purple-900/30'} font-medium rounded-xl transition-all cursor-pointer`}
-                            >
-                              <Hash className="w-3.5 h-3.5 inline mr-1.5" />
-                              {topic}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Stats Cards */}
-                      <div>
-                        <h4 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 text-sm uppercase tracking-wider ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                          Activity Stats
-                        </h4>
-                        <div className="grid grid-cols-3 gap-4">
-                          <div className={`text-center p-4 bg-gradient-to-br ${theme === 'light' ? 'from-blue-50 to-purple-50 border-blue-100' : 'from-blue-900/10 to-purple-900/10 border-blue-800/30'} rounded-xl border`}>
-                            <div className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                              {profile.stats.posts}
-                            </div>
-                            <div className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mt-1`}>
-                              Posts
-                            </div>
-                          </div>
-                          <div className={`text-center p-4 bg-gradient-to-br ${theme === 'light' ? 'from-green-50 to-emerald-50 border-green-100' : 'from-green-900/10 to-emerald-900/10 border-green-800/30'} rounded-xl border`}>
-                            <div className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                              {profile.stats.followers}
-                            </div>
-                            <div className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mt-1`}>
-                              Followers
-                            </div>
-                          </div>
-                          <div className={`text-center p-4 bg-gradient-to-br ${theme === 'light' ? 'from-orange-50 to-red-50 border-orange-100' : 'from-orange-900/10 to-red-900/10 border-orange-800/30'} rounded-xl border`}>
-                            <div className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                              {profile.stats.following}
-                            </div>
-                            <div className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mt-1`}>
-                              Following
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Side Info */}
+              <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-6 shadow-lg`}>
+                <h3 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-6`}>
+                  About {profileUser.full_name || profileUser.username}
+                </h3>
+                
                 <div className="space-y-6">
-                  {/* Join Date */}
-                  <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-5 shadow-lg transition-all duration-300`}>
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg">
-                        <Calendar className="w-5 h-5 text-blue-500" />
+                  {profileUser.bio && (
+                    <div>
+                      <h4 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 text-sm uppercase tracking-wider ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                        Bio
+                      </h4>
+                      <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} leading-relaxed`}>
+                        {profileUser.bio}
+                      </p>
+                    </div>
+                  )}
+
+                  <div>
+                    <h4 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 text-sm uppercase tracking-wider ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                      Activity Stats
+                    </h4>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className={`text-center p-4 bg-gradient-to-br ${theme === 'light' ? 'from-blue-50 to-purple-50 border-blue-100' : 'from-blue-900/10 to-purple-900/10 border-blue-800/30'} rounded-xl border`}>
+                        <div className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                          {stats.posts}
+                        </div>
+                        <div className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mt-1`}>
+                          Posts
+                        </div>
                       </div>
-                      <div>
-                        <h4 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                          Member Since
-                        </h4>
-                        <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                          {profile.joinedDate}
-                        </p>
+                      <div className={`text-center p-4 bg-gradient-to-br ${theme === 'light' ? 'from-green-50 to-emerald-50 border-green-100' : 'from-green-900/10 to-emerald-900/10 border-green-800/30'} rounded-xl border`}>
+                        <div className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                          {stats.followers}
+                        </div>
+                        <div className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mt-1`}>
+                          Followers
+                        </div>
+                      </div>
+                      <div className={`text-center p-4 bg-gradient-to-br ${theme === 'light' ? 'from-orange-50 to-red-50 border-orange-100' : 'from-orange-900/10 to-red-900/10 border-orange-800/30'} rounded-xl border`}>
+                        <div className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                          {stats.following}
+                        </div>
+                        <div className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mt-1`}>
+                          Following
+                        </div>
                       </div>
                     </div>
                   </div>
-
-                  {/* Location */}
-                  {profile.location && (
-                    <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-5 shadow-lg transition-all duration-300`}>
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="p-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg">
-                          <MapPin className="w-5 h-5 text-blue-500" />
-                        </div>
-                        <div>
-                          <h4 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                            Location
-                          </h4>
-                          <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                            {profile.location}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Website */}
-                  {profile.website && (
-                    <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-5 shadow-lg transition-all duration-300`}>
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="p-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg">
-                          <Link2 className="w-5 h-5 text-blue-500" />
-                        </div>
-                        <div>
-                          <h4 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                            Website
-                          </h4>
-                          <a
-                            href={`https://${profile.website}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={`text-sm ${theme === 'light' ? 'text-blue-600' : 'text-blue-400'} hover:underline flex items-center gap-1`}
-                          >
-                            {profile.website}
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
+              </div>
+            )}
+
+            {activeTab === "followers" && (
+              <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-6 shadow-lg`}>
+                <h3 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-6`}>
+                  Followers ({stats.followers})
+                </h3>
+                {followers.length > 0 ? (
+                  <div className="space-y-4">
+                    {followers.map((follower) => (
+                      <div key={follower.id} className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl transition-colors">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={follower.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${follower.username}`}
+                            alt={follower.full_name}
+                            className="w-12 h-12 rounded-full"
+                          />
+                          <div>
+                            <h4 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                              {follower.full_name}
+                            </h4>
+                            <p className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                              @{follower.username}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => console.log('Follow', follower.id)}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          Follow
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                      No followers yet
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "following" && (
+              <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-6 shadow-lg`}>
+                <h3 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-6`}>
+                  Following ({stats.following})
+                </h3>
+                {following.length > 0 ? (
+                  <div className="space-y-4">
+                    {following.map((followingUser) => (
+                      <div key={followingUser.id} className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl transition-colors">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={followingUser.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${followingUser.username}`}
+                            alt={followingUser.full_name}
+                            className="w-12 h-12 rounded-full"
+                          />
+                          <div>
+                            <h4 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                              {followingUser.full_name}
+                            </h4>
+                            <p className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                              @{followingUser.username}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => console.log('Unfollow', followingUser.id)}
+                          className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors"
+                        >
+                          Following
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                      Not following anyone yet
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1024,7 +1008,11 @@ export default function ProfilePage() {
         <EditProfileModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          currentProfile={profile}
+          currentProfile={profileUser}
+          onProfileUpdate={(updatedProfile) => {
+            setProfileUser(updatedProfile);
+            fetchUserProfile(); // Refresh data
+          }}
         />
       </div>
     </>

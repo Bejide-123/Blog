@@ -67,12 +67,15 @@ export const checkFollowStatus = async (targetUserId) => {
   }
 };
 
-// --------------------- TOGGLE FOLLOW ---------------------
-// --------------------- TOGGLE FOLLOW (Improved Simplified Version) ---------------------
+// --------------------- TOGGLE FOLLOW (DEBUG VERSION) ---------------------
 export const toggleFollowUser = async (targetUserId) => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
+
+    console.log('DEBUG: Starting follow toggle');
+    console.log('DEBUG: Current user ID:', user.id);
+    console.log('DEBUG: Target user ID:', targetUserId);
 
     // Check existing follow
     const { data: existingFollow } = await supabase
@@ -82,81 +85,109 @@ export const toggleFollowUser = async (targetUserId) => {
       .eq('following_id', targetUserId)
       .maybeSingle();
 
+    console.log('DEBUG: Already following?', !!existingFollow);
+
     if (existingFollow) {
       // UNFOLLOW
-      // Get current counts FIRST (before deleting)
-      const [targetProfileRes, currentProfileRes] = await Promise.all([
-        supabase
-          .from('profiles')
-          .select('followers_count')
-          .eq('id', targetUserId)
-          .single(),
-        supabase
-          .from('profiles')
-          .select('following_count')
-          .eq('id', user.id)
-          .single()
-      ]);
-
-      if (targetProfileRes.error) throw targetProfileRes.error;
-      if (currentProfileRes.error) throw currentProfileRes.error;
-
-      const targetProfile = targetProfileRes.data;
-      const currentProfile = currentProfileRes.data;
-
-      // Delete the follow record
+      console.log('DEBUG: Unfollowing user', targetUserId);
+      
+      // 1. Delete the follow record
       const { error: deleteError } = await supabase
         .from('follows')
         .delete()
         .eq('follower_id', user.id)
         .eq('following_id', targetUserId);
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        console.error('DEBUG: Delete error:', deleteError);
+        throw deleteError;
+      }
       
-      // Update counts AFTER successful delete
-      const [updateTarget, updateCurrent] = await Promise.all([
-        supabase
-          .from('profiles')
-          .update({ 
-            followers_count: Math.max((targetProfile?.followers_count || 0) - 1, 0) 
-          })
-          .eq('id', targetUserId),
-        supabase
-          .from('profiles')
-          .update({ 
-            following_count: Math.max((currentProfile?.following_count || 0) - 1, 0) 
-          })
-          .eq('id', user.id)
-      ]);
-
-      if (updateTarget.error) console.warn('Failed to update target followers:', updateTarget.error);
-      if (updateCurrent.error) console.warn('Failed to update current following:', updateCurrent.error);
+      console.log('DEBUG: Follow record deleted');
       
+      // 2. Get CURRENT profiles data
+      console.log('DEBUG: Fetching current profiles...');
+      
+      // Get target user's current followers count
+      const { data: targetProfile, error: targetError } = await supabase
+        .from('profiles')
+        .select('followers_count')
+        .eq('id', targetUserId)
+        .single();
+      
+      if (targetError) console.error('DEBUG: Target profile error:', targetError);
+      
+      // Get current user's current following count  
+      const { data: currentProfile, error: currentError } = await supabase
+        .from('profiles')
+        .select('following_count')
+        .eq('id', user.id)
+        .single();
+      
+      if (currentError) console.error('DEBUG: Current profile error:', currentError);
+      
+      console.log('DEBUG: Target current followers:', targetProfile?.followers_count || 0);
+      console.log('DEBUG: Current user following:', currentProfile?.following_count || 0);
+      
+      // 3. Update counts SIMPLY
+      // Update TARGET user's followers (person being unfollowed)
+      const { error: updateTargetError } = await supabase
+        .from('profiles')
+        .update({ 
+          followers_count: Math.max((targetProfile?.followers_count || 0) - 1, 0)
+        })
+        .eq('id', targetUserId);
+      
+      if (updateTargetError) {
+        console.error('DEBUG: Update target error:', updateTargetError);
+      } else {
+        console.log('DEBUG: Updated target followers count');
+      }
+      
+      // Update CURRENT user's following (person doing the unfollowing)
+      const { error: updateCurrentError } = await supabase
+        .from('profiles')
+        .update({ 
+          following_count: Math.max((currentProfile?.following_count || 0) - 1, 0)
+        })
+        .eq('id', user.id);
+      
+      if (updateCurrentError) {
+        console.error('DEBUG: Update current error:', updateCurrentError);
+      } else {
+        console.log('DEBUG: Updated current following count');
+      }
+      
+      console.log('DEBUG: Unfollow completed');
       return { isFollowing: false, action: 'unfollowed' };
       
     } else {
       // FOLLOW
-      // Get current counts FIRST (before inserting)
-      const [targetProfileRes, currentProfileRes] = await Promise.all([
-        supabase
-          .from('profiles')
-          .select('followers_count')
-          .eq('id', targetUserId)
-          .single(),
-        supabase
-          .from('profiles')
-          .select('following_count')
-          .eq('id', user.id)
-          .single()
-      ]);
-
-      if (targetProfileRes.error) throw targetProfileRes.error;
-      if (currentProfileRes.error) throw currentProfileRes.error;
-
-      const targetProfile = targetProfileRes.data;
-      const currentProfile = currentProfileRes.data;
-
-      // Create the follow record
+      console.log('DEBUG: Following user', targetUserId);
+      
+      // 1. First get current counts BEFORE inserting
+      console.log('DEBUG: Fetching current profiles BEFORE follow...');
+      
+      const { data: targetProfile, error: targetError } = await supabase
+        .from('profiles')
+        .select('followers_count')
+        .eq('id', targetUserId)
+        .single();
+      
+      if (targetError) console.error('DEBUG: Target profile error:', targetError);
+      
+      const { data: currentProfile, error: currentError } = await supabase
+        .from('profiles')
+        .select('following_count')
+        .eq('id', user.id)
+        .single();
+      
+      if (currentError) console.error('DEBUG: Current profile error:', currentError);
+      
+      console.log('DEBUG: Target current followers:', targetProfile?.followers_count || 0);
+      console.log('DEBUG: Current user following:', currentProfile?.following_count || 0);
+      
+      // 2. Insert follow record
       const { error: insertError } = await supabase
         .from('follows')
         .insert([{
@@ -165,44 +196,43 @@ export const toggleFollowUser = async (targetUserId) => {
           created_at: new Date().toISOString()
         }]);
 
-      if (insertError) throw insertError;
-      
-      // Update counts AFTER successful insert
-      const [updateTarget, updateCurrent] = await Promise.all([
-        supabase
-          .from('profiles')
-          .update({ 
-            followers_count: (targetProfile?.followers_count || 0) + 1 
-          })
-          .eq('id', targetUserId),
-        supabase
-          .from('profiles')
-          .update({ 
-            following_count: (currentProfile?.following_count || 0) + 1 
-          })
-          .eq('id', user.id)
-      ]);
-
-      if (updateTarget.error) {
-        // Rollback follow if count update fails
-        await supabase
-          .from('follows')
-          .delete()
-          .eq('follower_id', user.id)
-          .eq('following_id', targetUserId);
-        throw updateTarget.error;
+      if (insertError) {
+        console.error('DEBUG: Insert error:', insertError);
+        throw insertError;
       }
       
-      if (updateCurrent.error) {
-        // Rollback follow if count update fails
-        await supabase
-          .from('follows')
-          .delete()
-          .eq('follower_id', user.id)
-          .eq('following_id', targetUserId);
-        throw updateCurrent.error;
+      console.log('DEBUG: Follow record inserted');
+      
+      // 3. Update counts
+      // Update TARGET user's followers (person being followed) - INCREASE
+      const { error: updateTargetError } = await supabase
+        .from('profiles')
+        .update({ 
+          followers_count: (targetProfile?.followers_count || 0) + 1
+        })
+        .eq('id', targetUserId);
+      
+      if (updateTargetError) {
+        console.error('DEBUG: Update target error:', updateTargetError);
+      } else {
+        console.log('DEBUG: Updated target followers count to:', (targetProfile?.followers_count || 0) + 1);
       }
       
+      // Update CURRENT user's following (person doing the following) - INCREASE
+      const { error: updateCurrentError } = await supabase
+        .from('profiles')
+        .update({ 
+          following_count: (currentProfile?.following_count || 0) + 1
+        })
+        .eq('id', user.id);
+      
+      if (updateCurrentError) {
+        console.error('DEBUG: Update current error:', updateCurrentError);
+      } else {
+        console.log('DEBUG: Updated current following count to:', (currentProfile?.following_count || 0) + 1);
+      }
+      
+      console.log('DEBUG: Follow completed');
       return { isFollowing: true, action: 'followed' };
     }
   } catch (error) {
