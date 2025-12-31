@@ -6,6 +6,7 @@ import Auth from "./Pages/PublicPage/Login";
 import FullPostPage from "./Pages/ProtectedPage/FullPostPage";
 import SavedPage from "./Pages/ProtectedPage/SavedPage";
 import ProfilePage from "./Pages/ProtectedPage/Profile";
+import PublicProfilePage from "./Pages/ProtectedPage/PublicProfile";
 import CreatePostPage from "./Pages/ProtectedPage/CreatePost";
 import DashboardPage from "./Pages/ProtectedPage/Dashboard";
 import SettingsPage from "./Pages/ProtectedPage/Settings";
@@ -29,6 +30,7 @@ const App = () => {
           <Route path="/home" element={<FullPostPage />} />
           <Route path="/saved" element={<SavedPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile/:userId" element={<PublicProfilePage />} />
           <Route path="/create" element={<CreatePostPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/settings" element={<SettingsPage />} />

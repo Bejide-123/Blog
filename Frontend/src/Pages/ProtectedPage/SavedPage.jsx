@@ -21,7 +21,7 @@ import {
   Send,
 } from "lucide-react";
 import NavbarPrivate from "../../Components/Private/Navbarprivate";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { PageLoader } from "../../Components/Private/Loader";
 import { 
   getSavedPostsWithDetails, 
@@ -618,21 +618,25 @@ export default function SavedPage() {
                         <div className="p-4 sm:p-6 pb-4">
                           <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center gap-3">
-                              <div className="relative">
+                              <Link to={`/profile/${post.author?.id}`} className="relative">
                                 <img
                                   src={post.author?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.author?.username || 'anonymous'}`}
                                   alt={post.author?.full_name || 'Anonymous'}
                                   className={`w-12 h-12 rounded-xl border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} shadow-sm`}
                                 />
-                              </div>
+                              </Link>
                               <div>
                                 <div className="flex items-center gap-1 flex-wrap">
-                                  <h3 className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm`}>
-                                    {post.author?.full_name || 'Anonymous'}
-                                  </h3>
-                                  <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                    @{post.author?.username || 'anonymous'}
-                                  </span>
+                                  <Link to={`/profile/${post.author?.id}`}>
+                                    <h3 className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm`}>
+                                      {post.author?.full_name || 'Anonymous'}
+                                    </h3>
+                                  </Link>
+                                  <Link to={`/profile/${post.author?.id}`}>
+                                    <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                      @{post.author?.username || 'anonymous'}
+                                    </span>
+                                  </Link>
                                   <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} ml-1`}>
                                     • {formatDate(post.saved_at || post.createdat)}
                                   </span>

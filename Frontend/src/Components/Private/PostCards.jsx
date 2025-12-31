@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router-dom";
 // Import the new services
 import { 
   getPublicPosts, 
@@ -564,18 +564,20 @@ export default function FeedContent() {
                       <div className="p-4 sm:p-6 pb-4">
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center gap-3">
-                            <div className="relative">
+                            <Link to={`/profile/${post.author?.id}`} onClick={(e) => e.stopPropagation()} className="relative">
                               <img
                                 src={post.author?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.author?.username || 'anonymous'}`}
                                 alt={post.author?.full_name || 'Anonymous'}
                                 className={`w-12 h-12 rounded-xl border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} shadow-sm`}
                               />
-                            </div>
+                            </Link>
                             <div>
                               <div className="flex items-center gap-2">
-                                <h3 className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm`}>
-                                  {post.author?.full_name || 'Anonymous'}
-                                </h3>
+                                <Link to={`/profile/${post.author?.id}`} onClick={(e) => e.stopPropagation()}>
+                                  <h3 className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm`}>
+                                    {post.author?.full_name || 'Anonymous'}
+                                  </h3>
+                                </Link>
                                 <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                                   •
                                 </span>
@@ -584,9 +586,11 @@ export default function FeedContent() {
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                  @{post.author?.username || 'anonymous'}
-                                </p>
+                                <Link to={`/profile/${post.author?.id}`} onClick={(e) => e.stopPropagation()}>
+                                  <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                    @{post.author?.username || 'anonymous'}
+                                  </p>
+                                </Link>
                               </div>
                             </div>
                           </div>

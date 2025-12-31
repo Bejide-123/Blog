@@ -424,3 +424,128 @@ export const getPostsWithProfiles = async (options = {}) => {
     throw error
   }
 }
+
+// --------------------- GET USER PROFILE BY ID ---------------------
+export const getUserProfileById = async (userId) => {
+  try {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select(`
+        id,
+        username,
+        full_name,
+        avatar_url,
+        bio,
+        location,
+        website_url,
+        created_at,
+        followers_count,
+        following_count,
+        posts_count
+      `)
+      .eq('id', userId)
+      .single();
+
+    if (error) throw error;
+
+    return profile;
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    throw error;
+  }
+};
+
+// --------------------- CHECK FOLLOW STATUS ---------------------
+export const checkFollowStatus = async (targetUserId) => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { isFollowing: false };
+
+    const { data, error } = await supabase
+      .from('follows')
+      .select('id')
+      .eq('follower_id', user.id)
+      .eq('following_id', targetUserId)
+      .single();
+
+    return { isFollowing: !!data };
+  } catch (error) {
+    return { isFollowing: false };
+  }
+};
+
+// --------------------- TOGGLE FOLLOW ---------------------
+export const toggleFollowUser = async (targetUserId) => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    // Check current follow status
+    const { data: existingFollow } = await supabase
+      .from('follows')
+      .select('id')
+      .eq('follower_id', user.id)
+      .eq('following_id', targetUserId)
+      .single();
+
+    if (existingFollow) {
+      // Unfollow
+      const { error } = await supabase
+        .from('follows')
+        .delete()
+        .eq('follower_id', user.id)
+        .eq('following_id', targetUserId);
+
+      if (error) throw error;
+      return { isFollowing: false, action: 'unfollowed' };
+    } else {
+      // Follow
+      const { error } = await supabase
+        .from('follows')
+        .insert([{
+          follower_id: user.id,
+          following_id: targetUserId
+        }]);
+
+      if (error) throw error;
+      return { isFollowing: true, action: 'followed' };
+    }
+  } catch (error) {
+    console.error('Error toggling follow:', error);
+    throw error;
+  }
+};
+
+// --------------------- GET USER STATS ---------------------
+export const getUserStats = async (userId) => {
+  try {
+    const [
+      { count: postsCount },
+      { count: followersCount },
+      { count: followingCount }
+    ] = await Promise.all([
+      supabase
+        .from('posts')
+        .select('id', { count: 'exact', head: true })
+        .eq('authorid', userId)
+        .eq('status', 'published'),
+      supabase
+        .from('follows')
+        .select('id', { count: 'exact', head: true })
+        .eq('following_id', userId),
+      supabase
+        .from('follows')
+        .select('id', { count: 'exact', head: true })
+        .eq('follower_id', userId)
+    ]);
+
+    return {
+      posts: postsCount || 0,
+      followers: followersCount || 0,
+      following: followingCount || 0
+    };
+  } catch (error) {
+    console.error('Error fetching user stats:', error);
+    return { posts: 0, followers: 0, following: 0 };
+  }
+};
