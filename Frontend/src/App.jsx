@@ -12,15 +12,20 @@ import DashboardPage from "./Pages/ProtectedPage/Dashboard";
 import SettingsPage from "./Pages/ProtectedPage/Settings";
 import Notifications from "./Pages/ProtectedPage/Notifications";
 import { useTheme } from "./Context/themeContext";
-import { Toaster } from "react-hot-toast";
+import Toast from "./Components/Public/toast/Toast";
 import PostDetailsPage from "./Pages/PublicPage/PostDetails";
+import SearchResults from "./Pages/ProtectedPage/SearchPage";
 
 const App = () => {
   const { theme } = useTheme();
   return (
-    <div className={theme === "light" ? "bg-white text-black" : "bg-gray-900 text-white"}>
+    <div
+      className={
+        theme === "light" ? "bg-white text-black" : "bg-gray-900 text-white"
+      }
+    >
       <UserProvider>
-        <Toaster />
+        <Toast />
         <Routes>
           {/* Landing page with sections + navbar */}
           <Route path="/" element={<LandingPage />} />
@@ -36,6 +41,7 @@ const App = () => {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/post/:id" element={<PostDetailsPage />} />
+          <Route path="/search" element={<SearchResults />} />
         </Routes>
       </UserProvider>
     </div>

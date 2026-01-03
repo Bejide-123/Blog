@@ -15,6 +15,7 @@ import { signUp, signIn } from "../../Services/api";
 import { useUser } from "../../Context/userContext";
 import { supabase } from "../../lib/supabase";
 import { useTheme } from "../../Context/themeContext";
+import { toastService } from "../../Services/toastService";
 
 const Auth = () => {
   const { theme } = useTheme();
@@ -81,6 +82,12 @@ const Auth = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
+    
+    // Show loading toast
+    const loadingToast = toastService.loading(
+      isLogin ? "Signing you in..." : "Creating your account..."
+    );
+    
     setIsLoading(true);
 
     try {
@@ -92,9 +99,16 @@ const Auth = () => {
           email: formData.email,
           password: formData.password,
         });
-        if (!data?.user) throw new Error("Login failed: No user returned");
+        
+        if (!data?.user) {
+          throw new Error("Login failed: Invalid email or password");
+        }
 
         loggedInUser = data.user;
+        
+        // Show success toast for login
+        toastService.dismiss(loadingToast);
+        toastService.success(`Welcome back! Redirecting...`);
       } else {
         // Sign up new user
         const data = await signUp({
@@ -104,9 +118,17 @@ const Auth = () => {
           fullName: formData.name,
         });
 
-        if (!data?.user) throw new Error("Signup failed: No user returned");
+        if (!data?.user) {
+          throw new Error("Signup failed: Email might already be in use");
+        }
 
         loggedInUser = data.user;
+        
+        // Show success toast for signup
+        toastService.dismiss(loadingToast);
+        toastService.success(
+          `Welcome to Scribe, ${formData.name}! Account created successfully.`
+        );
       }
 
       // Fetch profile to ensure we get correct data
@@ -123,9 +145,19 @@ const Auth = () => {
         username: profileData?.username || "",
       });
 
-      nav("/home");
+      // Small delay before navigation to show toast
+      setTimeout(() => {
+        nav("/home");
+      }, isLogin ? 1000 : 1500);
+      
     } catch (err) {
-      alert(err?.message || "Something went wrong");
+      // Dismiss loading toast
+      toastService.dismiss(loadingToast);
+      
+      // Show error toast
+      toastService.error(err?.message || "Something went wrong. Please try again.");
+      
+      console.error("Auth error:", err);
     } finally {
       setIsLoading(false);
     }

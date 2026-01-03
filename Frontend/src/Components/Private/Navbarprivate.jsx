@@ -36,7 +36,6 @@ export default function NavbarPrivate() {
   const [notificationCount] = useState(3); // Example count
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
-  const [activeTab, setActiveTab] = useState("feed");
   const nav = useNavigate();
 
   // Update current path on location change
@@ -86,11 +85,30 @@ export default function NavbarPrivate() {
     }
   };
 
+  // SMART SEARCH FUNCTION WITH TYPE DETECTION
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      nav(`/search?q=${encodeURIComponent(searchQuery)}`);
+      // Smart search type detection
+      let searchType = 'all';
+      
+      // Check if search starts with @ (user search)
+      if (searchQuery.trim().startsWith('@')) {
+        searchType = 'users';
+      } 
+      // Check if search starts with # (tag search)
+      else if (searchQuery.trim().startsWith('#')) {
+        searchType = 'tags';
+      }
+      // Otherwise, it's a general search - prioritize posts
+      else {
+        searchType = 'posts';
+      }
+      
+      // Navigate with the detected search type
+      nav(`/search?q=${encodeURIComponent(searchQuery)}&type=${searchType}&sort=relevance`);
       setShowSearchModal(false);
+      setShowSearchSuggestions(false);
       setSearchQuery("");
     }
   };
@@ -100,12 +118,12 @@ export default function NavbarPrivate() {
     { icon: <Hash className="w-4 h-4" />, text: "#react", type: "tag" },
     { icon: <TrendingUp className="w-4 h-4" />, text: "Trending posts", type: "trending" },
     { icon: <BookOpen className="w-4 h-4" />, text: "Tutorials", type: "category" },
-    { icon: <User className="w-4 h-4" />, text: "Popular authors", type: "authors" },
+    { icon: <User className="w-4 h-4" />, text: "@popularuser", type: "user" },
   ];
 
   // Desktop navigation items
   const desktopNavItems = [
-    { path: "/home", label: "Feed", active: currentPath === "/login/home" },
+    { path: "/home", label: "Feed", active: currentPath === "/home" },
     { path: "/saved", label: "Saved", active: currentPath === "/saved" },
   ];
 
@@ -126,7 +144,7 @@ export default function NavbarPrivate() {
   return (
     <div className={theme === 'light' ? "bg-gray-50" : "bg-slate-900"}>
       {/* Desktop/Tablet Top Navbar */}
-      <nav className={`hidden md:block fixed top-0 left-0 right-0 ${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg border-b ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} shadow-sm ${theme === 'light' ? '' : 'dark:shadow-slate-900/30'} z-50`}>
+      <nav className={`hidden md:block fixed top-0 left-0 right-0 ${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg border-b ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} shadow-sm z-50`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Left: Logo */}
@@ -167,7 +185,7 @@ export default function NavbarPrivate() {
             </div>
 
             {/* Center: Search Bar */}
-            <div className="flex-1 max-w-xl mx-8 hidden lg:flex">
+            <div className="flex-1 max-w-2xl mx-8 hidden lg:flex">
               <div className="relative">
                 <div className="relative group">
                   <input
@@ -179,7 +197,7 @@ export default function NavbarPrivate() {
                     }}
                     onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
                     onFocus={() => searchQuery.length > 0 && setShowSearchSuggestions(true)}
-                    placeholder="Search stories, topics, authors..."
+                    placeholder="@username, #topic, or keywords..."
                     className={`w-full pl-12 pr-4 py-2.5 border ${theme === 'light' ? 'border-gray-300 bg-gray-50 text-gray-900 placeholder:text-gray-400 group-hover:bg-white' : 'border-slate-600 bg-slate-700 text-white placeholder:text-slate-500 group-hover:bg-slate-600'} rounded-full focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500/50 focus:border-blue-500' : 'focus:ring-blue-400/50 focus:border-blue-400'} transition-all duration-200`}
                   />
                   <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${theme === 'light' ? 'text-gray-400 group-hover:text-blue-500' : 'text-slate-500 group-hover:text-blue-400'} transition-colors`} />
@@ -195,7 +213,7 @@ export default function NavbarPrivate() {
 
                 {/* Search Suggestions */}
                 {showSearchSuggestions && searchQuery && (
-                  <div className={`absolute top-full left-0 right-0 mt-2 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-xl shadow-lg ${theme === 'light' ? '' : 'dark:shadow-slate-900/50'} border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} py-2 z-20`}>
+                  <div className={`absolute top-full left-0 right-0 mt-2 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-xl shadow-lg border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} py-2 z-20`}>
                     <div className={`px-4 py-2 border-b ${theme === 'light' ? 'border-gray-100' : 'border-slate-700'}`}>
                       <p className={`text-xs font-semibold ${theme === 'light' ? 'text-gray-500' : 'text-slate-400'} uppercase tracking-wider`}>
                         Quick Search
@@ -204,7 +222,10 @@ export default function NavbarPrivate() {
                     {searchSuggestions.map((suggestion, index) => (
                       <button
                         key={index}
-                        onClick={() => setSearchQuery(suggestion.text)}
+                        onClick={() => {
+                          setSearchQuery(suggestion.text);
+                          handleSearch({ preventDefault: () => {} });
+                        }}
                         className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm ${theme === 'light' ? 'text-gray-700 hover:bg-gray-50 hover:text-blue-600' : 'text-gray-300 hover:bg-slate-700/50 hover:text-blue-400'} transition-colors text-left`}
                       >
                         {suggestion.icon}
@@ -291,7 +312,7 @@ export default function NavbarPrivate() {
                       className="fixed inset-0 z-10"
                       onClick={() => setShowAvatarMenu(false)}
                     />
-                    <div className={`absolute right-0 mt-2 w-64 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-xl shadow-xl ${theme === 'light' ? '' : 'dark:shadow-slate-900/50'} border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} py-2 z-20 animate-in slide-in-from-top-2`}>
+                    <div className={`absolute right-0 mt-2 w-64 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-xl shadow-xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} py-2 z-20 animate-in slide-in-from-top-2`}>
                       <div className={`px-4 py-3 border-b ${theme === 'light' ? 'border-gray-100' : 'border-slate-700'}`}>
                         <p className={`text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                           @{getDisplayUsername()}
@@ -353,11 +374,11 @@ export default function NavbarPrivate() {
       </nav>
 
       {/* Mobile Top Bar */}
-      <div className={`md:hidden fixed top-0 left-0 right-0 ${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg border-b ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} shadow-sm ${theme === 'light' ? '' : 'dark:shadow-slate-900/30'} z-50`}>
+      <div className={`md:hidden fixed top-0 left-0 right-0 ${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg border-b ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} shadow-sm z-50`}>
         <div className="flex items-center justify-between px-4 h-14">
           {/* Logo */}
           <button
-            onClick={() => handleNavClick("/feed")}
+            onClick={() => handleNavClick("/home")}
             className="group flex items-center gap-2"
           >
             <Feather className={`w-6 h-6 ${theme === 'light' ? 'text-blue-600' : 'text-blue-500'}`} />
@@ -388,14 +409,14 @@ export default function NavbarPrivate() {
           </div>
         </div>
 
-        {/* Mobile Avatar Dropdown */}
+        {/* Mobile Avatar Dropdown - REMOVED BACKDROP COLOR */}
         {showAvatarMenu && (
           <>
             <div
-              className={`fixed inset-0 ${theme === 'light' ? 'bg-black/30' : 'bg-black/50'} backdrop-blur-sm z-40`}
+              className="fixed inset-0 z-40"
               onClick={() => setShowAvatarMenu(false)}
             />
-            <div className={`absolute right-4 top-14 w-56 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-xl shadow-xl ${theme === 'light' ? '' : 'dark:shadow-slate-900/50'} border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} py-2 z-50 animate-in slide-in-from-top-2`}>
+            <div className={`absolute right-4 top-14 w-56 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-xl shadow-xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} py-2 z-50 animate-in slide-in-from-top-2`}>
               <div className={`px-4 py-3 border-b ${theme === 'light' ? 'border-gray-100' : 'border-slate-700'}`}>
                 <p className={`text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                   @{getDisplayUsername()}
@@ -463,7 +484,7 @@ export default function NavbarPrivate() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
-                placeholder="Search stories, topics, authors..."
+                placeholder="@username, #topic, or keywords..."
                 autoFocus
                 className={`w-full px-4 py-3 ${theme === 'light' ? 'bg-gray-100 text-gray-900 placeholder:text-gray-400' : 'bg-slate-700 text-white placeholder:text-slate-500'} rounded-xl focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500' : 'focus:ring-blue-400'}`}
               />
@@ -495,7 +516,7 @@ export default function NavbarPrivate() {
       )}
 
       {/* Mobile Bottom Navigation */}
-      <nav className={`md:hidden fixed bottom-0 left-0 right-0 ${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg border-t ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} shadow-lg ${theme === 'light' ? '' : 'dark:shadow-slate-900/30'} z-50`}>
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 ${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg border-t ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} shadow-lg z-50`}>
         <div className="flex items-center justify-around px-2 py-3">
           {mobileNavItems.map(({ path, icon: Icon, label, isCenter, badge, isNotification }) => (
             <button
