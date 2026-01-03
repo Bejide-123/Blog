@@ -67,6 +67,9 @@ export default function FeedContent() {
     hasMore: false
   });
 
+  // Add state for mobile feed header visibility
+  const [showFeedHeader, setShowFeedHeader] = useState(false);
+
   // Fetch posts and user data on component mount
   useEffect(() => {
     fetchPosts();
@@ -476,13 +479,48 @@ export default function FeedContent() {
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-b ${theme === 'light' ? 'from-gray-50 via-white to-white' : 'from-slate-900 via-slate-900 to-slate-950'} pt-16 md:pt-20`}>
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className={`min-h-screen bg-gradient-to-b ${theme === 'light' ? 'from-gray-50 via-white to-white' : 'from-slate-900 via-slate-900 to-slate-950'} pt-10 md:pt-16`}>
+      <div className="max-w-7xl mx-auto px-4 py-8 pb-28 md:pb-28 lg:pb-32">
         <div className="flex flex-col lg:grid lg:grid-cols-4 gap-8">
           {/* Main Feed */}
           <div className="lg:col-span-3">
-            {/* Header */}
-            <div className={`relative ${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg border ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} rounded-2xl p-4 mb-8 shadow-sm`}>
+            {/* Mobile Toggle Button - Only show on small screens */}
+            <div className="lg:hidden mb-4">
+              <button
+                onClick={() => setShowFeedHeader(!showFeedHeader)}
+                className={`w-full flex items-center justify-between px-4 py-3 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} rounded-xl shadow-sm transition-all duration-300`}
+              >
+                <div className="flex items-center gap-2">
+                  <div className={`p-1.5 rounded-lg ${showFeedHeader ? 'bg-blue-500/10' : theme === 'light' ? 'bg-gray-100' : 'bg-slate-700'}`}>
+                    {showFeedHeader ? (
+                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className={`text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                      Feed Options
+                    </h3>
+                    <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                      {showFeedHeader ? 'Hide filters and tabs' : 'Show filters and tabs'}
+                    </p>
+                  </div>
+                </div>
+                <span className={`px-3 py-1 rounded-lg text-xs font-medium ${theme === 'light' ? 'bg-blue-50 text-blue-600' : 'bg-blue-900/30 text-blue-400'}`}>
+                  {activeTab === 'forYou' ? 'For You' : 
+                   activeTab === 'following' ? 'Following' :
+                   activeTab === 'latest' ? 'Latest' : 'Trending'}
+                </span>
+              </button>
+            </div>
+
+            {/* Header - Hidden on mobile by default, togglable */}
+            <div className={`${showFeedHeader ? 'block' : 'hidden'} lg:block relative ${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg border ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} rounded-2xl p-4 mb-8 shadow-sm transition-all duration-300`}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h1 className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${theme === 'light' ? 'from-blue-600 to-purple-600' : 'from-blue-500 to-purple-500'} bg-clip-text text-transparent`}>
@@ -512,8 +550,14 @@ export default function FeedContent() {
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold whitespace-nowrap transition-all duration-300 ${
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      // On mobile, close the header after selecting a tab
+                      if (window.innerWidth < 1024) {
+                        setShowFeedHeader(false);
+                      }
+                    }}
+                    className={`flex items-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl font-semibold whitespace-nowrap transition-all duration-300 text-sm sm:text-base ${
                       activeTab === tab.id
                         ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
                         : `${theme === 'light' ? 'text-gray-700 hover:bg-gray-100 hover:text-gray-900' : 'text-gray-300 hover:bg-slate-700 hover:text-white'}`

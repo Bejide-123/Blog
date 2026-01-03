@@ -363,7 +363,7 @@ export default function ProfilePage() {
     <>
       <NavbarPrivate />
       <div className={`min-h-screen bg-gradient-to-b ${theme === 'light' ? 'from-gray-50 via-white to-white' : 'from-slate-900 via-slate-900 to-slate-950'} pt-16 md:pt-20`}>
-        <div className="max-w-5xl mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 py-8 pb-28 md:pb-28 lg:pb-32">
           {/* Profile Header */}
           <div className={`relative ${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg border ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 mb-8 overflow-hidden`}>
             {/* Cover Photo */}

@@ -61,6 +61,9 @@ const Notifications = () => {
   const [hasMore, setHasMore] = useState(true)
   const pageRef = useRef(1)
 
+  // Add state for mobile header visibility
+  const [showFeedHeader, setShowFeedHeader] = useState(false);
+
   // Fetch notifications
   useEffect(() => {
     fetchNotifications()
@@ -345,9 +348,42 @@ const Notifications = () => {
     <>
       <NavbarPrivate />
       <div className={`min-h-screen bg-gradient-to-b ${theme === 'light' ? 'from-gray-50 via-white to-white' : 'from-slate-900 via-slate-900 to-slate-950'} pt-16 md:pt-20 lg:pt-24`}>
-        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 md:py-8">
-          {/* Enhanced Header - Mobile Optimized */}
-          <div className="mb-6 md:mb-8">
+        <div className="max-w-7xl mx-auto px-4 py-8 pb-28 md:pb-28 lg:pb-32">
+          {/* Mobile Toggle Button - Only show on small screens */}
+          <div className="lg:hidden mb-4">
+            <button
+              onClick={() => setShowFeedHeader(!showFeedHeader)}
+              className={`w-full flex items-center justify-between px-4 py-3 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} rounded-xl shadow-sm transition-all duration-300`}
+            >
+              <div className="flex items-center gap-2">
+                <div className={`p-1.5 rounded-lg ${showFeedHeader ? 'bg-blue-500/10' : theme === 'light' ? 'bg-gray-100' : 'bg-slate-700'}`}>
+                  {showFeedHeader ? (
+                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  )}
+                </div>
+                <div>
+                  <h3 className={`text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                    Notification Options
+                  </h3>
+                  <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                    {showFeedHeader ? 'Hide stats and actions' : 'Show stats and actions'}
+                  </p>
+                </div>
+              </div>
+              <span className={`px-3 py-1 rounded-lg text-xs font-medium ${theme === 'light' ? 'bg-blue-50 text-blue-600' : 'bg-blue-900/30 text-blue-400'}`}>
+                {unreadCount} unread
+              </span>
+            </button>
+          </div>
+
+          {/* Enhanced Header - Hidden on mobile by default, togglable */}
+          <div className={`${showFeedHeader ? 'block' : 'hidden'} lg:block mb-6 md:mb-8 transition-all duration-300`}>
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 md:gap-6 mb-6">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-3">
@@ -432,7 +468,13 @@ const Notifications = () => {
               {filters.slice(1, 5).map((filter) => (
                 <div 
                   key={filter.id}
-                  onClick={() => setActiveFilter(filter.id)}
+                  onClick={() => {
+                    setActiveFilter(filter.id);
+                    // On mobile, close header after selecting filter
+                    if (window.innerWidth < 1024) {
+                      setShowFeedHeader(false);
+                    }
+                  }}
                   className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-lg sm:rounded-xl md:rounded-2xl border p-3 sm:p-4 cursor-pointer transition-all active:scale-95 md:hover:scale-105 md:hover:shadow-lg ${
                     activeFilter === filter.id 
                       ? 'border-blue-500 shadow-lg' 
@@ -578,6 +620,8 @@ const Notifications = () => {
                           onClick={() => {
                             setActiveFilter(filter.id)
                             setShowMobileFilters(false)
+                            // Also close the main header on mobile
+                            setShowFeedHeader(false);
                           }}
                           className={`flex flex-col items-center justify-center p-2 rounded-lg transition-all active:scale-95 ${
                             activeFilter === filter.id
