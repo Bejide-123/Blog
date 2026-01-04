@@ -12,9 +12,11 @@ import { ButtonLoader } from "../../Components/Private/Loader";
 import { PageLoader } from "../../Components/Private/Loader";
 import { createPost } from "../../Services/api";
 import { getCurrentUserProfile } from "../../Services/api";
+import { useNavigate } from "react-router-dom";
 
 export default function CreatePostPage() {
   const { theme } = useTheme();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -242,7 +244,7 @@ export default function CreatePostPage() {
         alert("Post published successfully!");
         // Clear session draft
         sessionStorage.removeItem('postDraft');
-        window.location.href = "/home";
+        navigate("/home");
       } else {
         alert(result.error || "Failed to publish post");
       }

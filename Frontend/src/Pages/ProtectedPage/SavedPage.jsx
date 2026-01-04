@@ -21,7 +21,7 @@ import {
   Send,
 } from "lucide-react";
 import NavbarPrivate from "../../Components/Private/Navbarprivate";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, Navigate } from "react-router-dom";
 import { PageLoader } from "../../Components/Private/Loader";
 import { 
   getSavedPostsWithDetails, 
@@ -1191,7 +1191,7 @@ export default function SavedPage() {
                     </div>
                   </div>
 
-                  <button className="w-full mt-5 px-4 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-medium rounded-lg transition-colors text-sm">
+                  <button onClick={() => nav("/dashboard")} className="w-full mt-5 px-4 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-medium rounded-lg transition-colors text-sm">
                     View Dashboard
                   </button>
                 </div>

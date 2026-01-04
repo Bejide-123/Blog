@@ -1137,7 +1137,7 @@ export default function FeedContent() {
                   </div>
                 </div>
 
-                <button className="w-full mt-5 px-4 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-medium rounded-lg transition-colors text-sm">
+                <button onClick={() => navigate("/dashboard")} className="w-full mt-5 px-4 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-medium rounded-lg transition-colors text-sm">
                   View Dashboard
                 </button>
               </div>
