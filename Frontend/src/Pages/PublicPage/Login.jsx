@@ -427,7 +427,7 @@ const Auth = () => {
           </form>
 
           {/* Divider */}
-          <div className="relative my-8">
+          {/* <div className="relative my-8">
             <div className={`absolute inset-0 flex items-center`}>
               <div className={`w-full border-t ${theme === 'light' ? 'border-gray-300' : 'border-slate-700'}`}></div>
             </div>
@@ -436,10 +436,10 @@ const Auth = () => {
                 Or continue with
               </span>
             </div>
-          </div>
+          </div> */}
 
           {/* Social Login Buttons */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* <div className="grid grid-cols-2 gap-3">
             <button className={`flex items-center justify-center gap-3 py-3 px-4 ${theme === 'light' ? 'bg-white border-gray-300 hover:bg-gray-50 text-gray-700' : 'bg-slate-700 border-slate-600 hover:bg-slate-600 text-gray-300'} border rounded-xl transition-all duration-300 font-medium cursor-pointer group`}>
               <FcGoogle className="w-5 h-5" />
               <span>Google</span>
@@ -449,7 +449,7 @@ const Auth = () => {
               <FiGithub className="w-5 h-5" />
               <span>GitHub</span>
             </button>
-          </div>
+          </div> */}
 
           {/* Footer */}
           <p className={`mt-8 text-center text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
