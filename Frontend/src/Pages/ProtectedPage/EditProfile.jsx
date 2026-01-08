@@ -1,17 +1,17 @@
 import { useState } from 'react';
-import { X, Camera, Upload, Image, User, MapPin, Link2, Globe } from 'lucide-react';
+import { X, Camera, Upload, Image, User, MapPin } from 'lucide-react';
 import { useTheme } from '../../Context/themeContext';
+import { updateUserProfile } from '../../Services/user';
 
 export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
   const { theme } = useTheme();
   const [formData, setFormData] = useState({
-    name: currentProfile?.name || '',
+    full_name: currentProfile?.full_name || '',
     username: currentProfile?.username || '',
     bio: currentProfile?.bio || '',
     location: currentProfile?.location || '',
-    // website: currentProfile?.website || '',
     avatar: currentProfile?.avatar || '',
-    coverImage: '' // You can add a default cover if needed
+    coverImage: ''
   });
 
   const [avatarPreview, setAvatarPreview] = useState(currentProfile?.avatar || '');
@@ -58,25 +58,48 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    console.log('Saving profile:', formData);
-    alert('Profile updated! (This would save to backend)');
-    onClose();
+    const userId = currentProfile?.id;
+    
+    if (!userId) {
+      console.error('No user ID found');
+      alert('Cannot update profile: User not found');
+      return;
+    }
+    
+    const profileData = {
+      full_name: formData.full_name,
+      username: formData.username,
+      bio: formData.bio,
+      location: formData.location,
+      avatar_url: formData.avatar,
+    };
+    
+    updateUserProfile(userId, profileData)
+      .then(response => {
+        console.log('Profile updated successfully:', response);
+        alert('Profile updated successfully!');
+        onClose();
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      })
+      .catch(error => {
+        console.error('Error updating profile:', error);
+        alert('Failed to update profile: ' + error.message);
+      });
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div 
         className={`absolute inset-0 ${theme === 'light' ? 'bg-black/60' : 'bg-black/80'} backdrop-blur-sm`}
         onClick={onClose}
       />
 
-      {/* Modal */}
       <div className={`relative w-full max-w-2xl max-h-[90vh] ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl shadow-2xl overflow-hidden flex flex-col border ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'}`}>
         
-        {/* Header */}
         <div className={`flex items-center justify-between px-6 py-5 border-b ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} bg-gradient-to-r from-blue-500/5 to-purple-500/5`}>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg">
@@ -99,11 +122,9 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
           </button>
         </div>
 
-        {/* Form Content - Scrollable */}
         <form onSubmit={handleSubmit} className="overflow-y-auto flex-1">
           <div className="p-6">
             
-            {/* Cover Image Upload */}
             <div className="mb-8">
               <label className={`block text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 flex items-center gap-2`}>
                 <Image className="w-4 h-4 text-blue-500" />
@@ -139,7 +160,6 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
               </div>
             </div>
 
-            {/* Avatar Upload */}
             <div className="mb-8">
               <label className={`block text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 flex items-center gap-2`}>
                 <Camera className="w-4 h-4 text-blue-500" />
@@ -187,9 +207,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
               </div>
             </div>
 
-            {/* Form Fields */}
             <div className="space-y-5">
-              {/* Name */}
               <div>
                 <label className={`block text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2 flex items-center gap-2`}>
                   <User className="w-4 h-4 text-blue-500" />
@@ -197,8 +215,8 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
                 </label>
                 <input
                   type="text"
-                  name="name"
-                  value={formData.name}
+                  name="full_name"
+                  value={formData.full_name}
                   onChange={handleInputChange}
                   required
                   className={`w-full px-4 py-3 ${theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400' : 'bg-slate-700 border-slate-600 text-white placeholder:text-slate-500'} border rounded-xl focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500 focus:border-transparent' : 'focus:ring-blue-400 focus:border-transparent'} transition-all duration-300`}
@@ -206,7 +224,6 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
                 />
               </div>
 
-              {/* Username */}
               <div>
                 <label className={`block text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2 flex items-center gap-2`}>
                   <User className="w-4 h-4 text-blue-500" />
@@ -228,7 +245,6 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
                 </div>
               </div>
 
-              {/* Bio */}
               <div>
                 <label className={`block text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2 flex items-center gap-2`}>
                   <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -255,7 +271,6 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
                 </div>
               </div>
 
-              {/* Location */}
               <div>
                 <label className={`block text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2 flex items-center gap-2`}>
                   <MapPin className="w-4 h-4 text-blue-500" />
@@ -270,32 +285,9 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
                   placeholder="e.g. Lagos, Nigeria"
                 />
               </div>
-
-              {/* Website */}
-              {/* <div>
-                <label className={`block text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2 flex items-center gap-2`}>
-                  <Link2 className="w-4 h-4 text-blue-500" />
-                  Website
-                </label>
-                <div className="relative">
-                  <Globe className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 ${theme === 'light' ? 'text-gray-400' : 'text-slate-500'}`} />
-                  <input
-                    type="text"
-                    name="website"
-                    value={formData.website}
-                    onChange={handleInputChange}
-                    className={`w-full pl-10 pr-4 py-3 ${theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400' : 'bg-slate-700 border-slate-600 text-white placeholder:text-slate-500'} border rounded-xl focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500 focus:border-transparent' : 'focus:ring-blue-400 focus:border-transparent'} transition-all duration-300`}
-                    placeholder="yourwebsite.com"
-                  />
-                </div>
-                <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} mt-2`}>
-                  No need for https://
-                </p>
-              </div> */}
             </div>
           </div>
 
-          {/* Footer - Action Buttons */}
           <div className={`sticky bottom-0 flex items-center justify-between px-6 py-4 border-t ${theme === 'light' ? 'border-gray-200 bg-white/95' : 'border-slate-700 bg-slate-800/95'} backdrop-blur-sm`}>
             <button
               type="button"
@@ -313,37 +305,6 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
           </div>
         </form>
       </div>
-    </div>
-  );
-}
-
-// Demo usage - Remove this if not needed
-function ProfilePageDemo() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const currentProfile = {
-    name: 'John Doe',
-    username: 'johndoe',
-    bio: 'Full-stack developer passionate about React, Node.js, and building cool stuff.',
-    location: 'Lagos, Nigeria',
-    website: 'johndoe.dev',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=johndoe'
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center p-4">
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
-      >
-        Open Edit Profile Modal
-      </button>
-
-      <EditProfileModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        currentProfile={currentProfile}
-      />
     </div>
   );
 }
