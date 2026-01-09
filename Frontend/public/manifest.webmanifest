@@ -1,0 +1,21 @@
+{
+  "name": "Scribe",
+  "short_name": "Scribe",
+  "description": "Personal blog built with React and Vite",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/Scribe.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/Scribe.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
