@@ -44,6 +44,7 @@ export default function FeedContent() {
   
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [savedPosts, setSavedPosts] = useState(new Set());
+  const [likeProcessingPosts, setLikeProcessingPosts] = useState(new Set());
   const [expandedPostId, setExpandedPostId] = useState(null);
   const [activeCommentPost, setActiveCommentPost] = useState(null);
   const [newComment, setNewComment] = useState("");
@@ -152,6 +153,14 @@ export default function FeedContent() {
       navigate('/login');
       return;
     }
+
+    // Prevent duplicate requests for the same post
+    if (likeProcessingPosts.has(postId)) return;
+    setLikeProcessingPosts(prev => {
+      const s = new Set(prev);
+      s.add(postId);
+      return s;
+    });
     
     try {
       const { liked, count } = await togglePostLike(postId, user.id);
@@ -176,6 +185,12 @@ export default function FeedContent() {
     } catch (error) {
       console.error('Error toggling like:', error);
       alert('Failed to update like. Please try again.');
+    } finally {
+      setLikeProcessingPosts(prev => {
+        const s = new Set(prev);
+        s.delete(postId);
+        return s;
+      });
     }
   };
 

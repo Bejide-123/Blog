@@ -157,26 +157,6 @@ export const togglePostLike = async (postId, userId) => {
         .eq('user_id', userId);
 
       if (deleteError) throw deleteError;
-      
-      // Get current count and decrement
-      const { data: post, error: postError } = await supabase
-        .from('posts')
-        .select('likescount')
-        .eq('id', postId)
-        .single();
-
-      if (postError) throw postError;
-
-      const newCount = Math.max(0, (post?.likescount || 0) - 1);
-      
-      const { error: updateError } = await supabase
-        .from('posts')
-        .update({ likescount: newCount })
-        .eq('id', postId);
-
-      if (updateError) throw updateError;
-
-      return { liked: false, count: newCount };
     } else {
       // Like - insert new like
       const { error: insertError } = await supabase
@@ -186,28 +166,30 @@ export const togglePostLike = async (postId, userId) => {
           user_id: userId
         });
 
-      if (insertError) throw insertError;
-
-      // Get current count and increment
-      const { data: post, error: postError } = await supabase
-        .from('posts')
-        .select('likescount')
-        .eq('id', postId)
-        .single();
-
-      if (postError) throw postError;
-
-      const newCount = (post?.likescount || 0) + 1;
-      
-      const { error: updateError } = await supabase
-        .from('posts')
-        .update({ likescount: newCount })
-        .eq('id', postId);
-
-      if (updateError) throw updateError;
-
-      return { liked: true, count: newCount };
+      // If insertion fails due to unique constraint, ignore (concurrent request may have inserted)
+      if (insertError && !/unique|constraint|23505/i.test(insertError.message || '')) {
+        throw insertError;
+      }
     }
+
+    // Always compute the authoritative likes count from the likes table
+    const { data: likesData, error: countError, count } = await supabase
+      .from('likes')
+      .select('id', { count: 'exact' })
+      .eq('post_id', postId);
+
+    if (countError) throw countError;
+
+    const newCount = count || 0;
+
+    const { error: updateError } = await supabase
+      .from('posts')
+      .update({ likescount: newCount })
+      .eq('id', postId);
+
+    if (updateError) throw updateError;
+
+    return { liked: !isLiked, count: newCount };
   } catch (error) {
     console.error('Error toggling post like:', error);
     throw error;

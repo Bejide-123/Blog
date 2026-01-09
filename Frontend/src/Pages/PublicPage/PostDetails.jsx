@@ -44,6 +44,7 @@ export default function PostDetailsPage() {
   const [error, setError] = useState(null);
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [likeProcessing, setLikeProcessing] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
   const [likedComments, setLikedComments] = useState(new Set());
@@ -98,6 +99,9 @@ export default function PostDetailsPage() {
       navigate('/login');
       return;
     }
+
+    if (likeProcessing) return;
+    setLikeProcessing(true);
     
     try {
       const { liked: isLiked, count } = await togglePostLike(id, user.id);
@@ -110,6 +114,8 @@ export default function PostDetailsPage() {
     } catch (error) {
       console.error('Error liking post:', error);
       alert('Failed to update like. Please try again.');
+    } finally {
+      setLikeProcessing(false);
     }
   };
 
