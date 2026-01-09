@@ -7,15 +7,13 @@
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "icons": [
-    {
-      "src": "/Scribe.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "/Scribe.png",
-      "type": "image/png",
-      "sizes": "512x512"
-    }
+    { "src": "/Scribe.png", "type": "image/png", "sizes": "72x72" },
+    { "src": "/Scribe.png", "type": "image/png", "sizes": "96x96" },
+    { "src": "/Scribe.png", "type": "image/png", "sizes": "128x128" },
+    { "src": "/Scribe.png", "type": "image/png", "sizes": "144x144" },
+    { "src": "/Scribe.png", "type": "image/png", "sizes": "152x152" },
+    { "src": "/Scribe.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/Scribe.png", "type": "image/png", "sizes": "384x384" },
+    { "src": "/Scribe.png", "type": "image/png", "sizes": "512x512" }
   ]
 }
