@@ -1,6 +1,6 @@
 // src/services/auth.js
 import axios from 'axios'
-import { supabase } from '../lib/supabase.js'
+import { supabase, SUPABASE_STORAGE_BUCKET } from '../lib/supabase.js' 
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -115,6 +115,45 @@ export const getCurrentUserProfile = async () => {
 };
 
 // --------------------- CREATE POST ---------------------
+// UPDATE the uploadImage function (it's already correct in your code, just make sure)
+export const uploadImage = async (file, folder = 'posts') => {
+  try {
+    console.log('Uploading image to media bucket...', file.name);
+    
+    // Generate unique filename
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 15);
+    const fileExt = file.name.split('.').pop().toLowerCase();
+    const fileName = `${folder}/${timestamp}_${randomString}.${fileExt}`;
+    
+    // Upload to 'media' bucket
+    const { data, error } = await supabase.storage
+      .from('media')
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (error) {
+      console.error('Upload error:', error);
+      throw error;
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = await supabase.storage
+      .from('media')
+      .getPublicUrl(fileName);
+
+    console.log('Upload successful. URL:', publicUrl);
+    return publicUrl;
+    
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    throw error;
+  }
+};
+
+// UPDATE createPost function to store URL properly
 export const createPost = async (postData) => {
   try {
     const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -130,22 +169,20 @@ export const createPost = async (postData) => {
       tags: postData.tags || [],
       status: postData.status || 'draft',
       authorid: user.id,
-      ispublic: postData.ispublic !== undefined ? postData.ispublic : false,
-      allowcomments: postData.allowcomments !== undefined ? postData.allowcomments : true,
+      ispublic: postData.isPublic !== undefined ? postData.isPublic : true, // FIX: use isPublic
+      allowcomments: postData.allowComments !== undefined ? postData.allowComments : true, // FIX: use allowComments
       read_time: readTime,
       word_count: wordCount,
       viewscount: 0,
       likescount: 0,
       comments_count: 0,
-      featured_image: null,
-      imageurl: null,
+      featured_image: postData.featured_image || null, // STORE THE URL HERE
       createdat: new Date().toISOString(),
       updatedat: new Date().toISOString(),
     }
 
-    console.log('Creating post with:', postToCreate)
+    console.log('Creating post with image URL:', postToCreate.featured_image)
 
-    // SIMPLIFY: Just insert, no select with join
     const { error } = await supabase
       .from('posts')
       .insert([postToCreate])
@@ -164,38 +201,6 @@ export const createPost = async (postData) => {
   }
 }
 
-// --------------------- UPLOAD IMAGE TO MEDIA BUCKET ---------------------
-export const uploadImage = async (base64Image, folder, filename) => {
-  try {
-    // Convert base64 to blob
-    const response = await fetch(base64Image);
-    const blob = await response.blob();
-    
-    // Get file extension
-    const fileExt = base64Image.split(';')[0].split('/')[1] || 'jpg';
-    const filePath = `${folder}/${filename}.${fileExt}`;
-
-    // Upload to 'media' bucket
-    const { data, error } = await supabase.storage
-      .from('media')  // Use 'media' bucket
-      .upload(filePath, blob, {
-        contentType: blob.type,
-        upsert: false,
-      });
-
-    if (error) throw error;
-
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('media')
-      .getPublicUrl(filePath);
-
-    return publicUrl;
-  } catch (error) {
-    console.error('Error uploading image:', error);
-    throw error;
-  }
-};
 // --------------------- GET POSTS ---------------------
 export const getPosts = async (options = {}) => {
   const {
@@ -388,7 +393,7 @@ export const getPostsWithProfiles = async (options = {}) => {
           avatar_url
         )
       `)
-      .order('createdat', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(limit)
       .range(offset, offset + limit - 1)
 
@@ -397,7 +402,7 @@ export const getPostsWithProfiles = async (options = {}) => {
     }
 
     if (authorId) {
-      query = query.eq('authorid', authorId)
+      query = query.eq('author_id', authorId)
     }
 
     if (tag) {

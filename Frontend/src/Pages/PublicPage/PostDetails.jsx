@@ -326,24 +326,13 @@ export default function PostDetailsPage() {
             <div className="lg:col-span-3">
               {/* Post Content */}
               <article className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-xl md:rounded-2xl shadow-lg md:shadow-xl overflow-hidden mb-6 md:mb-8`}>
-                {/* Featured Image */}
-                {post.featured_image && (
-                  <div className="w-full h-48 sm:h-64 md:h-80 lg:h-[400px] overflow-hidden">
-                    <img
-                      src={post.featured_image}
-                      alt={post.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-
                 <div className="p-4 sm:p-6 md:p-8">
                   {/* Post Title */}
                   <h1 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 md:mb-4 leading-tight`}>
                     {post.title}
                   </h1>
 
-                  {/* Author & Metadata */}
+                  {/* Author & Metadata - UPDATED: Full name and username on same line */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 md:gap-4 mb-4 md:mb-6">
                     <div className="flex items-center gap-3">
                       <img
@@ -352,15 +341,15 @@ export default function PostDetailsPage() {
                         className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'}`}
                       />
                       <div className="flex-1 min-w-0">
-                        <h3 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm sm:text-base truncate`}>
-                          {post.author?.full_name || 'Anonymous'}
-                        </h3>
-                        <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs mt-0.5">
-                          <span className={`flex items-center gap-0.5 ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                            <User className="w-3 h-3" />
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm sm:text-base truncate`}>
+                            {post.author?.full_name || 'Anonymous'}
+                          </h3>
+                          <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                             @{post.author?.username || 'anonymous'}
                           </span>
-                          <span className={`${theme === 'light' ? 'text-gray-400' : 'text-gray-600'}`}>•</span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs mt-0.5">
                           <span className={`flex items-center gap-0.5 ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
                             <Calendar className="w-3 h-3" />
                             {formatDate(post.createdat)}
@@ -408,7 +397,44 @@ export default function PostDetailsPage() {
                     </div>
                   </div>
 
-                  {/* Tags */}
+                  {/* Featured Image - Full Width, No Rounded Corners */}
+                  {post.featured_image && (
+                    <div className="my-6 md:my-8 w-full overflow-hidden">
+                      <div className="relative w-full aspect-[16/9] md:aspect-[21/9] overflow-hidden">
+                        <img
+                          src={post.featured_image}
+                          alt={post.title}
+                          className="w-full h-full object-cover"
+                          loading="eager"
+                        />
+                        
+                        {/* Optional: Image credit/caption */}
+                        {post.image_credit && (
+                          <div className="absolute bottom-3 right-3">
+                            <span className="text-xs px-2 py-1 bg-black/60 text-white rounded-full backdrop-blur-sm">
+                              📷 {post.image_credit}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Optional: Image caption below */}
+                      {post.image_caption && (
+                        <p className={`text-center mt-2 text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} italic`}>
+                          {post.image_caption}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Post Content */}
+                  <div className={`prose ${theme === 'dark' ? 'dark:prose-invert' : ''} max-w-none mb-6 md:mb-8`}>
+                    <div className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} leading-relaxed sm:leading-loose whitespace-pre-line text-sm sm:text-base md:text-lg`}>
+                      {post.content}
+                    </div>
+                  </div>
+
+                  {/* Tags - CORRECTED: Moved to be UNDER the content */}
                   {post.tags && post.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4 md:mb-6">
                       {post.tags.map((tag, index) => (
@@ -421,13 +447,6 @@ export default function PostDetailsPage() {
                       ))}
                     </div>
                   )}
-
-                  {/* Post Content */}
-                  <div className={`prose ${theme === 'dark' ? 'dark:prose-invert' : ''} max-w-none mb-6 md:mb-8`}>
-                    <div className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} leading-relaxed sm:leading-loose whitespace-pre-line text-sm sm:text-base md:text-lg`}>
-                      {post.content}
-                    </div>
-                  </div>
 
                   {/* Mobile Action Buttons */}
                   <div className="sm:hidden flex items-center justify-between gap-2 mb-4 pt-4 border-t border-gray-200 dark:border-slate-700">
@@ -778,4 +797,3 @@ export default function PostDetailsPage() {
     </>
   );
 }
-

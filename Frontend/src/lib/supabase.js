@@ -7,4 +7,5 @@ export const supabase = createClient(
   supabaseUrl,
   supabaseAnonKey
 )
-export const SUPABASE_STORAGE_BUCKET = 'public'
+// Allow configuring bucket via env; fallback to 'media' which our services expect
+export const SUPABASE_STORAGE_BUCKET = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || 'media' 

@@ -10,24 +10,29 @@ import {
 import NavbarPrivate from "../../Components/Private/Navbarprivate";
 // import { ButtonLoader } from "../../Components/Private/Loader";
 import { PageLoader } from "../../Components/Private/Loader";
-import { createPost } from "../../Services/api";
+import { createPost, uploadImage } from "../../Services/api";
 import { getCurrentUserProfile } from "../../Services/api";
+
+
 import { useNavigate } from "react-router-dom";
 
 export default function CreatePostPage() {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    title: "",
-    content: "",
-    tags: [],
-    image: null,
-    isPublic: true,
-    allowComments: true,
-  });
+  title: "",
+  content: "",
+  tags: [],
+  imageFile: null, // CHANGE: Store File object
+  imageUrl: null,  // NEW: Store uploaded URL
+  isPublic: true,
+  allowComments: true,
+});
   const [tagInput, setTagInput] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
+    // Upload state
+  const [imageUploading, setImageUploading] = useState(false);
   const [charCount, setCharCount] = useState({ title: 0, content: 0 });
   const [isLoading, setIsLoading] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
@@ -142,34 +147,38 @@ export default function CreatePostPage() {
   };
 
   const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Validate file size (5MB max)
-      if (file.size > 5 * 1024 * 1024) {
-        alert("File size should be less than 5MB");
-        return;
-      }
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-        setFormData((prev) => ({
-          ...prev,
-          image: reader.result,
-        }));
-      };
-      reader.readAsDataURL(file);
+  const file = e.target.files[0];
+  if (file) {
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File size should be less than 5MB");
+      return;
     }
-  };
-
-  const removeImage = () => {
-    setImagePreview(null);
+    
+    // Store File object, not base64
     setFormData((prev) => ({
       ...prev,
-      image: null,
+      imageFile: file, // STORE FILE OBJECT
     }));
-  };
+    
+    // Create preview only for local display
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  }
+};
 
+
+const removeImage = () => {
+  setImagePreview(null);
+  setFormData((prev) => ({
+    ...prev,
+    imageFile: null,
+    imageUrl: null,
+  }));
+};
   const handleAddTag = (e) => {
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
@@ -192,69 +201,96 @@ export default function CreatePostPage() {
     }));
   };
 
+  // If image is a data URL, upload it and return the public URL
+  const preuploadImage = async () => {
+  if (!formData.imageFile) return null; // Check for File object
+  
+  try {
+    setImageUploading(true);
+    const url = await uploadImage(formData.imageFile); // Pass File object directly
+    return url; // This returns a URL like: https://...
+  } catch (err) {
+    console.error("Image upload failed:", err);
+    alert("Image upload failed. Continuing without image.");
+    return null;
+  } finally {
+    setImageUploading(false);
+  }
+}
+
   const handleSaveDraft = async () => {
-    setIsLoading(true);
-    try {
-      if (!formData.title.trim() || !formData.content.trim()) {
-        alert("Title and content are required for draft");
-        setIsLoading(false);
-        return;
-      }
-
-      const result = await createPost({
-        ...formData,
-        status: "draft",
-      });
-
-      if (result.success) {
-        alert("Draft saved successfully!");
-        // Clear session draft
-        sessionStorage.removeItem('postDraft');
-        setLastSaved(null);
-      } else {
-        alert(result.error || "Failed to save draft");
-      }
-    } catch (error) {
-      console.error("Error saving draft:", error);
-      alert(error.message || "Network error. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handlePublish = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-
+  setIsLoading(true);
+  try {
     if (!formData.title.trim() || !formData.content.trim()) {
-      alert("Title and content are required");
+      alert("Title and content are required for draft");
       setIsLoading(false);
       return;
     }
 
-    try {
-      const result = await createPost({
-        ...formData,
-        status: "published",
-        isPublic: formData.isPublic,
-        allowComments: formData.allowComments,
-      });
+    const imageUrl = await preuploadImage();
 
-      if (result.success) {
-        alert("Post published successfully!");
-        // Clear session draft
-        sessionStorage.removeItem('postDraft');
-        navigate("/home");
-      } else {
-        alert(result.error || "Failed to publish post");
-      }
-    } catch (error) {
-      console.error("Error publishing post:", error);
-      alert(error.message || "Network error. Please try again.");
-    } finally {
-      setIsLoading(false);
+    const result = await createPost({
+      title: formData.title,
+      content: formData.content,
+      tags: formData.tags,
+      status: "draft",
+      isPublic: formData.isPublic,
+      allowComments: formData.allowComments,
+      featured_image: imageUrl, // PASS URL
+    });
+
+    if (result.success) {
+      alert("Draft saved successfully!");
+      sessionStorage.removeItem('postDraft');
+      setLastSaved(null);
+    } else {
+      alert(result.error || "Failed to save draft");
     }
-  };
+  } catch (error) {
+    console.error("Error saving draft:", error);
+    alert(error.message || "Network error. Please try again.");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  const handlePublish = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
+
+  if (!formData.title.trim() || !formData.content.trim()) {
+    alert("Title and content are required");
+    setIsLoading(false);
+    return;
+  }
+
+  try {
+    const imageUrl = await preuploadImage();
+
+    const result = await createPost({
+      title: formData.title,
+      content: formData.content,
+      tags: formData.tags,
+      status: "published",
+      isPublic: formData.isPublic,
+      allowComments: formData.allowComments,
+      featured_image: imageUrl, // PASS URL, not base64
+    });
+
+    if (result.success) {
+      alert("Post published successfully!");
+      sessionStorage.removeItem('postDraft');
+      navigate("/home");
+    } else {
+      alert(result.error || "Failed to publish post");
+    }
+  } catch (error) {
+    console.error("Error publishing post:", error);
+    alert(error.message || "Network error. Please try again.");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const estimatedReadTime = Math.ceil(
     formData.content.split(/\s+/).filter(Boolean).length / 200
@@ -450,6 +486,15 @@ export default function CreatePostPage() {
                             alt="Preview"
                             className="w-full h-48 object-cover rounded-xl"
                           />
+
+                          {/* Uploading overlay */}
+                          {imageUploading && (
+                            <div className="absolute inset-0 bg-black/60 rounded-xl flex items-center justify-center text-white flex-col gap-2">
+                              <Loader2 className="w-6 h-6 animate-spin" />
+                              <span className="text-sm">Uploading image...</span>
+                            </div>
+                          )}
+
                           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">
                             <button
                               onClick={removeImage}
@@ -660,7 +705,7 @@ export default function CreatePostPage() {
                     <div className="sticky top-24 space-y-3">
                       <button
                         onClick={handlePublish}
-                        disabled={isLoading || !formData.title.trim() || !formData.content.trim()}
+                        disabled={isLoading || imageUploading || !formData.title.trim() || !formData.content.trim()}
                         className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
                       >
                         {isLoading ? (
@@ -676,7 +721,7 @@ export default function CreatePostPage() {
                       <div className="grid grid-cols-2 gap-3">
                         <button
                           onClick={handleSaveDraft}
-                          disabled={isLoading}
+                          disabled={isLoading || imageUploading}
                           className={`py-3 px-4 ${theme === 'light' ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-slate-800 text-gray-300 hover:bg-slate-700'} font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2`}
                         >
                           {isLoading ? (
@@ -691,7 +736,7 @@ export default function CreatePostPage() {
                         
                         <button
                           onClick={clearDraft}
-                          disabled={isLoading}
+                          disabled={isLoading || imageUploading}
                           className={`py-3 px-4 ${theme === 'light' ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-red-900/20 text-red-400 hover:bg-red-900/30'} font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2`}
                         >
                           <FileWarning className="w-4 h-4" />
