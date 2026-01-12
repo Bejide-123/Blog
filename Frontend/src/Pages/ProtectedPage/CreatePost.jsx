@@ -8,7 +8,7 @@ import {
   FileWarning, Heart, MessageCircle, Share2, Bookmark
 } from "lucide-react";
 import NavbarPrivate from "../../Components/Private/Navbarprivate";
-import { ButtonLoader } from "../../Components/Private/Loader";
+// import { ButtonLoader } from "../../Components/Private/Loader";
 import { PageLoader } from "../../Components/Private/Loader";
 import { createPost } from "../../Services/api";
 import { getCurrentUserProfile } from "../../Services/api";

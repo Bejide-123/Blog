@@ -905,3 +905,17 @@ export const getSearchSuggestions = async (searchTerm, limit = 5) => {
     return [];
   }
 };
+
+// export const getPinnedPosts = async (userId) => {
+//   const { data, error } = await supabase
+//     .from('pinned')
+//     .select('post_id')
+//     .eq('user_id', userId);
+    
+//   if (error) {
+//     console.error("Error Fetching Pinned posts", error);
+//     throw error; // or return null/empty array based on your error handling strategy
+//   }
+  
+//   return data;
+// }

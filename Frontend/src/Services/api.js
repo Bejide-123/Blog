@@ -117,57 +117,47 @@ export const getCurrentUserProfile = async () => {
 // --------------------- CREATE POST ---------------------
 export const createPost = async (postData) => {
   try {
-    // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser()
     
-    if (userError || !user) {
-      throw new Error('User not authenticated')
-    }
+    if (userError || !user) throw new Error('User not authenticated')
 
-    // Calculate read time
     const wordCount = postData.content.split(/\s+/).filter(Boolean).length
     const readTime = Math.ceil(wordCount / 200)
 
-    // Prepare post data
     const postToCreate = {
       title: postData.title,
       content: postData.content,
       tags: postData.tags || [],
       status: postData.status || 'draft',
       authorid: user.id,
+      ispublic: postData.ispublic !== undefined ? postData.ispublic : false,
+      allowcomments: postData.allowcomments !== undefined ? postData.allowcomments : true,
       read_time: readTime,
       word_count: wordCount,
-      featured_image: null, // We'll update this after image upload
-      createdat: new Date().toISOString(), // Add this for timestamp
-      updatedat: new Date().toISOString(), // Add this for timestamp
+      viewscount: 0,
+      likescount: 0,
+      comments_count: 0,
+      featured_image: null,
+      imageurl: null,
+      createdat: new Date().toISOString(),
+      updatedat: new Date().toISOString(),
     }
 
-    // Handle image upload if exists (base64 data URL)
-    if (postData.image && postData.image.startsWith('data:image')) {
-      try {
-        const imageUrl = await uploadImage(
-          postData.image, 
-          'posts', 
-          `post_${user.id}_${Date.now()}`
-        );
-        postToCreate.featured_image = imageUrl;
-      } catch (imageError) {
-        console.error("Image upload failed:", imageError);
-        // Continue without image
-        // You could show a warning: "Image upload failed, continuing without image"
-      }
-    }
+    console.log('Creating post with:', postToCreate)
 
-    // Insert post into database
-    const { data, error } = await supabase
+    // SIMPLIFY: Just insert, no select with join
+    const { error } = await supabase
       .from('posts')
       .insert([postToCreate])
-      .select()
-      .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('Insert error:', error)
+      throw error
+    }
 
-    return { success: true, data }
+    console.log('Post created successfully')
+    return { success: true }
+    
   } catch (error) {
     console.error('Error creating post:', error)
     throw error
