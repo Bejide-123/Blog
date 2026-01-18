@@ -34,6 +34,7 @@ import {
   toggleCommentLike,
   getUserCommentLikes
 } from "../../Services/post";
+import { getUserFollowing } from "../../Services/user";
 import { useUser } from "../../Context/userContext";
 import { useTheme } from "../../Context/themeContext";
 
@@ -64,8 +65,19 @@ export default function SavedPage() {
     fetchSavedPosts();
     if (user?.id) {
       fetchUserCommentLikes();
+      fetchUserFollowing();
     }
   }, [user]);
+
+  const fetchUserFollowing = async () => {
+    try {
+      if (!user?.id) return;
+      const followingProfiles = await getUserFollowing(user.id);
+      setFollowedUsers(new Set((followingProfiles || []).map(p => p.username)));
+    } catch (err) {
+      console.error('Error fetching following list:', err);
+    }
+  };
 
   const fetchSavedPosts = async () => {
     try {
@@ -648,6 +660,7 @@ export default function SavedPage() {
                     const isCommentsOpen = activeCommentPost === post.id;
                     const isMenuOpen = activeMenuPost === post.id;
                     const isFollowing = followedUsers.has(post.author?.username);
+                    const isAuthorSelf = user?.id && post.author?.id === user.id;
                     const isContentExpanded = expandedPostId === post.id;
                     const comments = postComments[post.id] || [];
                     const commentText = commentInputs[post.id] || "";
@@ -689,17 +702,19 @@ export default function SavedPage() {
 
                             {/* Right side buttons */}
                             <div className="flex items-center gap-2 flex-shrink-0">
-                              {/* Follow Button */}
-                              <button
-                                onClick={() => toggleFollow(post.author?.username)}
-                                className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg text-sm font-medium transition-all ${
-                                  isFollowing
-                                    ? `${theme === 'light' ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`
-                                    : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-sm"
-                                }`}
-                              >
-                                {isFollowing ? "Following" : "Follow"}
-                              </button>
+                              {/* Follow Button (hidden for own posts) */}
+                              {!isAuthorSelf && (
+                                <button
+                                  onClick={() => toggleFollow(post.author?.username)}
+                                  className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg text-sm font-medium transition-all ${
+                                    isFollowing
+                                      ? `${theme === 'light' ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`
+                                      : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-sm"
+                                  }`}
+                                >
+                                  {isFollowing ? "Following" : "Follow"}
+                                </button>
+                              )}
 
                               {/* Menu Button */}
                               <div className="relative">
@@ -758,7 +773,7 @@ export default function SavedPage() {
                           {/* Post Content */}
                           {isContentExpanded ? (
                             <div className={`prose ${theme === 'dark' ? 'dark:prose-invert' : ''} max-w-none`}>
-                              <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} mb-4 leading-relaxed`}>
+                              <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} mb-4 leading-relaxed whitespace-pre-line`}>
                                 {post.content}
                               </p>
                               <button
@@ -771,7 +786,7 @@ export default function SavedPage() {
                           ) : (
                             <div className="relative">
                               <div className="relative mb-3">
-                                <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} line-clamp-2 leading-relaxed pr-4`}>
+                                <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} line-clamp-2 leading-relaxed pr-4 whitespace-pre-line`}>
                                   {post.content}
                                 </p>
                                 {post.content && post.content.length > 150 && (

@@ -35,6 +35,7 @@ import {
   Send,
 } from "lucide-react";
 import { useTheme } from "../../Context/themeContext";
+import { getUserFollowing } from "../../Services/user";
 
 export default function FeedContent() {
   const { theme } = useTheme();
@@ -142,6 +143,14 @@ export default function FeedContent() {
       // Fetch user's liked comments
       const likedCommentIds = await getUserCommentLikes(user.id);
       setLikedComments(new Set(likedCommentIds));
+
+      // Fetch users the current user is following and initialize follow state
+      try {
+        const followingProfiles = await getUserFollowing(user.id);
+        setFollowedUsers(new Set((followingProfiles || []).map(p => p.username)));
+      } catch (err) {
+        console.error('Error fetching following list:', err);
+      }
     } catch (error) {
       console.error('Error fetching user data:', error);
     }
@@ -599,6 +608,7 @@ export default function FeedContent() {
                 </div>
               ) : (
                 visiblePosts.map((post) => {
+                  const isAuthorSelf = user?.id && post.author?.id === user.id;
                   const isLiked = likedPosts.has(post.id);
                   const isSaved = savedPosts.has(post.id);
                   const isCommentsOpen = activeCommentPost === post.id;
@@ -654,20 +664,22 @@ export default function FeedContent() {
                             </div>
                           </div>
 
-                          {/* Follow Button */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleFollow(post.author?.username);
-                            }}
-                            className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg text-sm font-medium transition-all ${
-                              isFollowing
-                                ? `${theme === 'light' ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`
-                                : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-sm"
-                            }`}
-                          >
-                            {isFollowing ? "Following" : "Follow"}
-                          </button>
+                          {/* Follow Button (hidden for own posts) */}
+                          {!isAuthorSelf && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleFollow(post.author?.username);
+                              }}
+                              className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg text-sm font-medium transition-all ${
+                                isFollowing
+                                  ? `${theme === 'light' ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`
+                                  : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-sm"
+                              }`}
+                            >
+                              {isFollowing ? "Following" : "Follow"}
+                            </button>
+                          )}
                         </div>
 
                         {/* Post Title */}
@@ -684,7 +696,7 @@ export default function FeedContent() {
                         {/* Post Content */}
                         {expandedPostId === post.id ? (
                           <div className={`prose ${theme === 'dark' ? 'dark:prose-invert' : ''} max-w-none`}>
-                            <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} mb-4 leading-relaxed`}>
+                            <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} mb-4 leading-relaxed whitespace-pre-line`}>
                               {post.content}
                             </p>
                             <button
@@ -700,7 +712,7 @@ export default function FeedContent() {
                         ) : (
                           <div className="relative">
                             <div className="relative mb-3">
-                              <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} line-clamp-2 leading-relaxed pr-4`}>
+                              <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} line-clamp-2 leading-relaxed pr-4 whitespace-pre-line`}>
                                 {post.content}
                               </p>
                               {post.content && post.content.length > 150 && (

@@ -238,7 +238,7 @@ const Posts = () => {
                   {post.title}
                 </h3>
                 
-                <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} mb-4 line-clamp-3 leading-relaxed`}>
+                <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} mb-4 line-clamp-3 leading-relaxed whitespace-pre-line`}>
                   {post.excerpt}
                 </p>
 

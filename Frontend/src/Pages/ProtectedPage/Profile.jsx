@@ -36,6 +36,7 @@ import {
   getUserFollowers,
   getUserFollowing
 } from "../../Services/user.js";
+import { getPostComments, addComment, deleteComment, toggleCommentLike, getUserCommentLikes } from "../../Services/post";
 
 export default function ProfilePage() {
   const { userId } = useParams(); // Get userId from URL params
@@ -60,6 +61,7 @@ export default function ProfilePage() {
   const [activeCommentPost, setActiveCommentPost] = useState(null);
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState({});
+  const [likedComments, setLikedComments] = useState(new Set());
   const [activeMenuPost, setActiveMenuPost] = useState(null);
   const [repostedPosts, setRepostedPosts] = useState(new Set());
 
@@ -68,6 +70,12 @@ export default function ProfilePage() {
   useEffect(() => {
     fetchUserProfile();
   }, [userId]);
+
+  useEffect(() => {
+    if (currentUser?.id) {
+      fetchUserCommentLikes();
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     if (activeTab === "followers" && followers.length === 0) {
@@ -171,6 +179,16 @@ export default function ProfilePage() {
     }
   };
 
+  const fetchUserCommentLikes = async () => {
+    try {
+      if (!currentUser?.id) return;
+      const likedIds = await getUserCommentLikes(currentUser.id);
+      setLikedComments(new Set(likedIds));
+    } catch (err) {
+      console.error('Error fetching user comment likes:', err);
+    }
+  };
+
   const fetchFollowing = async () => {
     try {
       const targetUserId = userId || currentUser?.id;
@@ -225,11 +243,113 @@ export default function ProfilePage() {
     });
   };
 
-  const toggleComments = (postId) => {
+  const toggleComments = async (postId) => {
     if (activeCommentPost === postId) {
       setActiveCommentPost(null);
-    } else {
-      setActiveCommentPost(postId);
+      return;
+    }
+
+    setActiveCommentPost(postId);
+
+    try {
+      const commentsData = await getPostComments(postId);
+      const mapped = (commentsData || []).map((c) => ({
+        ...c,
+        author: {
+          name: c.author?.full_name || c.author?.username || 'Anonymous',
+          avatar: c.author?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${c.author?.username || c.user_id || 'anonymous'}`
+        },
+        timestamp: formatDate(c.created_at),
+        likes: c.likes_count || 0,
+        isLiked: likedComments.has(c.id)
+      }));
+
+      setComments((prev) => ({
+        ...prev,
+        [postId]: mapped
+      }));
+    } catch (err) {
+      console.error('Error fetching comments for profile post:', err);
+      setComments((prev) => ({ ...prev, [postId]: [] }));
+    }
+  };
+
+  const handleSendComment = async (postId) => {
+    if (!currentUser?.id) {
+      navigate('/login');
+      return;
+    }
+
+    if (!newComment.trim()) return;
+
+    try {
+      const comment = await addComment(postId, currentUser.id, newComment.trim());
+      const formatted = {
+        ...comment,
+        author: {
+          name: comment.author?.full_name || comment.author?.username || 'Anonymous',
+          avatar: comment.author?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.author?.username || comment.user_id || 'anonymous'}`
+        },
+        timestamp: formatDate(comment.created_at),
+        likes: comment.likes_count || 0,
+        isLiked: false
+      };
+
+      setComments(prev => ({
+        ...prev,
+        [postId]: [formatted, ...(prev[postId] || [])]
+      }));
+
+      setNewComment('');
+
+      // Update post comments_count locally
+      setPosts(prevPosts => prevPosts.map(p => p.id === postId ? { ...p, comments_count: (p.comments_count || 0) + 1 } : p));
+    } catch (err) {
+      console.error('Error adding comment:', err);
+      alert('Failed to add comment. Please try again.');
+    }
+  };
+
+  const handleDeleteComment = async (postId, commentId) => {
+    if (!currentUser?.id) return;
+    if (!window.confirm('Are you sure you want to delete this comment?')) return;
+
+    try {
+      await deleteComment(commentId, currentUser.id);
+      setComments(prev => ({
+        ...prev,
+        [postId]: (prev[postId] || []).filter(c => c.id !== commentId)
+      }));
+
+      // Update post comments_count locally
+      setPosts(prevPosts => prevPosts.map(p => p.id === postId ? { ...p, comments_count: Math.max(0, (p.comments_count || 0) - 1) } : p));
+    } catch (err) {
+      console.error('Error deleting comment:', err);
+      alert('Failed to delete comment. Please try again.');
+    }
+  };
+
+  const handleCommentLike = async (postId, commentId) => {
+    if (!currentUser?.id) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const { liked } = await toggleCommentLike(commentId, currentUser.id);
+
+      setLikedComments(prev => {
+        const s = new Set(prev);
+        if (liked) s.add(commentId); else s.delete(commentId);
+        return s;
+      });
+
+      setComments(prev => ({
+        ...prev,
+        [postId]: (prev[postId] || []).map(c => c.id === commentId ? { ...c, likes: liked ? (c.likes || 0) + 1 : Math.max(0, (c.likes || 0) - 1), isLiked: liked } : c)
+      }));
+    } catch (err) {
+      console.error('Error toggling comment like:', err);
     }
   };
 
@@ -241,49 +361,7 @@ export default function ProfilePage() {
     }
   };
 
-  const handleSendComment = (postId) => {
-    if (newComment.trim()) {
-      const comment = {
-        id: Date.now(),
-        author: {
-          name: currentUser?.full_name || "You",
-          username: currentUser?.username || "currentuser",
-          avatar: currentUser?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser",
-        },
-        content: newComment,
-        timestamp: "Just now",
-        likes: 0,
-        isLiked: false,
-      };
-
-      setComments((prev) => ({
-        ...prev,
-        [postId]: [...(prev[postId] || []), comment],
-      }));
-      setNewComment("");
-    }
-  };
-
-  const toggleCommentLike = (postId, commentId) => {
-    setComments((prev) => {
-      const postComments = prev[postId] || [];
-      const updatedComments = postComments.map((comment) => {
-        if (comment.id === commentId) {
-          return {
-            ...comment,
-            likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
-            isLiked: !comment.isLiked,
-          };
-        }
-        return comment;
-      });
-
-      return {
-        ...prev,
-        [postId]: updatedComments,
-      };
-    });
-  };
+  
 
   // Format date
   const formatDate = (dateString) => {
@@ -614,7 +692,7 @@ export default function ProfilePage() {
                           {/* Post Content */}
                           {expandedPostId === post.id ? (
                             <div className={`prose ${theme === 'dark' ? 'dark:prose-invert' : ''} max-w-none`}>
-                              <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} mb-4 leading-relaxed`}>
+                              <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} mb-4 leading-relaxed whitespace-pre-line`}>
                                 {post.content}
                               </p>
                               <button
@@ -627,8 +705,8 @@ export default function ProfilePage() {
                           ) : (
                             <div className="relative">
                               <div className="relative mb-3">
-                                <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} line-clamp-2 leading-relaxed pr-4`}>
-                                  {post.content?.substring(0, 150)}...
+                                <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} line-clamp-2 leading-relaxed pr-4 whitespace-pre-line`}>
+                                  {post.content}
                                 </p>
                                 {post.content && post.content.length > 150 && (
                                   <div className={`absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t ${theme === 'light' ? 'from-white' : 'from-slate-800'} to-transparent flex items-end justify-center`}>

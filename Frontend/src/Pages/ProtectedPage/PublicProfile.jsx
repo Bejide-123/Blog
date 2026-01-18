@@ -565,7 +565,7 @@ export default function PublicProfilePage() {
                           {/* Post Content */}
                           {expandedPostId === post.id ? (
                             <div className={`prose ${theme === 'dark' ? 'dark:prose-invert' : ''} max-w-none`}>
-                              <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} mb-4 leading-relaxed`}>
+                              <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} mb-4 leading-relaxed whitespace-pre-line`}>
                                 {post.content}
                               </p>
                               <button
@@ -578,7 +578,7 @@ export default function PublicProfilePage() {
                           ) : (
                             <div className="relative">
                               <div className="relative mb-3">
-                                <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} line-clamp-2 leading-relaxed pr-4`}>
+                                <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} line-clamp-2 leading-relaxed pr-4 whitespace-pre-line`}>
                                   {post.content?.substring(0, 150)}...
                                 </p>
                                 {post.content && post.content.length > 150 && (
