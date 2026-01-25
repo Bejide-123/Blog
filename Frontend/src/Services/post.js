@@ -919,3 +919,4 @@ export const getSearchSuggestions = async (searchTerm, limit = 5) => {
   
 //   return data;
 // }
+

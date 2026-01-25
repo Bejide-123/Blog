@@ -43,6 +43,8 @@ import {
 import NavbarPrivate from '../../Components/Private/Navbarprivate'
 import { PageLoader } from '../../Components/Private/Loader'
 import { useTheme } from '../../Context/themeContext'
+import { supabase } from '../../lib/supabase'
+import { getNotifications, markNotificationAsRead,markAllNotificationsAsRead,getUnreadNotificationCount, deleteNotification } from '../../Services/notification'
 
 const Notifications = () => {
   const { theme } = useTheme();
@@ -70,142 +72,200 @@ const Notifications = () => {
   }, [])
 
   const fetchNotifications = useCallback(async (page = 1) => {
-    setIsLoading(page === 1)
-    try {
-      // Mock data for now
-      setTimeout(() => {
-        const mockData = generateMockNotifications(page)
-        setNotifications(prev => page === 1 ? mockData : [...prev, ...mockData])
-        setUnreadCount(mockData.filter(n => !n.read).length)
-        setHasMore(page < 3) // Mock 3 pages
-        setIsLoading(false)
-        setLoadingMore(false)
-      }, 1000)
-    } catch (error) {
-      console.error('Error fetching notifications:', error)
-      setIsLoading(false)
-      setLoadingMore(false)
+  setIsLoading(page === 1)
+  try {
+    // Get current user ID
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    
+    const options = {
+      limit: 8,
+      offset: (page - 1) * 8,
+      unreadOnly: false
     }
-  }, [])
-
-  const generateMockNotifications = (page) => {
-    const baseId = (page - 1) * 8
-    return [
-      {
-        id: baseId + 1,
-        type: 'like',
+    
+    // Use real function
+    const { notifications: realNotifications, hasMore: moreAvailable } = 
+      await getNotifications(user.id, options)
+    
+    // Transform to match your component structure
+    const transformedNotifications = realNotifications.map(notif => {
+      // Map database type to your UI type
+      const typeMap = {
+        'like_post': 'like',
+        'comment': 'comment',
+        'follow': 'follow'
+      }
+      
+      return {
+        id: notif.id,
+        type: typeMap[notif.type] || notif.type,
         user: {
-          name: 'Alex Turner',
-          username: 'alext',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=alex',
-          verified: true
-        },
-        post: {
-          title: 'Mastering React Performance Optimization',
-          excerpt: 'Learn advanced techniques to optimize your React applications...',
-          id: 'post123'
-        },
-        timestamp: 'Just now',
-        read: false,
-        meta: { likes: 124, isLiked: true }
-      },
-      {
-        id: baseId + 2,
-        type: 'comment',
-        user: {
-          name: 'Maria Garcia',
-          username: 'mariag',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=maria',
+          name: notif.sender_full_name || 'User',
+          username: notif.sender_username || '',
+          avatar: notif.sender_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${notif.sender_id}`,
           verified: false
         },
-        post: {
-          title: 'Building Real-time Chat with Socket.io',
-          id: 'post456'
-        },
-        comment: 'This tutorial saved my project! The step-by-step approach was exactly what I needed.',
-        timestamp: '5 minutes ago',
-        read: false,
-        meta: { replyCount: 3 }
-      },
-      {
-        id: baseId + 3,
-        type: 'follow',
-        user: {
-          name: 'James Wilson',
-          username: 'jamesw',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=james',
-          verified: true
-        },
-        timestamp: '15 minutes ago',
-        read: true,
-        meta: { mutualFollowers: 12 }
-      },
-      {
-        id: baseId + 4,
-        type: 'mention',
-        user: {
-          name: 'Sophie Chen',
-          username: 'sophiec',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sophie',
-          verified: true
-        },
-        post: {
-          title: 'The Future of Web3 Development',
-          id: 'post789'
-        },
-        mention: 'mentioned you in a discussion about React patterns',
-        timestamp: '1 hour ago',
-        read: true
-      },
-      {
-        id: baseId + 5,
-        type: 'repost',
-        user: {
-          name: 'David Kim',
-          username: 'davidk',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=david',
-          verified: true
-        },
-        post: {
-          title: 'CSS Grid vs Flexbox: Complete Guide 2024',
-          id: 'post101'
-        },
-        timestamp: '2 hours ago',
-        read: true,
-        meta: { shares: 89, views: '2.4K' }
-      },
-      {
-        id: baseId + 6,
-        type: 'trending',
-        post: {
-          title: 'My Journey Learning TypeScript in 30 Days',
-          excerpt: 'After years of JavaScript, I finally took the TypeScript plunge...',
-          id: 'post202'
-        },
-        timestamp: '6 hours ago',
-        read: true,
-        meta: { rank: 3, category: 'Programming', views: '15.2K' }
-      },
-      {
-        id: baseId + 7,
-        type: 'achievement',
-        title: 'Top Contributor Award',
-        description: 'You\'ve been recognized as a Top Contributor for your active engagement!',
-        timestamp: '1 day ago',
-        read: true,
-        meta: { badge: 'Top Contributor', level: 3 }
-      },
-      {
-        id: baseId + 8,
-        type: 'system',
-        title: 'New Feature: Dark Mode',
-        description: 'We\'ve added a beautiful dark mode! Try it out in settings.',
-        timestamp: '2 days ago',
-        read: true,
-        meta: { priority: 'info' }
+        post: notif.post_id ? {
+          id: notif.post_id,
+          title: notif.post_title || '',
+          excerpt: ''
+        } : null,
+        comment: notif.comment_preview || '',
+        timestamp: formatTimeAgo(notif.created_at), // We'll create this helper
+        read: notif.is_read,
+        meta: notif.metadata || {}
       }
-    ]
+    })
+    
+    setNotifications(prev => page === 1 ? transformedNotifications : [...prev, ...transformedNotifications])
+    setHasMore(moreAvailable)
+    setIsLoading(false)
+    setLoadingMore(false)
+    
+    // Get unread count
+    const unread = await getUnreadNotificationCount(user.id)
+    setUnreadCount(unread)
+    
+  } catch (error) {
+    console.error('Error fetching notifications:', error)
+    setIsLoading(false)
+    setLoadingMore(false)
   }
+}, [])
+
+const formatTimeAgo = (timestamp) => {
+  if (!timestamp) return 'Just now'
+  
+  const date = new Date(timestamp)
+  const now = new Date()
+  const diffInSeconds = Math.floor((now - date) / 1000)
+  
+  if (diffInSeconds < 60) return 'Just now'
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`
+  if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} days ago`
+  return date.toLocaleDateString()
+}
+
+  // const generateMockNotifications = (page) => {
+  //   const baseId = (page - 1) * 8
+  //   return [
+  //     {
+  //       id: baseId + 1,
+  //       type: 'like',
+  //       user: {
+  //         name: 'Alex Turner',
+  //         username: 'alext',
+  //         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=alex',
+  //         verified: true
+  //       },
+  //       post: {
+  //         title: 'Mastering React Performance Optimization',
+  //         excerpt: 'Learn advanced techniques to optimize your React applications...',
+  //         id: 'post123'
+  //       },
+  //       timestamp: 'Just now',
+  //       read: false,
+  //       meta: { likes: 124, isLiked: true }
+  //     },
+  //     {
+  //       id: baseId + 2,
+  //       type: 'comment',
+  //       user: {
+  //         name: 'Maria Garcia',
+  //         username: 'mariag',
+  //         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=maria',
+  //         verified: false
+  //       },
+  //       post: {
+  //         title: 'Building Real-time Chat with Socket.io',
+  //         id: 'post456'
+  //       },
+  //       comment: 'This tutorial saved my project! The step-by-step approach was exactly what I needed.',
+  //       timestamp: '5 minutes ago',
+  //       read: false,
+  //       meta: { replyCount: 3 }
+  //     },
+  //     {
+  //       id: baseId + 3,
+  //       type: 'follow',
+  //       user: {
+  //         name: 'James Wilson',
+  //         username: 'jamesw',
+  //         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=james',
+  //         verified: true
+  //       },
+  //       timestamp: '15 minutes ago',
+  //       read: true,
+  //       meta: { mutualFollowers: 12 }
+  //     },
+  //     {
+  //       id: baseId + 4,
+  //       type: 'mention',
+  //       user: {
+  //         name: 'Sophie Chen',
+  //         username: 'sophiec',
+  //         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sophie',
+  //         verified: true
+  //       },
+  //       post: {
+  //         title: 'The Future of Web3 Development',
+  //         id: 'post789'
+  //       },
+  //       mention: 'mentioned you in a discussion about React patterns',
+  //       timestamp: '1 hour ago',
+  //       read: true
+  //     },
+  //     {
+  //       id: baseId + 5,
+  //       type: 'repost',
+  //       user: {
+  //         name: 'David Kim',
+  //         username: 'davidk',
+  //         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=david',
+  //         verified: true
+  //       },
+  //       post: {
+  //         title: 'CSS Grid vs Flexbox: Complete Guide 2024',
+  //         id: 'post101'
+  //       },
+  //       timestamp: '2 hours ago',
+  //       read: true,
+  //       meta: { shares: 89, views: '2.4K' }
+  //     },
+  //     {
+  //       id: baseId + 6,
+  //       type: 'trending',
+  //       post: {
+  //         title: 'My Journey Learning TypeScript in 30 Days',
+  //         excerpt: 'After years of JavaScript, I finally took the TypeScript plunge...',
+  //         id: 'post202'
+  //       },
+  //       timestamp: '6 hours ago',
+  //       read: true,
+  //       meta: { rank: 3, category: 'Programming', views: '15.2K' }
+  //     },
+  //     {
+  //       id: baseId + 7,
+  //       type: 'achievement',
+  //       title: 'Top Contributor Award',
+  //       description: 'You\'ve been recognized as a Top Contributor for your active engagement!',
+  //       timestamp: '1 day ago',
+  //       read: true,
+  //       meta: { badge: 'Top Contributor', level: 3 }
+  //     },
+  //     {
+  //       id: baseId + 8,
+  //       type: 'system',
+  //       title: 'New Feature: Dark Mode',
+  //       description: 'We\'ve added a beautiful dark mode! Try it out in settings.',
+  //       timestamp: '2 days ago',
+  //       read: true,
+  //       meta: { priority: 'info' }
+  //     }
+  //   ]
+  // }
 
   const filters = [
     { id: 'all', label: 'All', icon: <Bell className="w-4 h-4" />, count: notifications.length },
@@ -247,59 +307,83 @@ const Notifications = () => {
   }
 
   const markAsRead = async (id) => {
-    try {
-      setNotifications(prev => prev.map(notif => 
-        notif.id === id ? { ...notif, read: true } : notif
-      ))
-      setUnreadCount(prev => prev - 1)
-    } catch (error) {
-      console.error('Error marking as read:', error)
-    }
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    
+    await markNotificationAsRead(id, user.id)
+    
+    setNotifications(prev => prev.map(notif => 
+      notif.id === id ? { ...notif, read: true } : notif
+    ))
+    setUnreadCount(prev => Math.max(0, prev - 1))
+  } catch (error) {
+    console.error('Error marking as read:', error)
   }
+}
 
   const markAllAsRead = async () => {
-    try {
-      setNotifications(prev => prev.map(notif => ({ ...notif, read: true })))
-      setUnreadCount(0)
-    } catch (error) {
-      console.error('Error marking all as read:', error)
-    }
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    
+    await markAllNotificationsAsRead(user.id)
+    
+    setNotifications(prev => prev.map(notif => ({ ...notif, read: true })))
+    setUnreadCount(0)
+  } catch (error) {
+    console.error('Error marking all as read:', error)
   }
+}
 
   const deleteSingleNotification = async (id) => {
-    try {
-      setNotifications(prev => prev.filter(notif => notif.id !== id))
-      if (selectedNotifications.has(id)) {
-        setSelectedNotifications(prev => {
-          const newSet = new Set(prev)
-          newSet.delete(id)
-          return newSet
-        })
-      }
-      if (unreadCount > 0 && !notifications.find(n => n.id === id)?.read) {
-        setUnreadCount(prev => prev - 1)
-      }
-    } catch (error) {
-      console.error('Error deleting notification:', error)
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    
+    await deleteNotification(id, user.id)
+    
+    setNotifications(prev => prev.filter(notif => notif.id !== id))
+    if (selectedNotifications.has(id)) {
+      setSelectedNotifications(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(id)
+        return newSet
+      })
     }
+    if (unreadCount > 0 && !notifications.find(n => n.id === id)?.read) {
+      setUnreadCount(prev => prev - 1)
+    }
+  } catch (error) {
+    console.error('Error deleting notification:', error)
   }
+}
 
   const deleteSelectedNotifications = async () => {
-    try {
-      setNotifications(prev => prev.filter(notif => !selectedNotifications.has(notif.id)))
-      
-      const deletedUnreadCount = notifications.filter(n => 
-        selectedNotifications.has(n.id) && !n.read
-      ).length
-      setUnreadCount(prev => Math.max(0, prev - deletedUnreadCount))
-      
-      setSelectedNotifications(new Set())
-      setSelectMode(false)
-      setShowDeleteConfirm(false)
-    } catch (error) {
-      console.error('Error deleting selected:', error)
-    }
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    
+    // Delete each selected notification
+    const deletePromises = Array.from(selectedNotifications).map(id => 
+      deleteNotification(id, user.id)
+    )
+    await Promise.all(deletePromises)
+    
+    setNotifications(prev => prev.filter(notif => !selectedNotifications.has(notif.id)))
+    
+    const deletedUnreadCount = notifications.filter(n => 
+      selectedNotifications.has(n.id) && !n.read
+    ).length
+    setUnreadCount(prev => Math.max(0, prev - deletedUnreadCount))
+    
+    setSelectedNotifications(new Set())
+    setSelectMode(false)
+    setShowDeleteConfirm(false)
+  } catch (error) {
+    console.error('Error deleting selected:', error)
   }
+}
 
   const toggleSelect = (id) => {
     setSelectedNotifications(prev => {
