@@ -544,3 +544,145 @@ export const getUserStats = async (userId) => {
     return { posts: 0, followers: 0, following: 0 };
   }
 };
+
+// --------------------- SEARCH USERS ---------------------
+export const searchUsers = async (query, limit = 5) => {
+  try {
+    // First, get the current user to exclude them from search
+    const { data: { user } } = await supabase.auth.getUser();
+    const currentUserId = user?.id || null;
+
+    let queryBuilder = supabase
+      .from('profiles')
+      .select(`
+        id,
+        username,
+        full_name,
+        avatar_url,
+        bio
+      `)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    // If there's a search query, use ilike for partial matching
+    if (query && query.trim().length > 0) {
+      queryBuilder = queryBuilder.or(`username.ilike.%${query}%,full_name.ilike.%${query}%`);
+    }
+
+    // Exclude current user from results
+    if (currentUserId) {
+      queryBuilder = queryBuilder.neq('id', currentUserId);
+    }
+
+    const { data, error } = await queryBuilder;
+
+    if (error) {
+      console.error('Error searching users:', error);
+      throw error;
+    }
+
+    // Format the response to match what the mentions feature expects
+    return data.map(user => ({
+      id: user.id,
+      username: user.username,
+      full_name: user.full_name,
+      avatar_url: user.avatar_url,
+      bio: user.bio
+    }));
+    
+  } catch (error) {
+    console.error('Error in searchUsers:', error);
+    throw error;
+  }
+};
+
+// --------------------- GET USERS BY USERNAME PREFIX ---------------------
+export const getUsersByUsernamePrefix = async (prefix, limit = 5) => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    const currentUserId = user?.id || null;
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select(`
+        id,
+        username,
+        full_name,
+        avatar_url
+      `)
+      .ilike('username', `${prefix}%`)
+      .neq('id', currentUserId) // Exclude current user
+      .limit(limit);
+
+    if (error) throw error;
+
+    return data;
+    
+  } catch (error) {
+    console.error('Error fetching users by prefix:', error);
+    throw error;
+  }
+};
+
+// --------------------- GET RECENTLY INTERACTED USERS (SIMPLIFIED) ---------------------
+export const getRecentlyInteractedUsers = async (limit = 8) => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) return [];
+
+    // SIMPLER: Just get recent users from profiles table
+    const { data, error } = await supabase
+      .from('profiles')
+      .select(`
+        id,
+        username,
+        full_name,
+        avatar_url
+      `)
+      .neq('id', user.id) // Exclude current user
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error fetching recent users:', error);
+      return [];
+    }
+
+    return data || [];
+    
+  } catch (error) {
+    console.error('Error fetching recently interacted users:', error);
+    return [];
+  }
+};
+
+// --------------------- GET USER BY USERNAME ---------------------
+export const getUserByUsername = async (username) => {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select(`
+        id,
+        username,
+        full_name,
+        avatar_url,
+        bio,
+        location,
+        website_url,
+        created_at,
+        followers_count,
+        following_count,
+        posts_count
+      `)
+      .eq('username', username)
+      .single();
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching user by username:', error);
+    throw error;
+  }
+};

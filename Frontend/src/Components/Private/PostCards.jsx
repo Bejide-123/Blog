@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 // Import the new services
 import { 
@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "../../Context/themeContext";
 import { getUserFollowing } from "../../Services/user";
+import { getUserByUsername } from "../../Services/api";
 
 export default function FeedContent() {
   const { theme } = useTheme();
@@ -69,8 +70,14 @@ export default function FeedContent() {
     hasMore: false
   });
 
+  // Cache for user IDs to avoid repeated API calls for mentions
+  const userProfileCache = useRef({});
+
   // Add state for mobile feed header visibility
   const [showFeedHeader, setShowFeedHeader] = useState(false);
+
+  // State for rendered content with mentions
+  const [renderedContent, setRenderedContent] = useState({});
 
   // Fetch posts and user data on component mount
   useEffect(() => {
@@ -79,6 +86,23 @@ export default function FeedContent() {
       fetchUserData();
     }
   }, [activeTab, user]);
+
+  // Process mentions for all posts
+  useEffect(() => {
+    const processMentions = async () => {
+      const newRenderedContent = {};
+      for (const post of posts) {
+        if (post.content) {
+          newRenderedContent[post.id] = await renderContentWithMentions(post.content);
+        }
+      }
+      setRenderedContent(newRenderedContent);
+    };
+
+    if (posts.length > 0) {
+      processMentions();
+    }
+  }, [posts]);
 
   const fetchPosts = async (page = 1) => {
     try {
@@ -443,6 +467,82 @@ export default function FeedContent() {
     }
   };
 
+  // Function to render content with highlighted mentions
+  const renderContentWithMentions = async (text) => {
+    if (!text) return "Your story content will appear here...";
+
+    const parts = text.split(/(@[\w.]+)/g);
+
+    const renderedParts = await Promise.all(parts.map(async (part, index) => {
+      if (part.startsWith("@")) {
+        const username = part.substring(1);
+
+        if (!username) {
+          return part;
+        }
+
+        // Check cache first
+        if (userProfileCache.current[username]) {
+          return (
+            <a
+              key={index}
+              href={`/profile/${userProfileCache.current[username]}`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigate(`/profile/${userProfileCache.current[username]}`);
+              }}
+              className="text-blue-600 dark:text-blue-400 hover:underline font-medium inline-flex items-center"
+            >
+              {part}
+            </a>
+          );
+        }
+
+        // Fetch user data if not cached
+        try {
+          const userProfile = await getUserByUsername(username);
+          if (userProfile && userProfile.id) {
+            // Cache the user ID
+            userProfileCache.current[username] = userProfile.id;
+            return (
+              <a
+                key={index}
+                href={`/profile/${userProfile.id}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate(`/profile/${userProfile.id}`);
+                }}
+                className="text-blue-600 dark:text-blue-400 hover:underline font-medium inline-flex items-center"
+              >
+                {part}
+              </a>
+            );
+          } else {
+            // User not found, keep original username link as fallback
+            return (
+              <span key={index} className="text-gray-500 inline-flex items-center">
+                {part}
+              </span>
+            );
+          }
+        } catch (error) {
+          console.error(`Error fetching user ID for ${username}:`, error);
+          // Fallback to original behavior if API fails
+          return (
+            <span key={index} className="text-gray-500 inline-flex items-center">
+              {part}
+            </span>
+          );
+        }
+      }
+      return part;
+    }));
+
+    return renderedParts;
+  };
+
   // Format comment date
   const formatCommentDate = (dateString) => {
     if (!dateString) return '';
@@ -697,7 +797,7 @@ export default function FeedContent() {
                         {expandedPostId === post.id ? (
                           <div className={`prose ${theme === 'dark' ? 'dark:prose-invert' : ''} max-w-none`}>
                             <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} mb-4 leading-relaxed whitespace-pre-line`}>
-                              {post.content}
+                              {renderedContent[post.id] || post.content}
                             </p>
                             <button
                               onClick={(e) => {
@@ -713,7 +813,7 @@ export default function FeedContent() {
                           <div className="relative">
                             <div className="relative mb-3">
                               <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} line-clamp-2 leading-relaxed pr-4 whitespace-pre-line`}>
-                                {post.content}
+                                {renderedContent[post.id] || post.content}
                               </p>
                               {post.content && post.content.length > 150 && (
                                 <div className={`absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t ${theme === 'light' ? 'from-white' : 'from-slate-800'} to-transparent flex items-end justify-center`}>
