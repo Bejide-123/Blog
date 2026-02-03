@@ -15,6 +15,7 @@ import { useTheme } from "./Context/themeContext";
 import Toast from "./Components/Public/toast/Toast";
 import PostDetailsPage from "./Pages/PublicPage/PostDetails";
 import SearchResults from "./Pages/ProtectedPage/SearchPage";
+import OnboardingPage from "./Pages/PublicPage/OnBoardingPage";
 
 const App = () => {
   const { theme } = useTheme();
@@ -42,6 +43,7 @@ const App = () => {
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/post/:id" element={<PostDetailsPage />} />
           <Route path="/search" element={<SearchResults />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />
         </Routes>
       </UserProvider>
     </div>
