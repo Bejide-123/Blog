@@ -6,7 +6,15 @@ export function UserProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
       const storedUser = localStorage.getItem("user");
-      return storedUser ? JSON.parse(storedUser) : null;
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        // Ensure onboarding_completed field exists
+        return {
+          ...parsedUser,
+          onboarding_completed: parsedUser.onboarding_completed || false
+        };
+      }
+      return null;
     } catch (error) {
       console.error("Failed to parse user from localStorage", error);
       return null;
@@ -26,12 +34,26 @@ export function UserProvider({ children }) {
       const userWithAvatar = {
         ...userData,
         avatar: userData.avatar || generateAvatarUrl(userData),
+        // Ensure onboarding_completed field exists
+        onboarding_completed: userData.onboarding_completed || false
       };
       setUser(userWithAvatar);
       localStorage.setItem("user", JSON.stringify(userWithAvatar));
     } else {
       setUser(null);
       localStorage.removeItem("user");
+    }
+  };
+
+  // Helper function to update only onboarding status
+  const updateOnboardingStatus = (completed) => {
+    if (user) {
+      const updatedUser = {
+        ...user,
+        onboarding_completed: completed
+      };
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
     }
   };
 
@@ -63,6 +85,7 @@ export function UserProvider({ children }) {
     <UserContext.Provider value={{ 
       user, 
       setUser: setUserWithAvatar,
+      updateOnboardingStatus, // Add this new function
       logout,
       generateAvatarUrl 
     }}>

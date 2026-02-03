@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../Context/userContext";
 import { useTheme } from "../../Context/themeContext";
-import { Check, ChevronRight, Sparkles, SkipForward, Mail, Bell, PenTool, BookOpen, Heart, X, PartyPopper } from "lucide-react";
-// import { updateUserProfile } from "../../Services/user";
+import { Check, ChevronRight, Sparkles, SkipForward, Mail, Bell, PenTool, BookOpen, Heart, PartyPopper } from "lucide-react";
+import { supabase } from "../../lib/supabase";
 
 export default function OnboardingPage() {
   const { theme } = useTheme();
-  const { user } = useUser();
+  const { user, setUser, updateOnboardingStatus } = useUser(); // Add updateOnboardingStatus
   const navigate = useNavigate();
   
   const [currentStep, setCurrentStep] = useState(0);
@@ -87,6 +87,13 @@ export default function OnboardingPage() {
     }
   ];
   
+  // Check if user is logged in
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+    }
+  }, [user, navigate]);
+  
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -101,22 +108,72 @@ export default function OnboardingPage() {
     }
   };
   
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    try {
+      // Mark as completed even if skipped
+      await saveOnboardingData({
+        bio: "",
+        topics: [],
+        focus: "",
+        notifications: formData.notifications
+      });
+    } catch (error) {
+      console.error("Error skipping onboarding:", error);
+    }
+    
     navigate("/home");
+  };
+  
+  // Function to save onboarding data to Supabase
+  const saveOnboardingData = async (data) => {
+    if (!user?.id) return;
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          bio: data.bio,
+          interests: data.topics,
+          focus: data.focus,
+          notifications_preferences: data.notifications,
+          onboarding_completed: true,
+          onboarding_completed_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      
+      // Update user in context using the new helper function
+      updateOnboardingStatus(true);
+      
+      // Also update other user data
+      setUser({
+        ...user,
+        bio: data.bio,
+        onboarding_completed: true
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error saving onboarding data:', error);
+      throw error;
+    }
   };
   
   const handleComplete = async () => {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call to save onboarding data
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Save onboarding data to backend
+      await saveOnboardingData(formData);
       
       console.log("Onboarding completed with data:", formData);
       setShowCompletionModal(true);
       
     } catch (error) {
       console.error("Error saving onboarding data:", error);
+      // Still show success modal even if save fails
+      setShowCompletionModal(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -150,11 +207,6 @@ export default function OnboardingPage() {
     return true;
   };
   
-  const handleCloseModal = () => {
-    setShowCompletionModal(false);
-    navigate("/home");
-  };
-  
   const handleCreatePost = () => {
     setShowCompletionModal(false);
     navigate("/create");
@@ -164,6 +216,18 @@ export default function OnboardingPage() {
     setShowCompletionModal(false);
     navigate("/home");
   };
+  
+  // If no user, show nothing (will redirect)
+  if (!user) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${theme === 'light' ? 'bg-white' : 'bg-slate-900'}`}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className={`mt-4 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>Loading...</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <>
