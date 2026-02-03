@@ -24,6 +24,8 @@ import MobileNotificationModal from "./mobileNotification";
 import { useUser } from "../../Context/userContext";
 import { signOut } from "../../Services/api";
 import { useTheme } from "../../Context/themeContext";
+import { getUnreadNotificationCount, subscribeToNotifications, unsubscribeFromNotifications } from "../../Services/notification";
+import { supabase } from "../../lib/supabase";
 
 export default function NavbarPrivate() {
   const { user, logout } = useUser();
@@ -33,7 +35,7 @@ export default function NavbarPrivate() {
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [notificationCount] = useState(3); // Example count
+  const [notificationCount, setNotificationCount] = useState(0);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const nav = useNavigate();
@@ -55,6 +57,41 @@ export default function NavbarPrivate() {
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
   }, []);
+
+  // Fetch notification count on mount and when user changes
+  useEffect(() => {
+    if (user?.id) {
+      fetchNotificationCount();
+    }
+  }, [user?.id]);
+
+  // Set up real-time subscription for notifications
+  useEffect(() => {
+    let subscription = null;
+    if (user?.id) {
+      subscription = subscribeToNotifications(user.id, (payload) => {
+        // Update count when new notification arrives
+        if (payload.eventType === 'INSERT') {
+          setNotificationCount(prev => prev + 1);
+        }
+      });
+    }
+    return () => {
+      if (subscription) {
+        unsubscribeFromNotifications(subscription);
+      }
+    };
+  }, [user?.id]);
+
+  const fetchNotificationCount = async () => {
+    if (!user?.id) return;
+    try {
+      const count = await getUnreadNotificationCount(user.id);
+      setNotificationCount(count);
+    } catch (error) {
+      console.error('Error fetching notification count:', error);
+    }
+  };
 
   // Generate avatar URL fallback
   const getAvatarUrl = () => {
