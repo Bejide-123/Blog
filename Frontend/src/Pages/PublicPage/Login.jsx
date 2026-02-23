@@ -16,6 +16,7 @@ import { useUser } from "../../Context/userContext";
 import { supabase } from "../../lib/supabase";
 import { useTheme } from "../../Context/themeContext";
 import { toastService } from "../../Services/toastService";
+import { signInWithGoogle } from "../../lib/supabase";
 
 const Auth = () => {
   const { theme } = useTheme();
@@ -27,6 +28,7 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(mode !== "signup");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     username: "",
@@ -40,6 +42,171 @@ const Auth = () => {
     if (mode === "signup") setIsLogin(false);
     if (mode === "login") setIsLogin(true);
   }, [mode]);
+
+  useEffect(() => {
+    const handleOAuthRedirect = async () => {
+      // Check if this is a redirect from OAuth
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error("Error getting session:", error);
+        return;
+      }
+
+      if (session) {
+        const loadingToast = toastService.loading("Completing sign in...");
+        
+        try {
+          const { user } = session;
+          
+          // Check if user profile exists
+          const { data: profileData, error: _error } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", user.id)
+            .maybeSingle();
+
+          if (!profileData) {
+            // Profile doesn't exist - create one for Google user
+            console.log("Creating profile for Google user:", user);
+            
+            // Generate username from email or name
+            let username = user.email?.split('@')[0] || '';
+            username = username.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+            
+            // Check if username exists and make it unique if needed
+            const { data: existingUser } = await supabase
+              .from("profiles")
+              .select("username")
+              .eq("username", username)
+              .maybeSingle();
+              
+            if (existingUser) {
+              username = `${username}_${Math.floor(Math.random() * 1000)}`;
+            }
+            
+            let newProfile;
+            
+            const { data: insertedProfile, error: insertError } = await supabase
+              .from("profiles")
+              .insert([
+                {
+                  id: user.id,
+                  username: username,
+                  full_name: user.user_metadata?.full_name || 
+                            user.user_metadata?.name || 
+                            user.email?.split('@')[0] || 
+                            "Google User",
+                  avatar_url: user.user_metadata?.avatar_url || 
+                             user.user_metadata?.picture || 
+                             null,
+                  onboarding_completed: false,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                },
+              ])
+              .select()
+              .single();
+
+            if (insertError) {
+              // If duplicate key error, fetch the existing profile
+              if (insertError.code === '23505') {
+                console.log("Profile already exists, fetching it...");
+                const { data: existingProfile, error: fetchError } = await supabase
+                  .from("profiles")
+                  .select("*")
+                  .eq("id", user.id)
+                  .single();
+                
+                if (fetchError) {
+                  console.error("Error fetching existing profile:", fetchError);
+                  toastService.dismiss(loadingToast);
+                  toastService.error("Error retrieving user profile");
+                  return;
+                }
+                newProfile = existingProfile;
+              } else {
+                console.error("Error creating profile:", insertError);
+                toastService.dismiss(loadingToast);
+                toastService.error("Error creating user profile");
+                return;
+              }
+            } else {
+              newProfile = insertedProfile;
+              console.log("Profile created successfully:", newProfile);
+            }
+
+            // Set user in context with new profile
+            setUser({
+              id: user.id,
+              name: newProfile.full_name,
+              email: user.email,
+              username: newProfile.username,
+              avatar: newProfile.avatar_url,
+              onboarding_completed: newProfile.onboarding_completed || false,
+            });
+
+            toastService.dismiss(loadingToast);
+            toastService.success("Welcome to Scribe! Let's set up your profile.");
+            
+            // Redirect new Google users to onboarding
+            setTimeout(() => {
+              nav("/onboarding");
+            }, 1000);
+            
+          } else {
+            // Profile exists - existing Google user
+            console.log("Existing profile found:", profileData);
+            
+            setUser({
+              id: user.id,
+              name: profileData.full_name,
+              email: user.email,
+              username: profileData.username,
+              avatar: profileData.avatar_url,
+              bio: profileData.bio,
+              onboarding_completed: profileData.onboarding_completed || false,
+            });
+
+            toastService.dismiss(loadingToast);
+            toastService.success(`Welcome back! Redirecting...`);
+
+            // Check if user needs onboarding
+            if (!profileData.onboarding_completed) {
+              setTimeout(() => {
+                nav("/onboarding");
+              }, 1000);
+            } else {
+              setTimeout(() => {
+                nav("/home");
+              }, 1000);
+            }
+          }
+        } catch (err) {
+          toastService.dismiss(loadingToast);
+          toastService.error("Error completing sign in");
+          console.error("OAuth callback error:", err);
+        }
+      }
+    };
+
+    // Check if there's a session on component mount (for OAuth redirect)
+    handleOAuthRedirect();
+
+    // Also listen for auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          // Handle sign in events that might not be caught by the initial check
+          handleOAuthRedirect();
+        }
+      }
+    );
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
+  }, [nav, setUser]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -79,7 +246,28 @@ const Auth = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Updated handleSubmit function in your Auth component
+  // Handle Google Sign-In
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    
+    try {
+      const { error } = await signInWithGoogle();
+      
+      if (error) {
+        toastService.error("Failed to sign in with Google. Please try again.");
+        console.error("Google sign-in error:", error);
+      }
+      // No need to handle success here - it will redirect to Google
+    } catch (err) {
+      toastService.error("An unexpected error occurred");
+      console.error("Google sign-in error:", err);
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -117,13 +305,13 @@ const Auth = () => {
           .eq("id", loggedInUser.id)
           .single();
 
-        // Set user in context (your UserContext will add avatar automatically)
+        // Set user in context
         setUser({
           id: loggedInUser.id,
           name: profileData?.full_name || "",
           email: loggedInUser.email,
           username: profileData?.username || "",
-          avatar: profileData?.avatar_url, // This will be handled by UserContext
+          avatar: profileData?.avatar_url,
           bio: profileData?.bio,
           onboarding_completed: profileData?.onboarding_completed || false,
         });
@@ -159,15 +347,14 @@ const Auth = () => {
         );
 
         // Create user profile in profiles table
-        const { data: profileData, error: profileError } = await supabase
+        const { error: profileError } = await supabase
           .from("profiles")
           .insert([
             {
               id: loggedInUser.id,
               username: formData.username,
               full_name: formData.name,
-              email: formData.email,
-              onboarding_completed: false, // New users need onboarding
+              onboarding_completed: false,
               created_at: new Date().toISOString(),
             },
           ])
@@ -176,34 +363,27 @@ const Auth = () => {
 
         if (profileError) {
           console.error("Error creating profile:", profileError);
-          // Continue anyway, we'll use the form data
         }
 
-        // Set user in context with minimal data
-        // Your UserContext will automatically add avatar
+        // Set user in context
         setUser({
           id: loggedInUser.id,
           name: formData.name,
           email: loggedInUser.email,
           username: formData.username,
-          onboarding_completed: false, // Always false for new users
-          // avatar will be auto-generated by UserContext
+          onboarding_completed: false,
         });
 
-        // ALWAYS redirect new users to onboarding
+        // Always redirect new users to onboarding
         setTimeout(() => {
           nav("/onboarding");
         }, 1500);
       }
     } catch (err) {
-      // Dismiss loading toast
       toastService.dismiss(loadingToast);
-
-      // Show error toast
       toastService.error(
         err?.message || "Something went wrong. Please try again.",
       );
-
       console.error("Auth error:", err);
     } finally {
       setIsLoading(false);
@@ -256,7 +436,7 @@ const Auth = () => {
         <div
           className={`relative ${theme === "light" ? "bg-white/95" : "bg-slate-800/95"} backdrop-blur-lg rounded-2xl border ${theme === "light" ? "border-gray-200/50" : "border-slate-700/50"} shadow-xl p-8`}
         >
-          {/* Toggle Tabs - Modern Design */}
+          {/* Toggle Tabs */}
           <div
             className={`flex items-center gap-1 mb-8 p-1 bg-gradient-to-r ${theme === "light" ? "from-gray-100 to-gray-50" : "from-slate-800 to-slate-900"} rounded-2xl`}
           >
@@ -504,7 +684,7 @@ const Auth = () => {
           </form>
 
           {/* Divider */}
-          {/* <div className="relative my-8">
+          <div className="relative my-8">
             <div className={`absolute inset-0 flex items-center`}>
               <div className={`w-full border-t ${theme === 'light' ? 'border-gray-300' : 'border-slate-700'}`}></div>
             </div>
@@ -513,20 +693,30 @@ const Auth = () => {
                 Or continue with
               </span>
             </div>
-          </div> */}
+          </div>
 
           {/* Social Login Buttons */}
-          {/* <div className="grid grid-cols-2 gap-3">
-            <button className={`flex items-center justify-center gap-3 py-3 px-4 ${theme === 'light' ? 'bg-white border-gray-300 hover:bg-gray-50 text-gray-700' : 'bg-slate-700 border-slate-600 hover:bg-slate-600 text-gray-300'} border rounded-xl transition-all duration-300 font-medium cursor-pointer group`}>
-              <FcGoogle className="w-5 h-5" />
-              <span>Google</span>
+          <div className="grid grid-cols-2 gap-3">
+            <button 
+              onClick={handleGoogleSignIn}
+              disabled={isGoogleLoading}
+              className={`flex items-center justify-center gap-3 py-3 px-4 ${theme === 'light' ? 'bg-white border-gray-300 hover:bg-gray-50 text-gray-700' : 'bg-slate-700 border-slate-600 hover:bg-slate-600 text-gray-300'} border rounded-xl transition-all duration-300 font-medium cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              {isGoogleLoading ? (
+                <ButtonLoader />
+              ) : (
+                <>
+                  <FcGoogle className="w-5 h-5" />
+                  <span>Google</span>
+                </>
+              )}
             </button>
 
             <button className={`flex items-center justify-center gap-3 py-3 px-4 ${theme === 'light' ? 'bg-white border-gray-300 hover:bg-gray-50 text-gray-700' : 'bg-slate-700 border-slate-600 hover:bg-slate-600 text-gray-300'} border rounded-xl transition-all duration-300 font-medium cursor-pointer group`}>
               <FiGithub className="w-5 h-5" />
               <span>GitHub</span>
             </button>
-          </div> */}
+          </div>
 
           {/* Footer */}
           <p
