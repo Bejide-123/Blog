@@ -277,47 +277,48 @@ export default function FeedContent() {
     }
   };
 
-  const handleSendComment = async (postId) => {
-    const commentText = commentInputs[postId] || newComment;
+const handleSendComment = async (postId) => {
+  const commentText = commentInputs[postId] || newComment;
+  
+  if (!commentText.trim() || !user?.id) {
+    if (!user?.id) navigate('/login');
+    return;
+  }
+  
+  try {
+    // Add comment to database
+    const comment = await addComment(postId, user.id, commentText.trim());
     
-    if (!commentText.trim() || !user?.id) {
-      if (!user?.id) navigate('/login');
-      return;
-    }
+    // Update comments for this post
+    setPostComments(prev => ({
+      ...prev,
+      [postId]: [comment, ...(prev[postId] || [])]
+    }));
     
-    try {
-      // Add comment to database
-      const comment = await addComment(postId, user.id, commentText.trim());
-      
-      // Update comments for this post
-      setPostComments(prev => ({
-        ...prev,
-        [postId]: [comment, ...(prev[postId] || [])]
-      }));
-      
-      // Clear comment input
-      setCommentInputs(prev => ({
-        ...prev,
-        [postId]: ""
-      }));
-      setNewComment("");
-      
-      // Update post comment count
-      setPosts(prevPosts => 
-        prevPosts.map(post => 
-          post.id === postId 
-            ? { 
-                ...post, 
-                comments_count: (post.comments_count || 0) + 1 
-              } 
-            : post
-        )
-      );
-    } catch (error) {
-      console.error('Error adding comment:', error);
-      alert('Failed to add comment. Please try again.');
-    }
-  };
+    // Clear comment input
+    setCommentInputs(prev => ({
+      ...prev,
+      [postId]: ""
+    }));
+    setNewComment("");
+    
+    // Update post comment count
+    setPosts(prevPosts => 
+      prevPosts.map(post => 
+        post.id === postId 
+          ? { 
+              ...post, 
+              comments_count: (post.comments_count || 0) + 1 
+            } 
+          : post
+      )
+    );
+  } catch (error) {
+    console.error('Error adding comment:', error);
+    // Show a more user-friendly error
+    alert('Failed to add comment. Please try again.');
+  }
+};
 
   const handleDeleteComment = async (postId, commentId) => {
     if (!window.confirm('Are you sure you want to delete this comment?')) {

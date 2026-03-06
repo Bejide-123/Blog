@@ -390,6 +390,7 @@ export const getPopularTags = async (limit = 10) => {
 }
 
 // --------------------- GET POST COMMENTS ---------------------
+// --------------------- GET POST COMMENTS ---------------------
 export const getPostComments = async (postId) => {
   try {
     // First get comments
@@ -499,7 +500,7 @@ export const addComment = async (postId, userId, content) => {
     if (updateError) throw updateError;
 
     // Get user profile
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id, username, full_name, avatar_url')
       .eq('id', userId)
@@ -526,7 +527,7 @@ export const deleteComment = async (commentId, userId) => {
     // First check if user owns the comment
     const { data: comment, error: fetchError } = await supabase
       .from('comments')
-      .select('post_id')
+      .select('post_id, user_id')
       .eq('id', commentId)
       .eq('user_id', userId)
       .single();
@@ -564,24 +565,6 @@ export const deleteComment = async (commentId, userId) => {
   }
 };
 
-// --------------------- GET COMMENT COUNT ---------------------
-export const getCommentCount = async (postId) => {
-  try {
-    const { data: post, error } = await supabase
-      .from('posts')
-      .select('comments_count')
-      .eq('id', postId)
-      .single();
-
-    if (error) throw error;
-    
-    return post?.comments_count || 0;
-  } catch (error) {
-    console.error('Error getting comment count:', error);
-    return 0;
-  }
-};
-
 // --------------------- TOGGLE COMMENT LIKE ---------------------
 export const toggleCommentLike = async (commentId, userId) => {
   try {
@@ -593,9 +576,9 @@ export const toggleCommentLike = async (commentId, userId) => {
       .eq('user_id', userId);
 
     // If table doesn't exist, return without error
-    if (likeError && likeError.code === 'PGRST205') {
+    if (likeError && likeError.code === '42P01') {
       console.log('comment_likes table not found');
-      return { liked: false };
+      return { liked: false, count: 0 };
     }
     
     if (likeError) throw likeError;
@@ -612,14 +595,14 @@ export const toggleCommentLike = async (commentId, userId) => {
 
       if (deleteError) throw deleteError;
       
-      // First, get current likes count
+      // Get current likes count
       const { data: comment, error: commentError } = await supabase
         .from('comments')
         .select('likes_count')
         .eq('id', commentId)
         .single();
 
-      if (commentError) throw commentError;
+      if (commentError && commentError.code !== 'PGRST116') throw commentError;
 
       // Update comment likes count
       const newCount = Math.max(0, (comment?.likes_count || 0) - 1);
@@ -628,7 +611,7 @@ export const toggleCommentLike = async (commentId, userId) => {
         .update({ likes_count: newCount })
         .eq('id', commentId);
       
-      return { liked: false };
+      return { liked: false, count: newCount };
     } else {
       // Like
       const { error: insertError } = await supabase
@@ -638,16 +621,16 @@ export const toggleCommentLike = async (commentId, userId) => {
           user_id: userId
         });
 
-      if (insertError) throw insertError;
+      if (insertError && !insertError.message?.includes('duplicate')) throw insertError;
 
-      // First, get current likes count
+      // Get current likes count
       const { data: comment, error: commentError } = await supabase
         .from('comments')
         .select('likes_count')
         .eq('id', commentId)
         .single();
 
-      if (commentError) throw commentError;
+      if (commentError && commentError.code !== 'PGRST116') throw commentError;
 
       // Update comment likes count
       const newCount = (comment?.likes_count || 0) + 1;
@@ -656,11 +639,11 @@ export const toggleCommentLike = async (commentId, userId) => {
         .update({ likes_count: newCount })
         .eq('id', commentId);
       
-      return { liked: true };
+      return { liked: true, count: newCount };
     }
   } catch (error) {
     console.error('Error toggling comment like:', error);
-    return { liked: false };
+    return { liked: false, count: 0 };
   }
 };
 
@@ -672,7 +655,7 @@ export const getCommentLikes = async (commentId) => {
       .select('user_id')
       .eq('comment_id', commentId);
 
-    if (error && error.code === 'PGRST205') {
+    if (error && error.code === '42P01') {
       return [];
     }
     
@@ -693,7 +676,7 @@ export const getUserCommentLikes = async (userId) => {
       .select('comment_id')
       .eq('user_id', userId);
 
-    if (error && error.code === 'PGRST205') {
+    if (error && error.code === '42P01') {
       return [];
     }
     
