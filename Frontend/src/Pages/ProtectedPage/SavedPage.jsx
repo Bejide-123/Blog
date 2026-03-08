@@ -562,7 +562,7 @@ export default function SavedPage() {
                   </div>
 
                   {/* Sort Options */}
-                  <div className="flex items-center gap-2 mb-4">
+                  <div className="flex items-center gap-2 mb-4 flex-wrap">
                     <span className={`text-sm font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>Sort by:</span>
                     {sortOptions.map((option) => (
                       <button
@@ -581,7 +581,7 @@ export default function SavedPage() {
                         }`}
                       >
                         {option.icon}
-                        {option.label}
+                        <span className="hidden sm:inline">{option.label}</span>
                       </button>
                     ))}
                   </div>
@@ -625,7 +625,7 @@ export default function SavedPage() {
               )}
 
               {/* Posts Feed */}
-              <div className="space-y-8">
+              <div className="space-y-6">
                 {displayedPosts.length === 0 ? (
                   <div className={`text-center py-12 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
                     <div className={`w-24 h-24 mx-auto mb-6 bg-gradient-to-r ${theme === 'light' ? 'from-blue-100 to-purple-100' : 'from-blue-900/30 to-purple-900/30'} rounded-full flex items-center justify-center`}>
@@ -668,35 +668,45 @@ export default function SavedPage() {
                     return (
                       <article
                         key={post.id}
-                        className={`group relative ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} shadow-lg hover:shadow-2xl ${theme === 'light' ? '' : 'dark:hover:shadow-slate-900/50'} transition-all duration-300 hover:-translate-y-1 overflow-hidden`}
+                        className={`group relative ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden`}
                       >
                         {/* Post Header */}
-                        <div className="p-4 sm:p-6 pb-4">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                              <Link to={`/profile/${post.author?.id}`} className="relative">
+                        <div 
+                          className="p-4 sm:p-6 pb-4 cursor-pointer"
+                          onClick={(e) => {
+                            if (!e.target.closest('button') && !e.target.closest('a')) {
+                              nav(`/post/${post.id}`);
+                            }
+                          }}
+                        >
+                          <div className="flex items-start justify-between mb-4 gap-3">
+                            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                              <Link to={`/profile/${post.author?.id}`} onClick={(e) => e.stopPropagation()} className="relative flex-shrink-0">
                                 <img
                                   src={post.author?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.author?.username || 'anonymous'}`}
                                   alt={post.author?.full_name || 'Anonymous'}
-                                  className={`w-12 h-12 rounded-xl border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} shadow-sm`}
+                                  className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} shadow-sm`}
                                 />
                               </Link>
-                              <div>
-                                <div className="flex items-center gap-1 flex-wrap">
-                                  <Link to={`/profile/${post.author?.id}`}>
-                                    <h3 className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm`}>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                  <Link to={`/profile/${post.author?.id}`} onClick={(e) => e.stopPropagation()}>
+                                    <h3 className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm sm:text-base truncate`}>
                                       {post.author?.full_name || 'Anonymous'}
                                     </h3>
                                   </Link>
-                                  <Link to={`/profile/${post.author?.id}`}>
-                                    <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                      @{post.author?.username || 'anonymous'}
-                                    </span>
-                                  </Link>
-                                  <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} ml-1`}>
-                                    • {formatDate(post.saved_at || post.createdat)}
+                                  <span className={`text-xs ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'} hidden sm:inline`}>
+                                    •
+                                  </span>
+                                  <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} whitespace-nowrap`}>
+                                    {formatDate(post.saved_at || post.createdat)}
                                   </span>
                                 </div>
+                                <Link to={`/profile/${post.author?.id}`} onClick={(e) => e.stopPropagation()}>
+                                  <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} truncate`}>
+                                    @{post.author?.username || 'anonymous'}
+                                  </p>
+                                </Link>
                               </div>
                             </div>
 
@@ -705,8 +715,11 @@ export default function SavedPage() {
                               {/* Follow Button (hidden for own posts) */}
                               {!isAuthorSelf && (
                                 <button
-                                  onClick={() => toggleFollow(post.author?.username)}
-                                  className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg text-sm font-medium transition-all ${
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleFollow(post.author?.username);
+                                  }}
+                                  className={`flex-shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                                     isFollowing
                                       ? `${theme === 'light' ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`
                                       : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-sm"
@@ -719,7 +732,10 @@ export default function SavedPage() {
                               {/* Menu Button */}
                               <div className="relative">
                                 <button 
-                                  onClick={() => toggleMenu(post.id)} 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleMenu(post.id);
+                                  }} 
                                   className={`p-1.5 ${theme === 'light' ? 'text-gray-400 hover:text-gray-600 hover:bg-gray-100' : 'text-gray-400 hover:text-gray-300 hover:bg-slate-700'} rounded-lg transition-colors`}
                                 >
                                   <MoreHorizontal className="w-5 h-5" />
@@ -729,14 +745,20 @@ export default function SavedPage() {
                                 {isMenuOpen && (
                                   <div className={`absolute right-0 mt-2 w-56 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-xl shadow-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} py-2 z-50`}>
                                     <button
-                                      onClick={() => toggleSave(post.id)}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        toggleSave(post.id);
+                                      }}
                                       className={`w-full px-4 py-2.5 text-left flex items-center gap-3 ${theme === 'light' ? 'hover:bg-gray-50 text-gray-700' : 'hover:bg-slate-700 text-gray-300'} transition-colors`}
                                     >
                                       <Trash2 className="w-4 h-4 text-red-500" />
                                       <span className="font-medium">Remove from Saved</span>
                                     </button>
                                     <button
-                                      onClick={() => toggleFollow(post.author?.username)}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        toggleFollow(post.author?.username);
+                                      }}
                                       className={`w-full px-4 py-2.5 text-left flex items-center gap-3 ${theme === 'light' ? 'hover:bg-gray-50 text-gray-700' : 'hover:bg-slate-700 text-gray-300'} transition-colors`}
                                     >
                                       {isFollowing ? (
@@ -764,8 +786,11 @@ export default function SavedPage() {
 
                           {/* Post Title */}
                           <h2 
-                            onClick={() => nav(`/post/${post.id}`)}
-                            className={`text-xl sm:text-2xl md:text-3xl font-bold ${theme === 'light' ? 'text-gray-900 hover:text-blue-600' : 'text-white hover:text-blue-500'} mb-3 transition-colors cursor-pointer leading-tight`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              nav(`/post/${post.id}`);
+                            }}
+                            className={`text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold ${theme === 'light' ? 'text-gray-900 hover:text-blue-600' : 'text-white hover:text-blue-500'} mb-3 transition-colors cursor-pointer leading-tight`}
                           >
                             {post.title}
                           </h2>
@@ -773,11 +798,14 @@ export default function SavedPage() {
                           {/* Post Content */}
                           {isContentExpanded ? (
                             <div className={`prose ${theme === 'dark' ? 'dark:prose-invert' : ''} max-w-none`}>
-                              <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} mb-4 leading-relaxed whitespace-pre-line`}>
+                              <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-sm sm:text-base mb-4 leading-relaxed whitespace-pre-line`}>
                                 {post.content}
                               </p>
                               <button
-                                onClick={() => setExpandedPostId(null)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setExpandedPostId(null);
+                                }}
                                 className={`${theme === 'light' ? 'text-blue-600' : 'text-blue-500'} hover:underline font-medium text-sm`}
                               >
                                 Show less
@@ -786,13 +814,16 @@ export default function SavedPage() {
                           ) : (
                             <div className="relative">
                               <div className="relative mb-3">
-                                <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} line-clamp-2 leading-relaxed pr-4 whitespace-pre-line`}>
+                                <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-sm sm:text-base line-clamp-2 leading-relaxed pr-4 whitespace-pre-line`}>
                                   {post.content}
                                 </p>
                                 {post.content && post.content.length > 150 && (
                                   <div className={`absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t ${theme === 'light' ? 'from-white' : 'from-slate-800'} to-transparent flex items-end justify-center`}>
                                     <button
-                                      onClick={() => setExpandedPostId(post.id)}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setExpandedPostId(post.id);
+                                      }}
                                       className={`relative -bottom-2 px-4 py-1.5 ${theme === 'light' ? 'bg-white border-gray-200 text-blue-600 hover:text-blue-700 hover:bg-gray-50' : 'bg-slate-800 border-slate-700 text-blue-500 hover:text-blue-400 hover:bg-slate-700'} border font-medium text-sm rounded-full shadow-sm transition-colors`}
                                     >
                                       Read full story
@@ -806,12 +837,17 @@ export default function SavedPage() {
 
                         {/* Featured Image */}
                         {post.featured_image && (
-                          <div className="w-full h-64 sm:h-72 md:h-80 overflow-hidden">
+                          <div 
+                            className="w-full h-48 sm:h-64 md:h-72 lg:h-80 overflow-hidden cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              nav(`/post/${post.id}`);
+                            }}
+                          >
                             <img
                               src={post.featured_image}
                               alt={post.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
-                              onClick={() => nav(`/post/${post.id}`)}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
                           </div>
                         )}
@@ -824,7 +860,10 @@ export default function SavedPage() {
                               {post.tags.map((tag, index) => (
                                 <span
                                   key={index}
-                                  className={`px-3 py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50 text-blue-700 hover:from-blue-100 hover:to-purple-100' : 'from-blue-900/20 to-purple-900/20 text-blue-400 hover:from-blue-900/30 hover:to-purple-900/30'} text-xs sm:text-sm font-medium rounded-full transition-all cursor-pointer`}
+                                  className={`px-3 py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50 text-blue-700 hover:from-blue-100 hover:to-purple-100' : 'from-blue-900/20 to-purple-900/20 text-blue-400 hover:from-blue-900/30 hover:to-purple-900/30'} text-xs font-medium rounded-full transition-all cursor-pointer`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                  }}
                                 >
                                   #{tag}
                                 </span>
@@ -833,64 +872,73 @@ export default function SavedPage() {
                           )}
 
                           {/* Stats & Actions */}
-                          <div className={`flex items-center justify-between flex-wrap gap-4 pt-4 border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
+                          <div className={`flex items-center justify-between flex-wrap gap-3 pt-4 border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
                             {/* Stats */}
-                            <div className={`flex items-center gap-4 sm:gap-6 text-xs sm:text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                            <div className={`flex items-center gap-2 text-xs ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
                               <div className="flex items-center gap-1">
-                                <Clock className="w-4 h-4" />
-                                <span>{post.read_time || 5} min read</span>
+                                <Clock className="w-3.5 h-3.5" />
+                                <span>{post.read_time || 5} min</span>
                               </div>
                             </div>
 
                             {/* Action Buttons */}
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1 sm:gap-2">
                               {/* Like Button */}
                               <button
-                                onClick={() => toggleLike(post.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleLike(post.id);
+                                }}
                                 disabled={!user?.id}
-                                className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all duration-300 ${
+                                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-all duration-300 text-xs sm:text-sm ${
                                   isLiked
-                                    ? `bg-gradient-to-r ${theme === 'light' ? 'from-red-50 to-pink-50 text-red-600' : 'from-red-900/20 to-pink-900/20 text-red-400'} shadow-sm`
+                                    ? `bg-gradient-to-r ${theme === 'light' ? 'from-red-50 to-pink-50 text-red-600' : 'from-red-900/20 to-pink-900/20 text-red-400'}`
                                     : `${theme === 'light' ? 'text-gray-600 hover:text-red-500 hover:bg-red-50' : 'text-gray-400 hover:text-red-400 hover:bg-red-900/20'}`
                                 } ${!user?.id ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 title={!user?.id ? "Login to like posts" : isLiked ? "Unlike post" : "Like post"}
                               >
                                 <Heart
-                                  className={`w-5 h-5 ${
+                                  className={`w-4 h-4 ${
                                     isLiked ? "fill-current" : ""
                                   }`}
                                 />
-                                <span className="font-medium text-xs sm:text-sm">
+                                <span className="font-medium">
                                   {post.likescount || 0}
                                 </span>
                               </button>
 
                               {/* Comment */}
                               <button
-                                onClick={() => toggleComments(post.id)}
-                                className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all duration-300 ${
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleComments(post.id);
+                                }}
+                                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-all duration-300 text-xs sm:text-sm ${
                                   isCommentsOpen
-                                    ? `bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-cyan-50 text-blue-600' : 'from-blue-900/20 to-cyan-900/20 text-blue-400'} shadow-sm`
+                                    ? `bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-cyan-50 text-blue-600' : 'from-blue-900/20 to-cyan-900/20 text-blue-400'}`
                                     : `${theme === 'light' ? 'text-gray-600 hover:text-blue-500 hover:bg-blue-50' : 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/20'}`
                                 }`}
                               >
-                                <MessageCircle className="w-5 h-5" />
-                                <span className="font-medium text-xs sm:text-sm">
+                                <MessageCircle className="w-4 h-4" />
+                                <span className="font-medium">
                                   {post.comments_count || 0}
                                 </span>
                               </button>
 
                               {/* Save Button - Always saved in SavedPage */}
                               <button
-                                onClick={() => toggleSave(post.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleSave(post.id);
+                                }}
                                 disabled={!user?.id}
-                                className={`p-2 sm:p-2.5 rounded-xl transition-all duration-300 ${
-                                  `bg-gradient-to-r ${theme === 'light' ? 'from-yellow-50 to-amber-50 text-yellow-600' : 'from-yellow-900/20 to-amber-900/20 text-yellow-400'} shadow-sm`
+                                className={`p-1.5 sm:p-2 rounded-lg transition-all duration-300 ${
+                                  `bg-gradient-to-r ${theme === 'light' ? 'from-yellow-50 to-amber-50 text-yellow-600' : 'from-yellow-900/20 to-amber-900/20 text-yellow-400'}`
                                 } ${!user?.id ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 title="Remove from saved"
                               >
                                 <Bookmark
-                                  className={`w-5 h-5 fill-current`}
+                                  className={`w-4 h-4 fill-current`}
                                 />
                               </button>
                             </div>
@@ -899,42 +947,45 @@ export default function SavedPage() {
 
                         {/* ========== COMMENTS SECTION ========== */}
                         {isCommentsOpen && (
-                          <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} bg-gradient-to-b ${theme === 'light' ? 'from-gray-50/50 to-transparent' : 'from-slate-900/50 to-transparent'}`}>
-                            <div className="p-4 sm:p-6 space-y-6 max-h-80 overflow-y-auto">
+                          <div 
+                            className={`border-t ${theme === 'light' ? 'border-gray-200 bg-gray-50/50' : 'border-slate-700 bg-slate-900/30'}`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="p-3 sm:p-6 space-y-4 max-h-96 overflow-y-auto">
                               {/* Existing Comments */}
                               {comments.length > 0 ? (
                                 comments.map((comment) => (
-                                  <div key={comment.id} className="flex gap-3">
+                                  <div key={comment.id} className="flex gap-2 sm:gap-3">
                                     <img
                                       src={comment.author?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.author?.username || 'anonymous'}`}
                                       alt={comment.author?.full_name || 'Anonymous'}
-                                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} flex-shrink-0`}
+                                      className={`w-7 h-7 sm:w-10 sm:h-10 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} flex-shrink-0`}
                                     />
-                                    <div className="flex-1">
-                                      <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl p-3 sm:p-4 shadow-sm`}>
-                                        <div className="flex items-center justify-between mb-2">
-                                          <div className="flex items-center gap-2 flex-wrap">
-                                            <span className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-xs sm:text-sm`}>
+                                    <div className="flex-1 min-w-0">
+                                      <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-xl p-3 sm:p-4`}>
+                                        <div className="flex items-start justify-between gap-2 mb-2">
+                                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0 flex-1">
+                                            <span className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-xs sm:text-sm truncate`}>
                                               {comment.author?.full_name || 'Anonymous'}
                                             </span>
-                                            <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                            <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} truncate`}>
                                               @{comment.author?.username || 'anonymous'}
                                             </span>
                                           </div>
-                                          <div className="flex items-center gap-2">
-                                          <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} ml-auto`}>
+                                          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                                            <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} whitespace-nowrap hidden sm:inline`}>
                                               {formatCommentDate(comment.created_at)}
                                             </span>
                                             <button
                                               onClick={() => handleCommentLike(post.id, comment.id)}
-                                              className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors ${
+                                              className={`flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded-lg transition-colors ${
                                                 likedComments.has(comment.id)
                                                   ? `${theme === 'light' ? 'text-red-600 bg-red-50' : 'text-red-400 bg-red-900/20'}`
                                                   : `${theme === 'light' ? 'text-gray-500 hover:text-red-500 hover:bg-gray-100' : 'text-gray-400 hover:text-red-400 hover:bg-slate-700'}`
                                               }`}
                                             >
                                               <Heart
-                                                className={`w-3.5 h-3.5 ${
+                                                className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${
                                                   likedComments.has(comment.id) ? "fill-current" : ""
                                                 }`}
                                               />
@@ -945,36 +996,39 @@ export default function SavedPage() {
                                             {user?.id === comment.user_id && (
                                               <button
                                                 onClick={() => handleDeleteComment(post.id, comment.id)}
-                                                className={`p-1.5 ${theme === 'light' ? 'text-gray-400 hover:text-red-500 hover:bg-red-50' : 'text-gray-400 hover:text-red-400 hover:bg-red-900/20'} rounded-lg transition-colors`}
+                                                className={`p-1 ${theme === 'light' ? 'text-gray-400 hover:text-red-500 hover:bg-red-50' : 'text-gray-400 hover:text-red-400 hover:bg-red-900/20'} rounded-lg transition-colors`}
                                                 title="Delete comment"
                                               >
-                                                <Trash2 className="w-4 h-4" />
+                                                <Trash2 className="w-3.5 h-3.5" />
                                               </button>
                                             )}
                                           </div>
                                         </div>
-                                        <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-sm leading-relaxed font-medium`}>
+                                        <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-xs sm:text-sm leading-relaxed break-words`}>
                                           {comment.content}
                                         </p>
+                                        <span className={`text-xs ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'} mt-1 block sm:hidden`}>
+                                          {formatCommentDate(comment.created_at)}
+                                        </span>
                                       </div>
                                     </div>
                                   </div>
                                 ))
                               ) : (
-                                <div className={`text-center py-4 ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                <div className={`text-center py-6 ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} text-sm`}>
                                   No comments yet. Be the first to comment!
                                 </div>
                               )}
 
                               {/* New Comment Input */}
-                              <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-4`}>
-                                <div className="flex items-end gap-3 sm:gap-4">
+                              <div className={`sticky bottom-0 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-3 sm:p-4`}>
+                                <div className="flex items-start gap-2 sm:gap-3">
                                   <img
                                     src={user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'user'}`}
                                     alt="You"
-                                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} flex-shrink-0`}
+                                    className={`w-7 h-7 sm:w-10 sm:h-10 rounded-full border-2 ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} flex-shrink-0`}
                                   />
-                                  <div className="flex-1">
+                                  <div className="flex-1 min-w-0">
                                     <textarea
                                       value={commentText}
                                       onChange={(e) => setCommentInputs(prev => ({
@@ -982,26 +1036,22 @@ export default function SavedPage() {
                                         [post.id]: e.target.value
                                       }))}
                                       placeholder="Share your thoughts..."
-                                      className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${theme === 'light' ? 'bg-gray-50 text-gray-900 placeholder:text-gray-400' : 'bg-slate-700 text-white placeholder:text-slate-500'} rounded-xl resize-none focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500' : 'focus:ring-blue-400'}`}
+                                      className={`w-full px-3 py-2 ${theme === 'light' ? 'bg-gray-50 text-gray-900 placeholder:text-gray-400' : 'bg-slate-700 text-white placeholder:text-slate-500'} rounded-lg resize-none focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500' : 'focus:ring-blue-400'} text-sm`}
                                       rows="2"
+                                      onClick={(e) => e.stopPropagation()}
                                     />
-                                    <div className="flex items-center justify-between mt-3">
-                                      <div className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} hidden sm:block`}>
-                                        Press Enter to post • Shift+Enter for new line
-                                      </div>
-                                      <div className="ml-auto">
+                                    <div className="flex items-center justify-end mt-2">
                                       <button
                                         onClick={() => handleSendComment(post.id)}
                                         disabled={!commentText.trim()}
-                                        className={`px-4 sm:px-6 py-2 rounded-xl font-medium transition-all ${
+                                        className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium transition-all text-xs sm:text-sm ${
                                           commentText.trim()
-                                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl"
+                                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
                                             : `${theme === 'light' ? 'bg-gray-200 text-gray-400' : 'bg-slate-700 text-slate-500'} cursor-not-allowed`
                                         }`}
                                       >
-                                        Post Comment
+                                        Post
                                       </button>
-                                      </div>
                                     </div>
                                   </div>
                                 </div>
@@ -1017,12 +1067,12 @@ export default function SavedPage() {
 
               {/* Load More */}
               {displayedPosts.length > 0 && (
-                <div className="flex justify-center mt-12">
+                <div className="flex justify-center mt-8">
                   <button 
                     onClick={() => fetchSavedPosts()}
-                    className="px-8 py-3.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2"
+                    className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2 text-sm sm:text-base"
                   >
-                    <Zap className="w-5 h-5" />
+                    <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
                     Refresh Saved
                   </button>
                 </div>
@@ -1030,7 +1080,7 @@ export default function SavedPage() {
             </div>
 
             {/* Right Sidebar - Remains the same */}
-            <div className={`lg:col-span-1 space-y-6 md:space-y-8 ${showTrendingSidebar ? "block" : "hidden"} lg:block`}>
+            <div className={`lg:col-span-1 space-y-6 ${showTrendingSidebar ? "block" : "hidden"} lg:block`}>
               {/* Trending Topics */}
               <div className={`relative ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-5 shadow-lg transition-all duration-300`}>
                 <div className="flex items-center justify-between mb-5">
