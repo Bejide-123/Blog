@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../../Context/userContext";
 import { useTheme } from "../../Context/themeContext";
 import { Check, ChevronRight, Sparkles, Mail, Bell, PenTool, BookOpen, Heart, PartyPopper, X } from "lucide-react";
-import { supabase } from "../../lib/supabase";
+// import { supabase } from "../../lib/supabase";
+import { uploadImage } from "../../Services/api";
+import { updateUserProfile } from "../../Services/user";
 
 export default function OnboardingPage() {
   const { theme } = useTheme();
@@ -21,6 +23,9 @@ export default function OnboardingPage() {
     }
   });
   
+  const [profileImage, setProfileImage] = useState(null);
+  const [profileImagePreview, setProfileImagePreview] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -69,6 +74,11 @@ export default function OnboardingPage() {
       title: "Welcome to Scribe",
       description: "Let's personalize your experience",
       emoji: "👋"
+    },
+    {
+      title: "Add Your Photo",
+      description: "Help others recognize you",
+      emoji: "📸"
     },
     {
       title: "Tell Us About You",
@@ -127,29 +137,71 @@ export default function OnboardingPage() {
     navigate("/home");
   };
   
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should be less than 5MB');
+        return;
+      }
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+      
+      setProfileImage(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  const removeProfileImage = () => {
+    setProfileImage(null);
+    setProfileImagePreview(null);
+  };
+  
   const saveOnboardingData = async (data) => {
     if (!user?.id) return;
     
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          bio: data.bio,
-          interests: data.topics,
-          focus: data.focus,
-          notifications_preferences: data.notifications,
-          onboarding_completed: true,
-          onboarding_completed_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
-
-      if (error) throw error;
+      // Upload profile image if exists
+      let avatarUrl = null;
+      if (profileImage) {
+        setUploadingImage(true);
+        avatarUrl = await uploadImage(profileImage, 'avatars');
+        setUploadingImage(false);
+      }
       
+      const updateData = {
+        bio: data.bio,
+        interests: data.topics,
+        focus: data.focus,
+        notifications_preferences: data.notifications,
+        onboarding_completed: true,
+        onboarding_completed_at: new Date().toISOString()
+      };
+      
+      // Add avatar URL if uploaded
+      if (avatarUrl) {
+        updateData.avatar_url = avatarUrl;
+      }
+      
+      await updateUserProfile(user.id, updateData);
+
       updateOnboardingStatus(true);
       
       setUser({
         ...user,
         bio: data.bio,
+        avatar_url: avatarUrl || user.avatar_url,
         onboarding_completed: true
       });
       
@@ -169,7 +221,7 @@ export default function OnboardingPage() {
       setShowCompletionModal(true);
     } catch (error) {
       console.error("Error saving onboarding data:", error);
-      setShowCompletionModal(true);
+      setShowCompletionModal(true); // Show modal even on error to not leave the user hanging
     } finally {
       setIsSubmitting(false);
     }
@@ -199,7 +251,7 @@ export default function OnboardingPage() {
   };
   
   const canProceed = () => {
-    if (currentStep === 2) return formData.topics.length >= 2;
+    if (currentStep === 3) return formData.topics.length >= 2; // Topics step is now index 3
     return true;
   };
   
@@ -353,8 +405,77 @@ export default function OnboardingPage() {
               </div>
             )}
             
-            {/* Step 1: Bio */}
+            {/* Step 1: Profile Picture */}
             {currentStep === 1 && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+                <div className="flex flex-col items-center">
+                  {/* Image Preview or Placeholder */}
+                  <div className="relative group">
+                    <div className={`w-32 h-32 sm:w-40 sm:h-40 rounded-full overflow-hidden border-4 ${theme === 'light' ? 'border-blue-100 bg-gradient-to-br from-blue-50 to-purple-50' : 'border-blue-800/30 bg-gradient-to-br from-blue-900/30 to-purple-900/30'} flex items-center justify-center shadow-2xl`}>
+                      {profileImagePreview ? (
+                        <img 
+                          src={profileImagePreview} 
+                          alt="Profile preview" 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="text-center">
+                          <div className="text-6xl mb-2">👤</div>
+                          <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                            No photo yet
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Remove button if image exists */}
+                    {profileImagePreview && (
+                      <button
+                        onClick={removeProfileImage}
+                        className={`absolute -top-2 -right-2 w-8 h-8 rounded-full ${theme === 'light' ? 'bg-red-500 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'} text-white flex items-center justify-center shadow-lg transition-all hover:scale-110`}
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* Upload Button */}
+                  <div className="mt-6 w-full max-w-sm">
+                    <label className={`block w-full py-4 px-6 rounded-2xl border-2 border-dashed cursor-pointer transition-all text-center ${
+                      theme === 'light' 
+                        ? 'border-blue-300 bg-blue-50 hover:bg-blue-100 hover:border-blue-400' 
+                        : 'border-blue-700 bg-blue-900/20 hover:bg-blue-900/30 hover:border-blue-600'
+                    }`}>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleImageSelect}
+                        className="hidden"
+                      />
+                      <div className="flex flex-col items-center gap-2">
+                        <div className={`text-4xl mb-1`}>📸</div>
+                        <span className={`font-bold text-base ${theme === 'light' ? 'text-blue-700' : 'text-blue-400'}`}>
+                          {profileImagePreview ? 'Change Photo' : 'Upload Photo'}
+                        </span>
+                        <span className={`text-xs ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                          PNG, JPG up to 5MB
+                        </span>
+                      </div>
+                    </label>
+                  </div>
+                  
+                  {/* Info Message */}
+                  <div className={`mt-6 p-4 rounded-2xl ${theme === 'light' ? 'bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100' : 'bg-gradient-to-r from-amber-900/20 to-orange-900/20 border border-amber-800/30'}`}>
+                    <p className={`text-sm font-medium text-center ${theme === 'light' ? 'text-amber-900' : 'text-amber-200'}`}>
+                      ✨ Optional - You can always add or change this later in your profile settings
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Step 2: Bio */}
+            {currentStep === 2 && (
               <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
                 <textarea
                   value={formData.bio}
@@ -378,7 +499,7 @@ export default function OnboardingPage() {
             )}
             
             {/* Step 2: Topics */}
-            {currentStep === 2 && (
+            {currentStep === 3 && (
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {topicsList.map((topic, idx) => {
@@ -434,7 +555,7 @@ export default function OnboardingPage() {
             )}
             
             {/* Step 3: Focus */}
-            {currentStep === 3 && (
+            {currentStep === 4 && (
               <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
                 {focusOptions.map((option, idx) => {
                   const Icon = option.icon;
@@ -482,7 +603,7 @@ export default function OnboardingPage() {
             )}
             
             {/* Step 4: Notifications */}
-            {currentStep === 4 && (
+            {currentStep === 5 && (
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
                 <div className="space-y-4">
                   {[
@@ -590,10 +711,10 @@ export default function OnboardingPage() {
                     : 'bg-slate-700 text-slate-500 cursor-not-allowed'
               }`}
             >
-              {isSubmitting ? (
+              {isSubmitting || uploadingImage ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>Saving...</span>
+                  <span>{uploadingImage ? 'Uploading...' : 'Saving...'}</span>
                 </>
               ) : (
                 <>

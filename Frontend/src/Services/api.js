@@ -687,30 +687,7 @@ export const getUserByUsername = async (username) => {
   }
 };
 
-// In your Services/api.js
-export const saveOnboardingData = async (userId, onboardingData) => {
-  try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .update({
-        bio: onboardingData.bio,
-        interests: onboardingData.topics,
-        focus: onboardingData.focus,
-        notifications_preferences: onboardingData.notifications,
-        onboarding_completed: true,
-        onboarding_completed_at: new Date().toISOString()
-      })
-      .eq('id', userId)
-      .select()
-      .single();
 
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.error('Error saving onboarding data:', error);
-    throw error;
-  }
-};
 
 export const checkOnboardingStatus = async (userId) => {
   try {
