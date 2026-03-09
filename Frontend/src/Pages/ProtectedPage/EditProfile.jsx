@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { X, Camera, Upload, Image, User, MapPin } from 'lucide-react';
 import { useTheme } from '../../Context/themeContext';
 import { updateUserProfile } from '../../Services/user';
+import { uploadImage } from '../../Services/api';
 
 export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
   const { theme } = useTheme();
@@ -10,12 +11,17 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
     username: currentProfile?.username || '',
     bio: currentProfile?.bio || '',
     location: currentProfile?.location || '',
-    avatar: currentProfile?.avatar || '',
-    coverImage: ''
+    avatar_url: currentProfile?.avatar_url || '',
+    cover_image_url: currentProfile?.cover_image_url || ''
   });
 
-  const [avatarPreview, setAvatarPreview] = useState(currentProfile?.avatar || '');
-  const [coverPreview, setCoverPreview] = useState('');
+  const [avatarPreview, setAvatarPreview] = useState(currentProfile?.avatar_url || '');
+  const [coverPreview, setCoverPreview] = useState(currentProfile?.cover_image_url || '');
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [coverFile, setCoverFile] = useState(null);
+
+  const avatarInputRef = useRef(null);
+  const coverInputRef = useRef(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -28,13 +34,10 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setAvatarFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatarPreview(reader.result);
-        setFormData(prev => ({
-          ...prev,
-          avatar: reader.result
-        }));
       };
       reader.readAsDataURL(file);
     }
@@ -43,19 +46,16 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
   const handleCoverChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setCoverFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setCoverPreview(reader.result);
-        setFormData(prev => ({
-          ...prev,
-          coverImage: reader.result
-        }));
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     const userId = currentProfile?.id;
@@ -66,12 +66,35 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
       return;
     }
     
+    let avatar_url = formData.avatar_url;
+    if (avatarFile) {
+      try {
+        avatar_url = await uploadImage(avatarFile, 'avatars');
+      } catch (error) {
+        console.error('Error uploading avatar:', error);
+        alert('Failed to upload avatar: ' + error.message);
+        return;
+      }
+    }
+
+    let cover_image_url = formData.cover_image_url;
+    if (coverFile) {
+      try {
+        cover_image_url = await uploadImage(coverFile, 'covers');
+      } catch (error) {
+        console.error('Error uploading cover image:', error);
+        alert('Failed to upload cover image: ' + error.message);
+        return;
+      }
+    }
+
     const profileData = {
       full_name: formData.full_name,
       username: formData.username,
       bio: formData.bio,
       location: formData.location,
-      avatar_url: formData.avatar,
+      avatar_url: avatar_url,
+      cover_image_url: cover_image_url,
     };
     
     updateUserProfile(userId, profileData)
@@ -146,6 +169,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
                   <span className="text-xs text-white/70 mt-1">1500x500px recommended</span>
                   <input
                     type="file"
+                    ref={coverInputRef}
                     accept="image/*"
                     onChange={handleCoverChange}
                     className="hidden"
@@ -182,6 +206,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
                       <span className="text-xs text-white font-medium">Change</span>
                       <input
                         type="file"
+                        ref={avatarInputRef}
                         accept="image/*"
                         onChange={handleAvatarChange}
                         className="hidden"
@@ -198,7 +223,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
                   </p>
                   <button
                     type="button"
-                    onClick={() => document.querySelector('input[type="file"]').click()}
+                    onClick={() => avatarInputRef.current.click()}
                     className="px-4 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-xs font-semibold rounded-lg transition-all duration-300 shadow-sm hover:shadow-md"
                   >
                     Choose File
