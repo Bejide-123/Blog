@@ -328,15 +328,9 @@ export default function SearchResults() {
   };
 
   const formatNumber = (num) => {
-    // Handle undefined or null values
     if (num === undefined || num === null) return '0';
-    
-    // Convert to number if it's a string
     const numberValue = Number(num);
-    
-    // Check if it's a valid number
     if (isNaN(numberValue)) return '0';
-    
     if (numberValue >= 1000000) return (numberValue / 1000000).toFixed(1) + 'M';
     if (numberValue >= 1000) return (numberValue / 1000).toFixed(1) + 'K';
     return numberValue.toString();
@@ -355,113 +349,104 @@ export default function SearchResults() {
     { id: 'popular', label: 'Most Popular', icon: <TrendingUp className="w-4 h-4" /> },
   ];
 
-  // Smart result ordering - show what has results first
+  // Smart result ordering
   const hasPosts = posts.length > 0;
   const hasUsers = users.length > 0;
   const hasTags = tags.length > 0;
 
   return (
-    <div className={`min-h-screen bg-gradient-to-b ${theme === 'light' ? 'from-gray-50 via-white to-white' : 'from-slate-900 via-slate-900 to-slate-950'}`}>
+    <div className={`min-h-screen ${theme === 'light' ? 'bg-gray-50' : 'bg-slate-900'}`}>
       <NavbarPrivate />
       
       <div className="pt-16 md:pt-20">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-6 md:py-8">
-          {/* Mobile Toggle Button - Only show on small screens */}
+        <div className="max-w-7xl mx-auto px-4 py-6 md:py-8 pb-24">
+          
+          {/* Mobile Toggle - Only show on small screens */}
           <div className="lg:hidden mb-4">
             <button
               onClick={() => setShowSearchHeader(!showSearchHeader)}
-              className={`w-full flex items-center justify-between px-4 py-3 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} rounded-xl shadow-sm transition-all duration-300`}
+              className={`w-full flex items-center justify-between px-4 py-3 ${theme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-800 border-slate-700'} border-2 rounded-xl shadow-sm transition-all`}
             >
-              <div className="flex items-center gap-2">
-                <div className={`p-1.5 rounded-lg ${showSearchHeader ? 'bg-blue-500/10' : theme === 'light' ? 'bg-gray-100' : 'bg-slate-700'}`}>
-                  {showSearchHeader ? (
-                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  )}
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${showSearchHeader ? 'bg-blue-500/10' : theme === 'light' ? 'bg-gray-100' : 'bg-slate-700'}`}>
+                  <FiSearch className={`w-5 h-5 ${showSearchHeader ? 'text-blue-500' : 'text-gray-500'}`} />
                 </div>
-                <div>
+                <div className="text-left">
                   <h3 className={`text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                     Search Options
                   </h3>
                   <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                    {showSearchHeader ? 'Hide filters and stats' : 'Show filters and stats'}
+                    {showSearchHeader ? 'Hide' : 'Show'} filters
                   </p>
                 </div>
               </div>
-              <span className={`px-3 py-1 rounded-lg text-xs font-medium ${theme === 'light' ? 'bg-blue-50 text-blue-600' : 'bg-blue-900/30 text-blue-400'}`}>
-                {posts.length + users.length + tags.length} results
+              <span className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${theme === 'light' ? 'bg-blue-50 text-blue-600' : 'bg-blue-900/30 text-blue-400'}`}>
+                {posts.length + users.length + tags.length}
               </span>
             </button>
           </div>
 
-          {/* Enhanced Header - Hidden on mobile by default, togglable */}
-          <div className={`${showSearchHeader ? 'block' : 'hidden'} lg:block mb-6 md:mb-8 transition-all duration-300`}>
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 md:gap-6 mb-6">
+          {/* Enhanced Header */}
+          <div className={`${showSearchHeader ? 'block' : 'hidden'} lg:block mb-8 animate-in fade-in slide-in-from-top-4 duration-300`}>
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl blur opacity-30" />
-                    <FiSearch className={`relative w-8 h-8 md:w-10 md:h-10 ${theme === 'light' ? 'text-blue-600' : 'text-blue-500'}`} />
+                <div className="flex items-center gap-4 mb-4">
+                  <div className={`p-4 rounded-2xl ${theme === 'light' ? 'bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-100' : 'bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-800/30'} shadow-lg`}>
+                    <FiSearch className={`w-10 h-10 ${theme === 'light' ? 'text-blue-600' : 'text-blue-400'}`} />
                   </div>
                   <div>
-                    <h1 className={`text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r ${theme === 'light' ? 'from-blue-600 to-purple-600' : 'from-blue-500 to-purple-500'} bg-clip-text text-transparent`}>
+                    <h1 className={`text-3xl md:text-4xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-1`}>
                       Search Results
                     </h1>
-                    <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-sm sm:text-base mt-1`}>
-                      Find posts, users, and topics across the platform
+                    <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-sm`}>
+                      Discover posts, users, and topics
                     </p>
                   </div>
                 </div>
 
-                {/* Quick Stats Bar - Mobile Optimized */}
-                <div className="flex flex-wrap items-center gap-2 mt-4">
-                  <div className={`flex items-center gap-1 px-3 py-1.5 sm:px-4 sm:py-2 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50' : 'from-blue-900/20 to-purple-900/20'} rounded-lg sm:rounded-xl`}>
-                    <Zap className={`w-3 h-3 sm:w-4 sm:h-4 ${theme === 'light' ? 'text-blue-600' : 'text-blue-400'}`} />
-                    <span className={`font-semibold text-sm sm:text-base ${theme === 'light' ? 'text-blue-700' : 'text-blue-400'}`}>
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className={`flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50 border border-blue-100' : 'from-blue-900/20 to-purple-900/20 border border-blue-800/30'} rounded-xl shadow-sm`}>
+                    <Zap className={`w-4 h-4 ${theme === 'light' ? 'text-blue-600' : 'text-blue-400'}`} />
+                    <span className={`font-semibold text-sm ${theme === 'light' ? 'text-blue-700' : 'text-blue-400'}`}>
                       {posts.length + users.length + tags.length} results
                     </span>
                   </div>
                   
                   {searchQuery && (
-                    <div className={`flex items-center gap-1 px-3 py-1.5 sm:px-4 sm:py-2 ${theme === 'light' ? 'bg-gray-100' : 'bg-slate-800'} rounded-lg sm:rounded-xl`}>
-                      <span className={`text-xs sm:text-sm font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
+                    <div className={`flex items-center gap-2 px-4 py-2.5 ${theme === 'light' ? 'bg-gray-100 border border-gray-200' : 'bg-slate-800 border border-slate-700'} rounded-xl shadow-sm`}>
+                      <span className={`text-sm font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
                         "{searchQuery}"
                       </span>
                       <button
                         onClick={() => setSearchQuery('')}
-                        className={`p-0.5 ${theme === 'light' ? 'text-gray-400 hover:text-gray-600' : 'text-gray-500 hover:text-gray-300'}`}
+                        className={`p-1 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg transition-colors`}
                       >
-                        <FiX className="w-3 h-3" />
+                        <FiX className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Search Bar - Mobile Optimized */}
-              <div className="w-full lg:w-96 mt-4 lg:mt-0">
-                <div className="relative group">
-                  <FiSearch className={`absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 ${theme === 'light' ? 'text-gray-400 group-hover:text-blue-500' : 'text-slate-500 group-hover:text-blue-400'} transition-colors`} />
+              {/* Search Bar */}
+              <div className="w-full lg:w-96">
+                <div className="relative">
+                  <FiSearch className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${theme === 'light' ? 'text-gray-400' : 'text-slate-500'}`} />
                   <form onSubmit={handleSearchSubmit}>
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="@username, #topic, or keywords..."
-                      className={`w-full pl-10 sm:pl-12 pr-10 py-2.5 sm:py-3 ${theme === 'light' ? 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400' : 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500'} border rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500/50 focus:border-blue-500' : 'focus:ring-blue-400/50 focus:border-blue-400'} transition-all`}
+                      placeholder="@username, #topic, keywords..."
+                      className={`w-full pl-12 pr-12 py-3.5 ${theme === 'light' ? 'bg-white border-gray-300 text-gray-900' : 'bg-slate-800 border-slate-700 text-white'} border-2 rounded-2xl focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500/50 focus:border-blue-500' : 'focus:ring-blue-400/50 focus:border-blue-400'} transition-all shadow-sm`}
                     />
                     {searchQuery && (
                       <button
                         type="button"
                         onClick={() => setSearchQuery('')}
-                        className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 ${theme === 'light' ? 'text-gray-400 hover:text-gray-600' : 'text-slate-500 hover:text-slate-300'} transition-colors`}
+                        className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 ${theme === 'light' ? 'text-gray-400 hover:text-gray-600 hover:bg-gray-100' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-700'} rounded-lg transition-colors`}
                       >
-                        <FiX className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <FiX className="w-4 h-4" />
                       </button>
                     )}
                   </form>
@@ -469,69 +454,63 @@ export default function SearchResults() {
               </div>
             </div>
 
-            {/* Search Type Cards - Responsive Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-6 md:mb-8">
-              {searchTypes.map((type) => (
+            {/* Filter Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              {searchTypes.map((type, idx) => (
                 <div 
                   key={type.id}
                   onClick={() => {
                     handleSearchTypeChange(type.id);
-                    // On mobile, close header after selecting filter
-                    if (window.innerWidth < 1024) {
-                      setShowSearchHeader(false);
-                    }
+                    if (window.innerWidth < 1024) setShowSearchHeader(false);
                   }}
-                  className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-lg sm:rounded-xl md:rounded-2xl border p-3 sm:p-4 cursor-pointer transition-all active:scale-95 md:hover:scale-105 md:hover:shadow-lg ${
+                  className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border-2 p-4 cursor-pointer transition-all hover:scale-105 hover:shadow-xl animate-in fade-in slide-in-from-bottom-4 ${
                     searchType === type.id 
-                      ? 'border-blue-500 shadow-lg' 
-                      : `${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`
+                      ? 'border-blue-500 shadow-lg ring-2 ring-blue-500/20' 
+                      : `${theme === 'light' ? 'border-gray-200 hover:border-gray-300' : 'border-slate-700 hover:border-slate-600'}`
                   }`}
+                  style={{ animationDelay: `${idx * 50}ms` }}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <div className={`p-1.5 sm:p-2 rounded-lg ${
-                        searchType === type.id
-                          ? `${theme === 'light' ? 'bg-blue-100' : 'bg-blue-900/30'}`
-                          : `${theme === 'light' ? 'bg-gray-100' : 'bg-slate-700'}`
-                      }`}>
-                        {React.cloneElement(type.icon, { 
-                          className: `w-3 h-3 sm:w-4 sm:h-4 ${
-                            searchType === type.id
-                              ? `${theme === 'light' ? 'text-blue-600' : 'text-blue-400'}`
-                              : `${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`
-                          }` 
-                        })}
-                      </div>
-                      <div>
-                        <p className={`text-lg sm:text-xl md:text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                          {type.count}
-                        </p>
-                        <p className={`text-xs sm:text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>{type.label}</p>
-                      </div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className={`p-2.5 rounded-xl ${
+                      searchType === type.id
+                        ? `${theme === 'light' ? 'bg-blue-100' : 'bg-blue-900/30'}`
+                        : `${theme === 'light' ? 'bg-gray-100' : 'bg-slate-700'}`
+                    }`}>
+                      {React.cloneElement(type.icon, { 
+                        className: `w-5 h-5 ${
+                          searchType === type.id
+                            ? `${theme === 'light' ? 'text-blue-600' : 'text-blue-400'}`
+                            : `${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`
+                        }` 
+                      })}
                     </div>
                     {searchType === type.id && (
-                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-500 rounded-full" />
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
                     )}
                   </div>
+                  <p className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-1`}>
+                    {type.count}
+                  </p>
+                  <p className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>{type.label}</p>
                 </div>
               ))}
             </div>
 
-            {/* Sort Options Bar */}
-            <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-4 mb-6`}>
+            {/* Sort Bar */}
+            <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${theme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-800 border-slate-700'} border-2 rounded-2xl p-4 shadow-sm`}>
               <div className="flex items-center gap-2">
-                <FiFilter className={`w-4 h-4 ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`} />
-                <span className={`font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>Sort by:</span>
+                <FiFilter className={`w-5 h-5 ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`} />
+                <span className={`font-semibold ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>Sort by:</span>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 {sortOptions.map((option) => (
                   <button
                     key={option.id}
                     onClick={() => handleSortChange(option.id)}
-                    className={`flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl font-medium text-sm transition-all active:scale-95 ${
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${
                       sortBy === option.id
-                        ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
-                        : `${theme === 'light' ? 'text-gray-700 hover:bg-gray-100 hover:text-gray-900' : 'text-gray-300 hover:bg-slate-700 hover:text-white'}`
+                        ? `bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg scale-105`
+                        : `${theme === 'light' ? 'text-gray-700 hover:bg-gray-100 border border-gray-200' : 'text-gray-300 hover:bg-slate-700 border border-slate-700'}`
                     }`}
                   >
                     {option.icon}
@@ -544,13 +523,13 @@ export default function SearchResults() {
 
           {/* Main Content */}
           <div className="lg:grid lg:grid-cols-4 lg:gap-8">
-            {/* Filters Sidebar - Hidden on mobile */}
-            <div className="hidden lg:block space-y-4">
+            
+            {/* Sidebar - Desktop Only */}
+            <div className="hidden lg:block">
               <div className="sticky top-28 space-y-4">
-                {/* Search Type Filters */}
-                <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-4`}>
-                  <h3 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 flex items-center gap-2`}>
-                    <FiFilter className="w-4 h-4" />
+                <div className={`${theme === 'light' ? 'bg-white border-gray-200' : 'bg-slate-800 border-slate-700'} rounded-2xl border-2 p-4 shadow-sm`}>
+                  <h3 className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 flex items-center gap-2`}>
+                    <FiFilter className="w-5 h-5" />
                     Search Types
                   </h3>
                   <div className="space-y-2">
@@ -558,7 +537,7 @@ export default function SearchResults() {
                       <button
                         key={type.id}
                         onClick={() => handleSearchTypeChange(type.id)}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                           searchType === type.id
                             ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
                             : `${theme === 'light' ? 'text-gray-700 hover:bg-gray-100' : 'text-gray-300 hover:bg-slate-700'}`
@@ -572,7 +551,7 @@ export default function SearchResults() {
                           <span className={`px-2 py-0.5 rounded-full text-xs ${
                             searchType === type.id
                               ? 'bg-white/20'
-                              : `${theme === 'light' ? 'bg-gray-200 text-gray-600' : 'bg-slate-700 text-gray-300'}`
+                              : `${theme === 'light' ? 'bg-gray-200' : 'bg-slate-700'}`
                           }`}>
                             {type.count}
                           </span>
@@ -581,151 +560,42 @@ export default function SearchResults() {
                     ))}
                   </div>
                 </div>
-
-                {/* Sort Filters */}
-                <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-4`}>
-                  <h3 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 flex items-center gap-2`}>
-                    <TrendingUp className="w-4 h-4" />
-                    Sort By
-                  </h3>
-                  <div className="space-y-2">
-                    {sortOptions.map((option) => (
-                      <button
-                        key={option.id}
-                        onClick={() => handleSortChange(option.id)}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                          sortBy === option.id
-                            ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
-                            : `${theme === 'light' ? 'text-gray-700 hover:bg-gray-100' : 'text-gray-300 hover:bg-slate-700'}`
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          {option.icon}
-                          {option.label}
-                        </div>
-                        {sortBy === option.id && (
-                          <div className="w-2 h-2 bg-white rounded-full"></div>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Advanced Filters */}
-                <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-4`}>
-                  <h3 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 flex items-center gap-2`}>
-                    <FiGlobe className="w-4 h-4" />
-                    Advanced Filters
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className={`text-sm ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>Verified only</span>
-                      <button className="w-10 h-6 bg-blue-500 rounded-full relative">
-                        <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1"></div>
-                      </button>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className={`text-sm ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>Following only</span>
-                      <button className="w-10 h-6 bg-gray-300 dark:bg-slate-600 rounded-full relative">
-                        <div className="w-4 h-4 bg-white rounded-full absolute top-1 left-1"></div>
-                      </button>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className={`text-sm ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>Include private</span>
-                      <button className="w-10 h-6 bg-blue-500 rounded-full relative">
-                        <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1"></div>
-                      </button>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
 
-            {/* Results List */}
+            {/* Results */}
             <div className="lg:col-span-3">
-              {/* Mobile Filter Button */}
-              <div className="lg:hidden mb-4">
-                <button
-                  onClick={() => setShowSearchHeader(!showSearchHeader)}
-                  className={`w-full flex items-center justify-between px-4 py-3 ${theme === 'light' ? 'bg-white border-gray-300' : 'bg-slate-800 border-slate-700'} border rounded-xl active:scale-95 transition-transform`}
-                >
-                  <div className="flex items-center gap-2">
-                    <FiFilter className="w-5 h-5" />
-                    <span className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                      {searchTypes.find(f => f.id === searchType)?.label || 'All Results'}
-                    </span>
-                    <span className={`px-2 py-0.5 ${theme === 'light' ? 'bg-gray-200 text-gray-600' : 'bg-slate-700 text-gray-300'} rounded-full text-sm`}>
-                      {posts.length + users.length + tags.length}
-                    </span>
-                  </div>
-                  <FiChevronDown className={`w-5 h-5 transition-transform ${showSearchHeader ? 'rotate-180' : ''}`} />
-                </button>
-
-                {/* Mobile Sort Options */}
-                <div className="mt-3">
-                  <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                    {sortOptions.map((option) => (
-                      <button
-                        key={option.id}
-                        onClick={() => handleSortChange(option.id)}
-                        className={`flex items-center gap-1 px-3 py-1.5 rounded-lg flex-shrink-0 text-sm font-medium transition-all active:scale-95 ${
-                          sortBy === option.id
-                            ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
-                            : `${theme === 'light' ? 'text-gray-700 bg-gray-100 hover:bg-gray-200' : 'text-gray-300 bg-slate-700 hover:bg-slate-600'}`
-                        }`}
-                      >
-                        {option.icon}
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Loading State */}
               {loading && (
-                <div className="flex justify-center items-center py-12">
+                <div className="flex justify-center items-center py-20">
                   <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className={`mt-4 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>Searching...</p>
+                    <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>Searching...</p>
                   </div>
                 </div>
               )}
 
-              {/* Results - Smart Ordering */}
               {!loading && searchQuery && (
                 <div className="space-y-8">
-                  {/* Users Results First if that's what they're likely searching for */}
+                  {/* Users */}
                   {(searchQuery.startsWith('@') || hasUsers) && (searchType === 'all' || searchType === 'users') && hasUsers && (
                     <div>
-                      <div className="flex items-center justify-between mb-6">
-                        <h2 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                          Users ({users.length})
-                        </h2>
-                        <div className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                          Found {users.length} matching profiles
-                        </div>
-                      </div>
-
+                      <h2 className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-6`}>
+                        Users ({users.length})
+                      </h2>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {users.map((userProfile) => {
                           const isFollowing = followedUsers.has(userProfile.id);
-                          
                           return (
                             <div
                               key={userProfile.id}
-                              className={`group ${theme === 'light' ? 'bg-white hover:shadow-xl' : 'bg-slate-800 hover:shadow-slate-900/50'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-6 transition-all duration-300 hover:-translate-y-1`}
+                              className={`${theme === 'light' ? 'bg-white hover:shadow-2xl' : 'bg-slate-800 hover:shadow-slate-900/50'} rounded-2xl border-2 ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-6 transition-all duration-300 hover:-translate-y-2`}
                             >
                               <div className="flex flex-col items-center text-center mb-4">
-                                <div className="relative mb-4">
-                                  <img
-                                    src={userProfile.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userProfile.username}`}
-                                    alt={userProfile.full_name}
-                                    className="w-20 h-20 rounded-full border-4 border-white dark:border-slate-800 shadow-lg"
-                                  />
-                                  <div className="absolute bottom-0 right-0 w-6 h-6 bg-green-500 rounded-full border-2 border-white dark:border-slate-800"></div>
-                                </div>
-                                
+                                <img
+                                  src={userProfile.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userProfile.username}`}
+                                  alt={userProfile.full_name}
+                                  className="w-20 h-20 rounded-full border-4 border-white dark:border-slate-800 shadow-lg mb-4"
+                                />
                                 <h3 className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-lg mb-1`}>
                                   {userProfile.full_name || userProfile.username}
                                 </h3>
@@ -734,100 +604,41 @@ export default function SearchResults() {
                                 </p>
                               </div>
 
-                              {/* User Stats - Now using properly fetched stats */}
                               <div className="grid grid-cols-3 gap-2 mb-4">
-                                <div className={`text-center p-2 rounded-lg ${theme === 'light' ? 'bg-gray-50' : 'bg-slate-700/50'}`}>
-                                  <div className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                                    {formatNumber(userProfile.posts_count || 0)}
+                                {['posts_count', 'followers_count', 'following_count'].map((key, idx) => (
+                                  <div key={idx} className={`text-center p-2 rounded-lg ${theme === 'light' ? 'bg-gray-50' : 'bg-slate-700/50'}`}>
+                                    <div className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                                      {formatNumber(userProfile[key] || 0)}
+                                    </div>
+                                    <div className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                      {key.replace('_count', '').replace('_', ' ')}
+                                    </div>
                                   </div>
-                                  <div className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                    Posts
-                                  </div>
-                                </div>
-                                <div className={`text-center p-2 rounded-lg ${theme === 'light' ? 'bg-gray-50' : 'bg-slate-700/50'}`}>
-                                  <div className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                                    {formatNumber(userProfile.followers_count || 0)}
-                                  </div>
-                                  <div className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                    Followers
-                                  </div>
-                                </div>
-                                <div className={`text-center p-2 rounded-lg ${theme === 'light' ? 'bg-gray-50' : 'bg-slate-700/50'}`}>
-                                  <div className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                                    {formatNumber(userProfile.following_count || 0)}
-                                  </div>
-                                  <div className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                    Following
-                                  </div>
-                                </div>
+                                ))}
                               </div>
 
-                              {/* User Info */}
                               {userProfile.bio && (
                                 <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} mb-4 text-center line-clamp-2`}>
                                   {userProfile.bio}
                                 </p>
                               )}
 
-                              {/* User Meta Info */}
-                              <div className="space-y-2 mb-4">
-                                {userProfile.location && (
-                                  <div className="flex items-center gap-2 text-sm">
-                                    <FiMapPin className={`w-4 h-4 ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'}`} />
-                                    <span className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-300'}`}>
-                                      {userProfile.location}
-                                    </span>
-                                  </div>
-                                )}
-                                {userProfile.website_url && (
-                                  <div className="flex items-center gap-2 text-sm">
-                                    <FiLink className={`w-4 h-4 ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'}`} />
-                                    <a 
-                                      href={userProfile.website_url.startsWith('http') ? userProfile.website_url : `https://${userProfile.website_url}`}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className={`${theme === 'light' ? 'text-blue-600 hover:underline' : 'text-blue-400 hover:underline'}`}
-                                    >
-                                      {userProfile.website_url.length > 30 ? userProfile.website_url.substring(0, 30) + '...' : userProfile.website_url}
-                                    </a>
-                                  </div>
-                                )}
-                                {userProfile.created_at && (
-                                  <div className="flex items-center gap-2 text-sm">
-                                    <FiCalendar className={`w-4 h-4 ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'}`} />
-                                    <span className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-300'}`}>
-                                      Joined {new Date(userProfile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-
                               <div className="flex gap-2">
                                 <button
                                   onClick={() => navigate(`/profile/${userProfile.id}`)}
-                                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 transition-colors"
+                                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg"
                                 >
                                   View Profile
                                 </button>
                                 <button
                                   onClick={() => handleFollow(userProfile.id)}
-                                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${
+                                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold transition-all ${
                                     isFollowing
                                       ? `${theme === 'light' ? 'bg-gray-200 text-gray-700' : 'bg-slate-700 text-gray-300'}`
                                       : `${theme === 'light' ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-slate-700/50 text-gray-300 hover:bg-slate-700'}`
                                   }`}
                                 >
-                                  {isFollowing ? (
-                                    <>
-                                      <Check className="w-4 h-4" />
-                                      Following
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Plus className="w-4 h-4" />
-                                      Follow
-                                    </>
-                                  )}
+                                  {isFollowing ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                                 </button>
                               </div>
                             </div>
@@ -837,10 +648,10 @@ export default function SearchResults() {
                     </div>
                   )}
 
-                  {/* Tags Results */}
+                  {/* Tags */}
                   {(searchQuery.startsWith('#') || hasTags) && (searchType === 'all' || searchType === 'tags') && hasTags && (
                     <div>
-                      <h2 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-6`}>
+                      <h2 className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-6`}>
                         Tags ({tags.length})
                       </h2>
                       <div className="flex flex-wrap gap-3">
@@ -848,35 +659,31 @@ export default function SearchResults() {
                           <button
                             key={index}
                             onClick={() => navigate(`/tag/${tagObj.tag}`)}
-                            className={`group flex items-center gap-3 px-5 py-4 ${theme === 'light' ? 'bg-white hover:bg-gray-50' : 'bg-slate-800 hover:bg-slate-700'} border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg`}
+                            className={`flex items-center gap-3 px-5 py-4 ${theme === 'light' ? 'bg-white hover:bg-gray-50 border-gray-200' : 'bg-slate-800 hover:bg-slate-700 border-slate-700'} border-2 rounded-2xl transition-all hover:scale-105 hover:shadow-xl`}
                           >
-                            <div className={`p-3 ${theme === 'light' ? 'bg-blue-50 group-hover:bg-blue-100' : 'bg-blue-900/20 group-hover:bg-blue-900/30'} rounded-lg`}>
+                            <div className={`p-3 ${theme === 'light' ? 'bg-blue-50' : 'bg-blue-900/20'} rounded-lg`}>
                               <Hash className="w-6 h-6 text-blue-500" />
                             </div>
-                            <div className="text-left">
+                            <div>
                               <span className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-lg`}>
                                 #{tagObj.tag}
                               </span>
                               <p className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                {tagObj.count} posts • Trending
+                                {tagObj.count} posts
                               </p>
                             </div>
-                            <FiChevronDown className={`w-5 h-5 ml-4 ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'} group-hover:text-blue-500 transform group-hover:rotate-90 transition-transform`} />
                           </button>
                         ))}
                       </div>
                     </div>
                   )}
 
-                  {/* Posts Results - Only show if there are posts AND it's not a user/tag specific search */}
+                  {/* Posts */}
                   {!searchQuery.startsWith('@') && !searchQuery.startsWith('#') && hasPosts && (searchType === 'all' || searchType === 'posts') && (
                     <div>
-                      <div className="flex items-center justify-between mb-6">
-                        <h2 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-                          Posts ({posts.length})
-                        </h2>
-                      </div>
-
+                      <h2 className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-6`}>
+                        Posts ({posts.length})
+                      </h2>
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {posts.map((post) => {
                           const isLiked = likedPosts.has(post.id);
@@ -885,36 +692,29 @@ export default function SearchResults() {
                           return (
                             <article
                               key={post.id}
-                              className={`group relative ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 overflow-hidden cursor-pointer`}
+                              className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border-2 ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 overflow-hidden cursor-pointer`}
                               onClick={() => navigate(`/post/${post.id}`)}
                             >
                               <div className="p-6">
                                 <div className="flex items-center gap-3 mb-4">
                                   <img
                                     src={post.author?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.author?.username || 'anonymous'}`}
-                                    alt={post.author?.full_name || 'Anonymous'}
+                                    alt={post.author?.full_name}
                                     className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-800"
                                   />
-                                  <div className="flex-1 min-w-0">
-                                    <h3 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm truncate`}>
+                                  <div>
+                                    <h3 className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm`}>
                                       {post.author?.full_name || 'Anonymous'}
                                     </h3>
-                                    <div className="flex items-center gap-2 text-xs">
-                                      <span className={`${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                        @{post.author?.username || 'anonymous'}
-                                      </span>
-                                      <span className={`${theme === 'light' ? 'text-gray-400' : 'text-gray-500'}`}>•</span>
-                                      <span className={`${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                        {formatDate(post.createdat)}
-                                      </span>
-                                    </div>
+                                    <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                      @{post.author?.username || 'anonymous'} • {formatDate(post.createdat)}
+                                    </p>
                                   </div>
                                 </div>
 
-                                <h3 className={`text-lg font-bold ${theme === 'light' ? 'text-gray-900 hover:text-blue-600' : 'text-white hover:text-blue-500'} mb-3 transition-colors line-clamp-2`}>
+                                <h3 className={`text-lg font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-3 line-clamp-2`}>
                                   {post.title}
                                 </h3>
-                                
                                 <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} text-sm line-clamp-3 mb-4`}>
                                   {post.content}
                                 </p>
@@ -922,10 +722,7 @@ export default function SearchResults() {
                                 {post.tags && post.tags.length > 0 && (
                                   <div className="flex flex-wrap gap-2 mb-4">
                                     {post.tags.slice(0, 3).map((tag, index) => (
-                                      <span
-                                        key={index}
-                                        className={`px-3 py-1 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50 text-blue-700' : 'from-blue-900/20 to-purple-900/20 text-blue-400'} text-xs font-medium rounded-full`}
-                                      >
+                                      <span key={index} className={`px-3 py-1 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50 text-blue-700' : 'from-blue-900/20 to-purple-900/20 text-blue-400'} text-xs font-medium rounded-full`}>
                                         #{tag}
                                       </span>
                                     ))}
@@ -934,18 +731,12 @@ export default function SearchResults() {
 
                                 <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-slate-700">
                                   <div className={`flex items-center gap-4 text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                                    <div className="flex items-center gap-1">
-                                      <FiHeart className={`w-4 h-4 ${isLiked ? 'text-red-500 fill-current' : ''}`} />
-                                      <span>{post.likescount || 0}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                      <FiMessageCircle className="w-4 h-4" />
-                                      <span>{post.comments_count || 0}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                      <FiClock className="w-4 h-4" />
-                                      <span>{post.read_time || 5} min</span>
-                                    </div>
+                                    <span className="flex items-center gap-1">
+                                      <FiHeart className="w-4 h-4" /> {post.likescount || 0}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <FiMessageCircle className="w-4 h-4" /> {post.comments_count || 0}
+                                    </span>
                                   </div>
 
                                   <div className="flex items-center gap-2">
@@ -955,9 +746,7 @@ export default function SearchResults() {
                                         handleLike(post.id);
                                       }}
                                       className={`p-2 rounded-lg transition-colors ${
-                                        isLiked
-                                          ? `${theme === 'light' ? 'text-red-600 bg-red-50' : 'text-red-400 bg-red-900/20'}`
-                                          : `${theme === 'light' ? 'text-gray-500 hover:text-red-500 hover:bg-gray-100' : 'text-gray-400 hover:text-red-400 hover:bg-slate-700'}`
+                                        isLiked ? `${theme === 'light' ? 'text-red-600 bg-red-50' : 'text-red-400 bg-red-900/20'}` : `${theme === 'light' ? 'text-gray-500 hover:bg-gray-100' : 'text-gray-400 hover:bg-slate-700'}`
                                       }`}
                                     >
                                       <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
@@ -968,9 +757,7 @@ export default function SearchResults() {
                                         handleSave(post.id);
                                       }}
                                       className={`p-2 rounded-lg transition-colors ${
-                                        isSaved
-                                          ? `${theme === 'light' ? 'text-yellow-600 bg-yellow-50' : 'text-yellow-400 bg-yellow-900/20'}`
-                                          : `${theme === 'light' ? 'text-gray-500 hover:text-yellow-500 hover:bg-gray-100' : 'text-gray-400 hover:text-yellow-400 hover:bg-slate-700'}`
+                                        isSaved ? `${theme === 'light' ? 'text-yellow-600 bg-yellow-50' : 'text-yellow-400 bg-yellow-900/20'}` : `${theme === 'light' ? 'text-gray-500 hover:bg-gray-100' : 'text-gray-400 hover:bg-slate-700'}`
                                       }`}
                                     >
                                       <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-current' : ''}`} />
@@ -987,28 +774,20 @@ export default function SearchResults() {
 
                   {/* No Results */}
                   {searchQuery && !hasPosts && !hasUsers && !hasTags && (
-                    <div className={`text-center py-16 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
+                    <div className={`text-center py-20 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border-2 ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
                       <FiSearch className={`w-16 h-16 mx-auto ${theme === 'light' ? 'text-gray-300' : 'text-slate-600'} mb-4`} />
-                      <h3 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2`}>
+                      <h3 className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2`}>
                         No results found
                       </h3>
-                      <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mb-6 max-w-md mx-auto`}>
-                        We couldn't find any results for "{searchQuery}". Try different keywords or check your spelling.
+                      <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mb-6`}>
+                        Try different keywords or check your spelling
                       </p>
-                      <div className="space-x-4">
-                        <button
-                          onClick={() => navigate('/home')}
-                          className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-colors"
-                        >
-                          Browse Feed
-                        </button>
-                        <button
-                          onClick={() => navigate('/create')}
-                          className="px-6 py-3 border border-blue-600 text-blue-600 dark:text-blue-400 font-semibold rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                        >
-                          Create Post
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => navigate('/home')}
+                        className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 shadow-lg"
+                      >
+                        Browse Feed
+                      </button>
                     </div>
                   )}
                 </div>
@@ -1016,27 +795,14 @@ export default function SearchResults() {
 
               {/* Search Prompt */}
               {!searchQuery && (
-                <div className={`text-center py-16 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
+                <div className={`text-center py-20 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border-2 ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
                   <FiSearch className={`w-16 h-16 mx-auto ${theme === 'light' ? 'text-gray-300' : 'text-slate-600'} mb-4`} />
-                  <h3 className={`text-xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2`}>
+                  <h3 className={`text-2xl font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-2`}>
                     Start Searching
                   </h3>
-                  <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mb-6 max-w-md mx-auto`}>
+                  <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} mb-6`}>
                     Search for posts, users (@username), or topics (#topic)
                   </p>
-                  <div className="space-y-4 max-w-md mx-auto">
-                    <div className={`p-4 ${theme === 'light' ? 'bg-gray-50' : 'bg-slate-700/50'} rounded-xl text-left`}>
-                      <p className={`font-medium ${theme === 'light' ? 'text-gray-900' : 'text-white'} mb-1`}>
-                        Search tips:
-                      </p>
-                      <ul className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} space-y-1`}>
-                        <li>• <span className="font-semibold">@username</span> - Search for specific users</li>
-                        <li>• <span className="font-semibold">#topic</span> - Search for topics or tags</li>
-                        <li>• <span className="font-semibold">"exact phrase"</span> - For exact matches</li>
-                        <li>• Try different search filters for better results</li>
-                      </ul>
-                    </div>
-                  </div>
                 </div>
               )}
             </div>

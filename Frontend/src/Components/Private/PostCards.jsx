@@ -671,7 +671,7 @@ const handleSendComment = async (postId) => {
               </div>
 
               {/* Tabs */}
-              <div className="flex items-center gap-1 overflow-x-auto mt-6 pb-2">
+              <div className="flex items-center space-x-4 overflow-x-auto mt-6 pb-2">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
@@ -684,7 +684,23 @@ const handleSendComment = async (postId) => {
                     }}
                     className={`flex items-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl font-semibold whitespace-nowrap transition-all duration-300 text-sm sm:text-base ${
                       activeTab === tab.id
-                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                        ? tab.id === "forYou"
+                          ? "bg-green-500 text-white shadow-lg"
+                          : tab.id === "following"
+                          ? "bg-red-500 text-white shadow-lg"
+                          : tab.id === "latest"
+                          ? "bg-blue-500 text-white shadow-lg"
+                          : tab.id === "trending"
+                          ? "bg-yellow-500 text-white shadow-lg"
+                          : ""
+                        : tab.id === "forYou"
+                        ? `${theme === 'light' ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-green-900/30 text-green-300 hover:bg-green-900/40'}`
+                        : tab.id === "following"
+                        ? `${theme === 'light' ? 'bg-red-100 text-red-800 hover:bg-red-200' : 'bg-red-900/30 text-red-300 hover:bg-red-900/40'}`
+                        : tab.id === "latest"
+                        ? `${theme === 'light' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' : 'bg-blue-900/30 text-blue-300 hover:bg-blue-900/40'}`
+                        : tab.id === "trending"
+                        ? `${theme === 'light' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' : 'bg-yellow-900/30 text-yellow-300 hover:bg-yellow-900/40'}`
                         : `${theme === 'light' ? 'text-gray-700 hover:bg-gray-100 hover:text-gray-900' : 'text-gray-300 hover:bg-slate-700 hover:text-white'}`
                     }`}
                   >
