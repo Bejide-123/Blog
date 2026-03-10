@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase.js'
+import { getUserFollowing } from './user.js';
 
 // --------------------- GET PUBLIC POSTS WITH AUTHOR INFO ---------------------
 export const getPublicPosts = async (options = {}) => {
@@ -903,3 +904,122 @@ export const getSearchSuggestions = async (searchTerm, limit = 5) => {
 //   return data;
 // }
 
+export const getPostbyFollowing = async (userId, options = {}) => {
+  const {
+    limit = 10,
+    offset = 0,
+    sortBy = 'createdat',
+    sortOrder = 'desc'
+  } = options
+
+  try {
+    // Get the list of users that the current user is following
+    const following = await getUserFollowing(userId);
+    const followingIds = following.map(f => f.id);
+
+    if (followingIds.length === 0) {
+      return { posts: [], total: 0, hasMore: false };
+    }
+
+    let query = supabase
+      .from('posts')
+      .select('*')
+      .in('authorid', followingIds)
+      .eq('status', 'published')
+      .order(sortBy, { ascending: sortOrder === 'asc' })
+      .limit(limit)
+      .range(offset, offset + limit - 1);
+
+    const { data: posts, error: postsError, count } = await query;
+
+    if (postsError) throw postsError;
+    if (!posts || posts.length === 0) {
+      return { posts: [], total: 0, hasMore: false };
+    }
+
+    const authorIds = [...new Set(posts.map(post => post.authorid).filter(Boolean))]
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, username, full_name, avatar_url')
+      .in('id', authorIds)
+
+    const profileMap = {}
+    if (profiles) {
+      profiles.forEach(profile => {
+        profileMap[profile.id] = profile
+      })
+    }
+
+    const postsWithAuthors = posts.map(post => ({
+      ...post,
+      author: profileMap[post.authorid] || {
+        username: 'anonymous',
+        full_name: 'Anonymous',
+        avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorid || 'anonymous'}`
+      }
+    }))
+
+    return {
+      posts: postsWithAuthors,
+      total: count || postsWithAuthors.length,
+      hasMore: posts.length === limit
+    }
+
+  } catch (error) {
+    console.error('Error in getPostbyFollowing:', error);
+    throw error;
+  }
+} 
+
+export const getUserPosts = async (userId, options = {}) => {
+  const {
+    status = 'published',
+    limit = 10,
+    offset = 0,
+    sortBy = 'createdat',
+    sortOrder = 'desc'
+  } = options;
+
+  try {
+    let query = supabase
+      .from('posts')
+      .select('*', { count: 'exact' })
+      .eq('authorid', userId)
+      .order(sortBy, { ascending: sortOrder === 'asc' })
+      .limit(limit)
+      .range(offset, offset + limit - 1);
+
+    if (status) {
+      query = query.eq('status', status);
+    }
+
+    const { data: posts, error, count } = await query;
+
+    if (error) throw error;
+
+    return {
+      posts: posts || [],
+      total: count || 0,
+      hasMore: (posts || []).length === limit
+    };
+  } catch (error) {
+    console.error('Error fetching user posts:', error);
+    throw error;
+  }
+};
+
+export const deletePost = async (postId) => {
+  try {
+    const { error } = await supabase
+      .from('posts')
+      .delete()
+      .eq('id', postId);
+
+    if (error) throw error;
+
+    return true;
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    throw error;
+  }
+};

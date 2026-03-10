@@ -11,7 +11,8 @@ import {
   addComment,
   deleteComment,
   toggleCommentLike,
-  getUserCommentLikes
+  getUserCommentLikes,
+  getPostbyFollowing
 } from "../../Services/post";
 import { useUser } from "../../Context/userContext";
 import {
@@ -81,6 +82,8 @@ export default function FeedContent() {
 
   // Fetch posts and user data on component mount
   useEffect(() => {
+    setPosts([]); // Clear posts immediately when tab changes
+    setPagination(prev => ({ ...prev, page: 1, total: 0, hasMore: false })); // Reset pagination
     fetchPosts();
     if (user?.id) {
       fetchUserData();
@@ -113,23 +116,35 @@ export default function FeedContent() {
         offset: (page - 1) * pagination.limit
       };
       
+      let result;
+
       // Configure options based on active tab
       switch(activeTab) {
         case 'trending':
           options.sortBy = 'likescount';
           options.sortOrder = 'desc';
+          result = await getPublicPosts(options);
           break;
         case 'latest':
           options.sortBy = 'createdat';
           options.sortOrder = 'desc';
+          result = await getPublicPosts(options);
+          break;
+        case 'following':
+          if (!user?.id) {
+            setPosts([]);
+            setPagination(prev => ({ ...prev, total: 0, hasMore: false }));
+            setLoading(false);
+            return;
+          }
+          result = await getPostbyFollowing(user.id, options);
           break;
         case 'forYou':
         default:
           options.sortBy = 'createdat';
           options.sortOrder = 'desc';
+          result = await getPublicPosts(options);
       }
-      
-      const result = await getPublicPosts(options);
       
       if (page === 1) {
         setPosts(result.posts);
