@@ -43,6 +43,7 @@ import {
   getRecentlyInteractedUsers,
   getUserByUsername
 } from "../../Services/api";
+import { saveToDraft } from "../../Services/post"; // Corrected import path
 import { useNavigate } from "react-router-dom";
 
 export default function CreatePostPage() {
@@ -127,11 +128,11 @@ export default function CreatePostPage() {
 
     fetchUserProfile();
 
-    const savedDraft = sessionStorage.getItem("postDraft");
+    const savedDraft = localStorage.getItem("postDraft");
     if (savedDraft) {
       const draft = JSON.parse(savedDraft);
       setFormData(draft);
-      if (draft.image) setImagePreview(draft.image);
+      if (draft.imageUrl) setImagePreview(draft.imageUrl); // Use imageUrl for preview
       setLastSaved(new Date(draft.savedAt));
     }
 
@@ -180,6 +181,27 @@ export default function CreatePostPage() {
       setShowTagSuggestions(false);
     }
   }, [formData, tagInput]);
+
+  // Automatic saving to localStorage
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      const draftToSave = {
+        title: formData.title,
+        content: formData.content,
+        tags: formData.tags,
+        imageUrl: formData.imageUrl, // Save the uploaded image URL if available
+        isPublic: formData.isPublic,
+        allowComments: formData.allowComments,
+        // Do not save imageFile as it's a File object and cannot be directly stored
+      };
+      localStorage.setItem("postDraft", JSON.stringify({ ...draftToSave, savedAt: new Date().toISOString() }));
+      setLastSaved(new Date());
+    }, 1000); // Debounce for 1 second
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [formData]);
 
   // Process preview content with mentions
   useEffect(() => {
@@ -444,8 +466,26 @@ export default function CreatePostPage() {
       }));
 
       const reader = new FileReader();
-      reader.onloadend = () => {
+      reader.onloadend = async () => { // Make onloadend async
         setImagePreview(reader.result);
+        // Immediately pre-upload the image and update formData.imageUrl
+        try {
+          setImageUploading(true);
+          const url = await uploadImage(file);
+          setFormData((prev) => ({
+            ...prev,
+            imageUrl: url,
+          }));
+        } catch (err) {
+          console.error("Error pre-uploading image:", err);
+          alert("Image pre-upload failed. Image will not be saved with draft.");
+          setFormData((prev) => ({
+            ...prev,
+            imageUrl: null, // Ensure imageUrl is null if upload fails
+          }));
+        } finally {
+          setImageUploading(false);
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -498,7 +538,7 @@ export default function CreatePostPage() {
     }
   };
 
-  const handleSaveDraft = async () => {
+  const handleSavePostAsBackendDraft = async () => {
     setIsLoading(true);
     try {
       if (!formData.title.trim() || !formData.content.trim()) {
@@ -507,8 +547,6 @@ export default function CreatePostPage() {
         return;
       }
 
-      const imageUrl = await preuploadImage();
-
       const result = await createPost({
         title: formData.title,
         content: formData.content,
@@ -516,19 +554,66 @@ export default function CreatePostPage() {
         status: "draft",
         isPublic: formData.isPublic,
         allowComments: formData.allowComments,
-        featured_image: imageUrl,
+        featured_image: formData.imageUrl, // Use formData.imageUrl directly
       });
 
       if (result.success) {
-        alert("Draft saved successfully!");
-        sessionStorage.removeItem("postDraft");
+        alert("Draft saved successfully to backend!");
+        localStorage.removeItem("postDraft");
         setLastSaved(null);
       } else {
-        alert(result.error || "Failed to save draft");
+        alert(result.error || "Failed to save draft to backend");
       }
     } catch (error) {
-      console.error("Error saving draft:", error);
+      console.error("Error saving draft to backend:", error);
       alert(error.message || "Network error. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSaveDraft = async () => { // This is the new function for the button
+    setIsLoading(true);
+    try {
+      if (!formData.title.trim() || !formData.content.trim()) {
+        alert("Title and content are required for draft");
+        setIsLoading(false);
+        return;
+      }
+
+      const result = await saveToDraft({ // Use the new saveToDraft function
+        title: formData.title,
+        content: formData.content,
+        tags: formData.tags,
+        isPublic: formData.isPublic,
+        allowComments: formData.allowComments,
+        featured_image: formData.imageUrl,
+      });
+
+      if (result.success) {
+        alert("Draft saved successfully to drafts table!");
+        localStorage.removeItem("postDraft"); // Clear local storage draft
+        setLastSaved(null);
+        // --- ADD THESE LINES TO CLEAR THE FORM ---
+        setFormData({
+          title: "",
+          content: "",
+          tags: [],
+          imageFile: null,
+          imageUrl: null,
+          isPublic: true,
+          allowComments: true,
+        });
+        setImagePreview(null);
+        setTagInput("");
+        // --- END ADDED LINES ---
+      } else {
+        // Handle the error returned from saveToDraft
+        alert(result.error || "Failed to save draft to drafts table");
+      }
+    } catch (error) {
+      console.error("Error saving draft to drafts table:", error);
+      alert(error.message || "An unexpected error occurred while saving draft.");
     } finally {
       setIsLoading(false);
     }
@@ -545,8 +630,6 @@ export default function CreatePostPage() {
     }
 
     try {
-      const imageUrl = await preuploadImage();
-
       const result = await createPost({
         title: formData.title,
         content: formData.content,
@@ -554,12 +637,12 @@ export default function CreatePostPage() {
         status: "published",
         isPublic: formData.isPublic,
         allowComments: formData.allowComments,
-        featured_image: imageUrl,
+        featured_image: formData.imageUrl, // Use formData.imageUrl directly
       });
 
       if (result.success) {
         alert("Post published successfully!");
-        sessionStorage.removeItem("postDraft");
+        localStorage.removeItem("postDraft");
         navigate("/home");
       } else {
         alert(result.error || "Failed to publish post");
@@ -593,7 +676,7 @@ export default function CreatePostPage() {
       });
       setImagePreview(null);
       setTagInput("");
-      sessionStorage.removeItem("postDraft");
+      localStorage.removeItem("postDraft");
       setLastSaved(null);
       setShowMentions(false);
       setMentionQuery("");
@@ -964,6 +1047,7 @@ export default function CreatePostPage() {
                         </div>
                       ) : (
                         <label
+                        
                           className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed ${theme === "light" ? "border-gray-300 hover:border-blue-500" : "border-slate-600 hover:border-blue-400"} rounded-xl cursor-pointer transition-colors group`}
                         >
                           <div className="flex flex-col items-center justify-center text-center p-4">

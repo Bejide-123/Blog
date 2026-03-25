@@ -365,7 +365,7 @@ export const getPopularTags = async (limit = 10) => {
     const { data: posts, error } = await supabase
       .from('posts')
       .select('tags')
-      .eq('status', 'published')
+      .eq('status', 'published');
 
     if (error) throw error;
 
@@ -1021,5 +1021,55 @@ export const deletePost = async (postId) => {
   } catch (error) {
     console.error('Error deleting post:', error);
     throw error;
+  }
+};
+
+// --------------------- SAVE TO DRAFTS TABLE ---------------------
+export const saveToDraft = async (draftData) => {
+  try {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+    if (userError) {
+      console.error('Supabase user authentication error:', userError);
+      return { success: false, error: 'Authentication error: ' + userError.message };
+    }
+    if (!user) {
+      return { success: false, error: 'User not authenticated. Please log in to save a draft.' };
+    }
+
+    const wordCount = draftData.content.split(/\s+/).filter(Boolean).length;
+    const readTime = Math.ceil(wordCount / 200);
+
+    const draftToCreate = {
+      title: draftData.title,
+      content: draftData.content,
+      tags: draftData.tags || [],
+      user_id: user.id, // Changed from authorid to user_id
+      is_public: draftData.isPublic !== undefined ? draftData.isPublic : true, // Changed to snake_case
+      allow_comments: draftData.allowComments !== undefined ? draftData.allowComments : true, // Changed to snake_case
+      read_time: readTime,
+      word_count: wordCount,
+      featured_image: draftData.featured_image || null,
+      created_at: new Date().toISOString(), // Changed to snake_case
+      updated_at: new Date().toISOString(), // Changed to snake_case
+    };
+
+    console.log('Saving draft to drafts table:', draftToCreate);
+
+    const { error } = await supabase
+      .from('drafts') // Assuming 'drafts' is your table name
+      .insert([draftToCreate]);
+
+    if (error) {
+      console.error('Insert draft error:', error);
+      return { success: false, error: error.message };
+    }
+
+    console.log('Draft saved successfully to drafts table');
+    return { success: true };
+
+  } catch (error) {
+    console.error('Error saving draft to drafts table:', error);
+    return { success: false, error: error.message || 'An unexpected error occurred.' };
   }
 };

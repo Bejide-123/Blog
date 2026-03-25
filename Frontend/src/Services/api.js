@@ -675,12 +675,11 @@ export const getUserByUsername = async (username) => {
         following_count,
         posts_count
       `)
-      .eq('username', username)
-      .single();
+      .eq('username', username);
 
     if (error) throw error;
 
-    return data;
+    return data && data.length > 0 ? data[0] : null;
   } catch (error) {
     console.error('Error fetching user by username:', error);
     throw error;
