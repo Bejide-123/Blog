@@ -35,14 +35,15 @@ import {
 } from "lucide-react";
 import NavbarPrivate from "../../Components/Private/Navbarprivate";
 import { PageLoader } from "../../Components/Private/Loader";
-import { 
-  createPost, 
-  uploadImage, 
-  getCurrentUserProfile, 
-  searchUsers, 
+import {
+  createPost,
+  uploadImage,
+  getCurrentUserProfile,
+  searchUsers,
   getRecentlyInteractedUsers,
-  getUserByUsername
+  getUserByUsername,
 } from "../../Services/api";
+import DraftsPanel from "../../Components/Private/DraftPanel";
 import { saveToDraft } from "../../Services/post"; // Corrected import path
 import { useNavigate } from "react-router-dom";
 
@@ -72,7 +73,7 @@ export default function CreatePostPage() {
   const [readTime, setReadTime] = useState(0);
   const [titleScore, setTitleScore] = useState(0);
   const [lastSaved, setLastSaved] = useState(null);
-  
+
   // Mention states
   const [showMentions, setShowMentions] = useState(false);
   const [mentionQuery, setMentionQuery] = useState("");
@@ -194,7 +195,10 @@ export default function CreatePostPage() {
         allowComments: formData.allowComments,
         // Do not save imageFile as it's a File object and cannot be directly stored
       };
-      localStorage.setItem("postDraft", JSON.stringify({ ...draftToSave, savedAt: new Date().toISOString() }));
+      localStorage.setItem(
+        "postDraft",
+        JSON.stringify({ ...draftToSave, savedAt: new Date().toISOString() }),
+      );
       setLastSaved(new Date());
     }, 1000); // Debounce for 1 second
 
@@ -223,43 +227,50 @@ export default function CreatePostPage() {
 
     const textarea = contentRef.current;
     const cursorPos = textarea.selectionStart;
-    
+
     // Get textarea bounds
     const textareaRect = textarea.getBoundingClientRect();
-    
+
     // Create a temporary div to measure text position
-    const div = document.createElement('div');
+    const div = document.createElement("div");
     const styles = window.getComputedStyle(textarea);
-    
+
     // Copy relevant styles
-    ['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'padding', 'border'].forEach(prop => {
+    [
+      "fontFamily",
+      "fontSize",
+      "fontWeight",
+      "lineHeight",
+      "padding",
+      "border",
+    ].forEach((prop) => {
       div.style[prop] = styles[prop];
     });
-    
-    div.style.position = 'absolute';
-    div.style.visibility = 'hidden';
-    div.style.whiteSpace = 'pre-wrap';
-    div.style.wordWrap = 'break-word';
-    div.style.width = textarea.clientWidth + 'px';
-    
+
+    div.style.position = "absolute";
+    div.style.visibility = "hidden";
+    div.style.whiteSpace = "pre-wrap";
+    div.style.wordWrap = "break-word";
+    div.style.width = textarea.clientWidth + "px";
+
     // Get text up to cursor
     const textBeforeCursor = textarea.value.substring(0, cursorPos);
     div.textContent = textBeforeCursor;
-    
+
     document.body.appendChild(div);
-    
+
     // Get the height (which gives us the line position)
     const textHeight = div.offsetHeight;
     document.body.removeChild(div);
-    
+
     // Calculate position
     const lineHeight = parseInt(styles.lineHeight);
     const paddingTop = parseInt(styles.paddingTop);
-    
+
     // Position dropdown below the current line
     const top = textareaRect.top + paddingTop + textHeight + window.scrollY;
     const left = textareaRect.left + window.scrollX + 20; // Small offset from left
-    
+
     setDropdownPosition({ top, left });
   };
 
@@ -268,22 +279,37 @@ export default function CreatePostPage() {
     try {
       setMentionLoading(true);
       let users;
-      
+
       if (!query || query.trim().length < 1) {
         users = await getRecentlyInteractedUsers();
       } else {
         users = await searchUsers(query);
       }
-      
+
       setMentionSuggestions(users || []);
       setSelectedMentionIndex(0);
     } catch (error) {
       console.error("Error fetching mention suggestions:", error);
       // Fallback to dummy data for testing
       setMentionSuggestions([
-        { id: 1, username: "john_doe", full_name: "John Doe", avatar_url: null },
-        { id: 2, username: "jane_smith", full_name: "Jane Smith", avatar_url: null },
-        { id: 3, username: "alex_wong", full_name: "Alex Wong", avatar_url: null },
+        {
+          id: 1,
+          username: "john_doe",
+          full_name: "John Doe",
+          avatar_url: null,
+        },
+        {
+          id: 2,
+          username: "jane_smith",
+          full_name: "Jane Smith",
+          avatar_url: null,
+        },
+        {
+          id: 3,
+          username: "alex_wong",
+          full_name: "Alex Wong",
+          avatar_url: null,
+        },
       ]);
       setSelectedMentionIndex(0);
     } finally {
@@ -308,24 +334,24 @@ export default function CreatePostPage() {
       const textAfterAt = textBeforeCursor.substring(lastAtSymbol);
       const spaceIndex = textAfterAt.indexOf(" ");
       const newlineIndex = textAfterAt.indexOf("\n");
-      
+
       // Check if we're still in the mention (no space or newline after @)
       const endIndex = Math.min(
         spaceIndex === -1 ? Infinity : spaceIndex,
-        newlineIndex === -1 ? Infinity : newlineIndex
+        newlineIndex === -1 ? Infinity : newlineIndex,
       );
-      
+
       if (endIndex === Infinity || cursorPos <= lastAtSymbol + endIndex) {
         const query = textBeforeCursor.substring(lastAtSymbol + 1, cursorPos);
-        
+
         setShowMentions(true);
         setMentionQuery(query);
         setMentionPosition({ start: lastAtSymbol, end: cursorPos });
         setMentionTriggered(true);
-        
+
         // Calculate dropdown position
         calculateDropdownPosition();
-        
+
         // Debounce the search
         if (mentionTimeoutRef.current) {
           clearTimeout(mentionTimeoutRef.current);
@@ -374,12 +400,12 @@ export default function CreatePostPage() {
     if (showMentions && mentionSuggestions.length > 0) {
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setSelectedMentionIndex((prev) => 
-          prev < mentionSuggestions.length - 1 ? prev + 1 : prev
+        setSelectedMentionIndex((prev) =>
+          prev < mentionSuggestions.length - 1 ? prev + 1 : prev,
         );
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
-        setSelectedMentionIndex((prev) => prev > 0 ? prev - 1 : 0);
+        setSelectedMentionIndex((prev) => (prev > 0 ? prev - 1 : 0));
       } else if (e.key === "Enter") {
         e.preventDefault();
         if (mentionSuggestions[selectedMentionIndex]) {
@@ -395,17 +421,21 @@ export default function CreatePostPage() {
   // Handle clicking the @ button
   const handleMentionButtonClick = () => {
     const currentContent = formData.content;
-    const cursorPos = contentRef.current?.selectionStart || currentContent.length;
-    const newContent = currentContent.substring(0, cursorPos) + "@" + currentContent.substring(cursorPos);
-    
-    setFormData(prev => ({ ...prev, content: newContent }));
-    
+    const cursorPos =
+      contentRef.current?.selectionStart || currentContent.length;
+    const newContent =
+      currentContent.substring(0, cursorPos) +
+      "@" +
+      currentContent.substring(cursorPos);
+
+    setFormData((prev) => ({ ...prev, content: newContent }));
+
     setTimeout(() => {
       if (contentRef.current) {
         const newCursorPos = cursorPos + 1;
         contentRef.current.focus();
         contentRef.current.setSelectionRange(newCursorPos, newCursorPos);
-        
+
         // Manually trigger mention detection
         setShowMentions(true);
         setMentionQuery("");
@@ -427,15 +457,15 @@ export default function CreatePostPage() {
     setTitleScore(score);
   };
 
-  const saveDraftToSession = () => {
-    const draft = {
-      ...formData,
-      savedAt: new Date().toISOString(),
-    };
-    sessionStorage.setItem("postDraft", JSON.stringify(draft));
-    setLastSaved(new Date());
-    alert("Draft saved!");
-  };
+  // const saveDraftToSession = () => {
+  //   const draft = {
+  //     ...formData,
+  //     savedAt: new Date().toISOString(),
+  //   };
+  //   sessionStorage.setItem("postDraft", JSON.stringify(draft));
+  //   setLastSaved(new Date());
+  //   alert("Draft saved!");
+  // };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -466,7 +496,8 @@ export default function CreatePostPage() {
       }));
 
       const reader = new FileReader();
-      reader.onloadend = async () => { // Make onloadend async
+      reader.onloadend = async () => {
+        // Make onloadend async
         setImagePreview(reader.result);
         // Immediately pre-upload the image and update formData.imageUrl
         try {
@@ -522,23 +553,58 @@ export default function CreatePostPage() {
     }));
   };
 
-  const preuploadImage = async () => {
-    if (!formData.imageFile) return null;
+  // const preuploadImage = async () => {
+  //   if (!formData.imageFile) return null;
 
-    try {
-      setImageUploading(true);
-      const url = await uploadImage(formData.imageFile);
-      return url;
-    } catch (err) {
-      console.error("Image upload failed:", err);
-      alert("Image upload failed. Continuing without image.");
-      return null;
-    } finally {
-      setImageUploading(false);
-    }
-  };
+  //   try {
+  //     setImageUploading(true);
+  //     const url = await uploadImage(formData.imageFile);
+  //     return url;
+  //   } catch (err) {
+  //     console.error("Image upload failed:", err);
+  //     alert("Image upload failed. Continuing without image.");
+  //     return null;
+  //   } finally {
+  //     setImageUploading(false);
+  //   }
+  // };
 
-  const handleSavePostAsBackendDraft = async () => {
+  // const handleSavePostAsBackendDraft = async () => {
+  //   setIsLoading(true);
+  //   try {
+  //     if (!formData.title.trim() || !formData.content.trim()) {
+  //       alert("Title and content are required for draft");
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     const result = await createPost({
+  //       title: formData.title,
+  //       content: formData.content,
+  //       tags: formData.tags,
+  //       status: "draft",
+  //       isPublic: formData.isPublic,
+  //       allowComments: formData.allowComments,
+  //       featured_image: formData.imageUrl, // Use formData.imageUrl directly
+  //     });
+
+  //     if (result.success) {
+  //       alert("Draft saved successfully to backend!");
+  //       localStorage.removeItem("postDraft");
+  //       setLastSaved(null);
+  //     } else {
+  //       alert(result.error || "Failed to save draft to backend");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error saving draft to backend:", error);
+  //     alert(error.message || "Network error. Please try again.");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  const handleSaveDraft = async () => {
+    // This is the new function for the button
     setIsLoading(true);
     try {
       if (!formData.title.trim() || !formData.content.trim()) {
@@ -547,41 +613,8 @@ export default function CreatePostPage() {
         return;
       }
 
-      const result = await createPost({
-        title: formData.title,
-        content: formData.content,
-        tags: formData.tags,
-        status: "draft",
-        isPublic: formData.isPublic,
-        allowComments: formData.allowComments,
-        featured_image: formData.imageUrl, // Use formData.imageUrl directly
-      });
-
-      if (result.success) {
-        alert("Draft saved successfully to backend!");
-        localStorage.removeItem("postDraft");
-        setLastSaved(null);
-      } else {
-        alert(result.error || "Failed to save draft to backend");
-      }
-    } catch (error) {
-      console.error("Error saving draft to backend:", error);
-      alert(error.message || "Network error. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSaveDraft = async () => { // This is the new function for the button
-    setIsLoading(true);
-    try {
-      if (!formData.title.trim() || !formData.content.trim()) {
-        alert("Title and content are required for draft");
-        setIsLoading(false);
-        return;
-      }
-
-      const result = await saveToDraft({ // Use the new saveToDraft function
+      const result = await saveToDraft({
+        // Use the new saveToDraft function
         title: formData.title,
         content: formData.content,
         tags: formData.tags,
@@ -613,7 +646,9 @@ export default function CreatePostPage() {
       }
     } catch (error) {
       console.error("Error saving draft to drafts table:", error);
-      alert(error.message || "An unexpected error occurred while saving draft.");
+      alert(
+        error.message || "An unexpected error occurred while saving draft.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -689,45 +724,24 @@ export default function CreatePostPage() {
 
     const parts = text.split(/(@[\w.]+)/g);
 
-    const renderedParts = await Promise.all(parts.map(async (part, index) => {
-      if (part.startsWith("@")) {
-        const username = part.substring(1);
+    const renderedParts = await Promise.all(
+      parts.map(async (part, index) => {
+        if (part.startsWith("@")) {
+          const username = part.substring(1);
 
-        if (!username) {
-          return part;
-        }
+          if (!username) {
+            return part;
+          }
 
-        // Check cache first
-        if (userProfileCache.current[username]) {
-          return (
-            <span key={index} className="inline-flex items-center">
-              <a
-                href={`/profile/${userProfileCache.current[username]}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate(`/profile/${userProfileCache.current[username]}`);
-                }}
-                className="text-blue-600 dark:text-blue-400 hover:underline font-medium cursor-pointer"
-              >
-                {part}
-              </a>
-            </span>
-          );
-        }
-
-        // Fetch user data if not cached
-        try {
-          const userProfile = await getUserByUsername(username);
-          if (userProfile && userProfile.id) {
-            // Cache the user ID
-            userProfileCache.current[username] = userProfile.id;
+          // Check cache first
+          if (userProfileCache.current[username]) {
             return (
               <span key={index} className="inline-flex items-center">
                 <a
-                  href={`/profile/${userProfile.id}`}
+                  href={`/profile/${userProfileCache.current[username]}`}
                   onClick={(e) => {
                     e.preventDefault();
-                    navigate(`/profile/${userProfile.id}`);
+                    navigate(`/profile/${userProfileCache.current[username]}`);
                   }}
                   className="text-blue-600 dark:text-blue-400 hover:underline font-medium cursor-pointer"
                 >
@@ -735,26 +749,55 @@ export default function CreatePostPage() {
                 </a>
               </span>
             );
-          } else {
-            // User not found, keep original username link as fallback
+          }
+
+          // Fetch user data if not cached
+          try {
+            const userProfile = await getUserByUsername(username);
+            if (userProfile && userProfile.id) {
+              // Cache the user ID
+              userProfileCache.current[username] = userProfile.id;
+              return (
+                <span key={index} className="inline-flex items-center">
+                  <a
+                    href={`/profile/${userProfile.id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate(`/profile/${userProfile.id}`);
+                    }}
+                    className="text-blue-600 dark:text-blue-400 hover:underline font-medium cursor-pointer"
+                  >
+                    {part}
+                  </a>
+                </span>
+              );
+            } else {
+              // User not found, keep original username link as fallback
+              return (
+                <span
+                  key={index}
+                  className="text-gray-500 inline-flex items-center"
+                >
+                  {part}
+                </span>
+              );
+            }
+          } catch (error) {
+            console.error(`Error fetching user ID for ${username}:`, error);
+            // Fallback to original behavior if API fails
             return (
-              <span key={index} className="text-gray-500 inline-flex items-center">
+              <span
+                key={index}
+                className="text-gray-500 inline-flex items-center"
+              >
                 {part}
               </span>
             );
           }
-        } catch (error) {
-          console.error(`Error fetching user ID for ${username}:`, error);
-          // Fallback to original behavior if API fails
-          return (
-            <span key={index} className="text-gray-500 inline-flex items-center">
-              {part}
-            </span>
-          );
         }
-      }
-      return part;
-    }));
+        return part;
+      }),
+    );
 
     return renderedParts;
   };
@@ -800,6 +843,25 @@ export default function CreatePostPage() {
                       </span>
                     </div>
                   )}
+
+                  <DraftsPanel
+                    theme={theme}
+                    onEditDraft={(draft) => {
+                      setFormData({
+                        title: draft.title || "",
+                        content: draft.content || "",
+                        tags: draft.tags || [],
+                        imageUrl: draft.featured_image || null,
+                        imageFile: null,
+                        isPublic: true,
+                        allowComments: true,
+                      });
+                      if (draft.featured_image)
+                        setImagePreview(draft.featured_image);
+                      setShowPreview(false);
+                    }}
+                    userId={userProfile?.id} // Pass the user ID here
+                  />
 
                   <button
                     onClick={() => setShowPreview(!showPreview)}
@@ -983,7 +1045,9 @@ export default function CreatePostPage() {
 
                           <div className="flex items-center gap-2">
                             {mentionTriggered && (
-                              <span className={`text-xs ${theme === "light" ? "text-blue-600" : "text-blue-400"} flex items-center gap-1`}>
+                              <span
+                                className={`text-xs ${theme === "light" ? "text-blue-600" : "text-blue-400"} flex items-center gap-1`}
+                              >
                                 <AtSign className="w-3 h-3" />
                                 Type username
                               </span>
@@ -1047,7 +1111,6 @@ export default function CreatePostPage() {
                         </div>
                       ) : (
                         <label
-                        
                           className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed ${theme === "light" ? "border-gray-300 hover:border-blue-500" : "border-slate-600 hover:border-blue-400"} rounded-xl cursor-pointer transition-colors group`}
                         >
                           <div className="flex flex-col items-center justify-center text-center p-4">
@@ -1314,12 +1377,12 @@ export default function CreatePostPage() {
                                 formData.allowComments
                                   ? "bg-blue-500 justify-end"
                                   : `${theme === "light" ? "bg-gray-300" : "bg-slate-600"} justify-start`
-                            }`}
-                            type="button"
-                          >
-                            <div className="w-4 h-4 bg-white rounded-full"></div>
-                          </button>
-                        </div>
+                              }`}
+                              type="button"
+                            >
+                              <div className="w-4 h-4 bg-white rounded-full"></div>
+                            </button>
+                          </div>
                           <p
                             className={`text-xs ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}
                           >
@@ -1536,7 +1599,9 @@ export default function CreatePostPage() {
               }}
             >
               {mentionLoading ? (
-                <div className={`p-4 text-center ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
+                <div
+                  className={`p-4 text-center ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}
+                >
                   <Loader2 className="w-5 h-5 mx-auto mb-2 animate-spin" />
                   <p className="text-sm">Loading users...</p>
                 </div>
@@ -1555,30 +1620,43 @@ export default function CreatePostPage() {
                       onMouseEnter={() => setSelectedMentionIndex(index)}
                     >
                       <img
-                        src={user.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`}
+                        src={
+                          user.avatar_url ||
+                          `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`
+                        }
                         className="w-10 h-10 rounded-full flex-shrink-0"
                         alt={user.username}
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold truncate">@{user.username}</div>
+                        <div className="font-semibold truncate">
+                          @{user.username}
+                        </div>
                         {user.full_name && (
-                          <div className={`text-xs truncate ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
+                          <div
+                            className={`text-xs truncate ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}
+                          >
                             {user.full_name}
                           </div>
                         )}
                       </div>
                       {index === selectedMentionIndex && (
-                        <Check className={`w-4 h-4 flex-shrink-0 ${theme === "light" ? "text-blue-600" : "text-blue-400"}`} />
+                        <Check
+                          className={`w-4 h-4 flex-shrink-0 ${theme === "light" ? "text-blue-600" : "text-blue-400"}`}
+                        />
                       )}
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className={`p-6 text-center ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
+                <div
+                  className={`p-6 text-center ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}
+                >
                   <User className="w-8 h-8 mx-auto mb-2 opacity-50" />
                   <p className="text-sm font-medium">No users found</p>
                   <p className="text-xs mt-1">
-                    {mentionQuery ? `No users match "${mentionQuery}"` : "Start typing to search users"}
+                    {mentionQuery
+                      ? `No users match "${mentionQuery}"`
+                      : "Start typing to search users"}
                   </p>
                 </div>
               )}

@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase.js'
 import { getUserFollowing } from './user.js';
 
+
 // --------------------- GET PUBLIC POSTS WITH AUTHOR INFO ---------------------
 export const getPublicPosts = async (options = {}) => {
   const {
@@ -1071,5 +1072,81 @@ export const saveToDraft = async (draftData) => {
   } catch (error) {
     console.error('Error saving draft to drafts table:', error);
     return { success: false, error: error.message || 'An unexpected error occurred.' };
+  }
+};
+
+export const getAllDraftsForUser = async (userId, options = {}) => {
+  try {
+    if (!userId) {
+      console.error('No userId provided to getAllDraftsForUser');
+      return [];
+    }
+
+    let query = supabase
+      .from('drafts')
+      .select('*')
+      .eq('user_id', userId);
+
+    // Add optional filtering
+    if (options.status) {
+      query = query.eq('status', options.status);
+    }
+
+    // Add pagination
+    if (options.limit) {
+      query = query.limit(options.limit);
+    }
+    if (options.offset) {
+      query = query.range(options.offset, options.offset + (options.limit || 10) - 1);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching drafts for user:', error);
+    return [];
+  }
+};
+
+export const deleteDraft = async (draftId) => {
+  try {
+    if (!draftId) {
+      throw new Error('No draftId provided');
+    }
+
+    const { error } = await supabase
+      .from('drafts')
+      .delete()
+      .eq('id', draftId);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting draft:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+export const getDraftById = async (userId, draftId) => {
+  try {
+    if (!userId || !draftId) {
+      console.error('Missing userId or draftId');
+      return null;
+    }
+
+    const { data, error } = await supabase
+      .from('drafts')
+      .select('*')
+      .eq('id', draftId)
+      .eq('user_id', userId)
+      .maybeSingle(); // Use maybeSingle() instead of single() to avoid throwing on no results
+
+    if (error) throw error;
+    return data || null;
+  } catch (error) {
+    console.error('Error fetching draft by id:', error);
+    return null;
   }
 };
