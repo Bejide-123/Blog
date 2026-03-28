@@ -1,20 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 // Import the new services
-import { 
-  getPublicPosts, 
-  togglePostLike, 
-  toggleSavePost, 
-  getUserLikedPosts, 
+import {
+  getPublicPosts,
+  togglePostLike,
+  toggleSavePost,
+  getUserLikedPosts,
   getUserSavedPosts,
   getPostComments,
   addComment,
   deleteComment,
   toggleCommentLike,
   getUserCommentLikes,
-  getPostbyFollowing
+  getPostbyFollowing,
 } from "../../Services/post";
 import { useUser } from "../../Context/userContext";
+import PostImageModal from "./PostImageModal";
 import {
   Heart,
   MessageCircle,
@@ -44,7 +45,7 @@ export default function FeedContent() {
   const [activeTab, setActiveTab] = useState("forYou");
   const navigate = useNavigate();
   const { user } = useUser();
-  
+
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [savedPosts, setSavedPosts] = useState(new Set());
   const [likeProcessingPosts, setLikeProcessingPosts] = useState(new Set());
@@ -54,12 +55,13 @@ export default function FeedContent() {
   const [postComments, setPostComments] = useState({}); // Changed from comments to postComments
   const [activeMenuPost, setActiveMenuPost] = useState(null);
   const [followedUsers, setFollowedUsers] = useState(new Set());
+  const [imageModalPost, setImageModalPost] = useState(null);
   const [hiddenPosts, setHiddenPosts] = useState(new Set());
   const [repostedPosts, setRepostedPosts] = useState(new Set());
   const [showTrendingSidebar, setShowTrendingSidebar] = useState(true);
   const [likedComments, setLikedComments] = useState(new Set());
   const [commentInputs, setCommentInputs] = useState({}); // For storing comment input per post
-  
+
   // Add state for real posts
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +70,7 @@ export default function FeedContent() {
     page: 1,
     limit: 10,
     total: 0,
-    hasMore: false
+    hasMore: false,
   });
 
   // Cache for user IDs to avoid repeated API calls for mentions
@@ -83,7 +85,7 @@ export default function FeedContent() {
   // Fetch posts and user data on component mount
   useEffect(() => {
     setPosts([]); // Clear posts immediately when tab changes
-    setPagination(prev => ({ ...prev, page: 1, total: 0, hasMore: false })); // Reset pagination
+    setPagination((prev) => ({ ...prev, page: 1, total: 0, hasMore: false })); // Reset pagination
     fetchPosts();
     if (user?.id) {
       fetchUserData();
@@ -96,7 +98,9 @@ export default function FeedContent() {
       const newRenderedContent = {};
       for (const post of posts) {
         if (post.content) {
-          newRenderedContent[post.id] = await renderContentWithMentions(post.content);
+          newRenderedContent[post.id] = await renderContentWithMentions(
+            post.content,
+          );
         }
       }
       setRenderedContent(newRenderedContent);
@@ -110,59 +114,59 @@ export default function FeedContent() {
   const fetchPosts = async (page = 1) => {
     try {
       setLoading(true);
-      
+
       let options = {
         limit: pagination.limit,
-        offset: (page - 1) * pagination.limit
+        offset: (page - 1) * pagination.limit,
       };
-      
+
       let result;
 
       // Configure options based on active tab
-      switch(activeTab) {
-        case 'trending':
-          options.sortBy = 'likescount';
-          options.sortOrder = 'desc';
+      switch (activeTab) {
+        case "trending":
+          options.sortBy = "likescount";
+          options.sortOrder = "desc";
           result = await getPublicPosts(options);
           break;
-        case 'latest':
-          options.sortBy = 'createdat';
-          options.sortOrder = 'desc';
+        case "latest":
+          options.sortBy = "createdat";
+          options.sortOrder = "desc";
           result = await getPublicPosts(options);
           break;
-        case 'following':
+        case "following":
           if (!user?.id) {
             setPosts([]);
-            setPagination(prev => ({ ...prev, total: 0, hasMore: false }));
+            setPagination((prev) => ({ ...prev, total: 0, hasMore: false }));
             setLoading(false);
             return;
           }
           result = await getPostbyFollowing(user.id, options);
           break;
-        case 'forYou':
+        case "forYou":
         default:
-          options.sortBy = 'createdat';
-          options.sortOrder = 'desc';
+          options.sortBy = "createdat";
+          options.sortOrder = "desc";
           result = await getPublicPosts(options);
       }
-      
+
       if (page === 1) {
         setPosts(result.posts);
       } else {
-        setPosts(prev => [...prev, ...result.posts]);
+        setPosts((prev) => [...prev, ...result.posts]);
       }
-      
-      setPagination(prev => ({
+
+      setPagination((prev) => ({
         ...prev,
         page,
         total: result.total,
-        hasMore: result.hasMore
+        hasMore: result.hasMore,
       }));
-      
+
       setError(null);
     } catch (err) {
-      console.error('Failed to fetch posts:', err);
-      setError('Failed to load posts. Please try again.');
+      console.error("Failed to fetch posts:", err);
+      setError("Failed to load posts. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -172,10 +176,10 @@ export default function FeedContent() {
   const fetchUserData = async () => {
     try {
       if (!user?.id) return;
-      
+
       const likedPostIds = await getUserLikedPosts(user.id);
       setLikedPosts(new Set(likedPostIds));
-      
+
       const savedPostIds = await getUserSavedPosts(user.id);
       setSavedPosts(new Set(savedPostIds));
 
@@ -186,55 +190,87 @@ export default function FeedContent() {
       // Fetch users the current user is following and initialize follow state
       try {
         const followingProfiles = await getUserFollowing(user.id);
-        setFollowedUsers(new Set((followingProfiles || []).map(p => p.username)));
+        setFollowedUsers(
+          new Set((followingProfiles || []).map((p) => p.username)),
+        );
       } catch (err) {
-        console.error('Error fetching following list:', err);
+        console.error("Error fetching following list:", err);
       }
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      console.error("Error fetching user data:", error);
     }
   };
 
   // ========== LIKE FUNCTIONALITY ==========
   const toggleLike = async (postId) => {
     if (!user?.id) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
 
-    // Prevent duplicate requests for the same post
     if (likeProcessingPosts.has(postId)) return;
-    setLikeProcessingPosts(prev => {
+
+    setLikeProcessingPosts((prev) => {
       const s = new Set(prev);
       s.add(postId);
       return s;
     });
-    
+
+    // 🔥 Get current state BEFORE updating
+    const isCurrentlyLiked = likedPosts.has(postId);
+
+    // 🔥 OPTIMISTIC UPDATE (instant UI change)
+    setLikedPosts((prev) => {
+      const newSet = new Set(prev);
+      if (isCurrentlyLiked) {
+        newSet.delete(postId);
+      } else {
+        newSet.add(postId);
+      }
+      return newSet;
+    });
+
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              likescount: (post.likescount || 0) + (isCurrentlyLiked ? -1 : 1),
+            }
+          : post,
+      ),
+    );
+
     try {
-      const { liked, count } = await togglePostLike(postId, user.id);
-      
-      setLikedPosts(prev => {
+      // 🔥 Call API AFTER UI updates
+      await togglePostLike(postId, user.id);
+    } catch (error) {
+      console.error("Error toggling like:", error);
+
+      // 🔥 ROLLBACK if API fails
+      setLikedPosts((prev) => {
         const newSet = new Set(prev);
-        if (liked) {
+        if (isCurrentlyLiked) {
           newSet.add(postId);
         } else {
           newSet.delete(postId);
         }
         return newSet;
       });
-      
-      setPosts(prevPosts => 
-        prevPosts.map(post => 
-          post.id === postId 
-            ? { ...post, likescount: count || 0 } 
-            : post
-        )
+
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                likescount:
+                  (post.likescount || 0) + (isCurrentlyLiked ? 1 : -1),
+              }
+            : post,
+        ),
       );
-    } catch (error) {
-      console.error('Error toggling like:', error);
-      alert('Failed to update like. Please try again.');
     } finally {
-      setLikeProcessingPosts(prev => {
+      setLikeProcessingPosts((prev) => {
         const s = new Set(prev);
         s.delete(postId);
         return s;
@@ -245,31 +281,49 @@ export default function FeedContent() {
   // ========== SAVE FUNCTIONALITY ==========
   const toggleSave = async (postId) => {
     if (!user?.id) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
-    
+
+    // 🔥 Get current state BEFORE update
+    const isCurrentlySaved = savedPosts.has(postId);
+
+    // 🔥 OPTIMISTIC UPDATE (instant UI)
+    setSavedPosts((prev) => {
+      const newSet = new Set(prev);
+      if (isCurrentlySaved) {
+        newSet.delete(postId);
+      } else {
+        newSet.add(postId);
+      }
+      return newSet;
+    });
+
     try {
-      const { saved } = await toggleSavePost(postId, user.id);
-      
-      setSavedPosts(prev => {
+      // 🔥 Call API after UI update
+      await toggleSavePost(postId, user.id);
+
+      console.log(
+        isCurrentlySaved
+          ? "Post removed from saved"
+          : "Post saved successfully",
+      );
+    } catch (error) {
+      console.error("Error toggling save:", error);
+
+      // 🔥 ROLLBACK if failed
+      setSavedPosts((prev) => {
         const newSet = new Set(prev);
-        if (saved) {
+        if (isCurrentlySaved) {
           newSet.add(postId);
         } else {
           newSet.delete(postId);
         }
         return newSet;
       });
-      
-      if (saved) {
-        console.log('Post saved successfully');
-      } else {
-        console.log('Post removed from saved');
-      }
-    } catch (error) {
-      console.error('Error toggling save:', error);
-      alert('Failed to update saved post. Please try again.');
+
+      // ❌ Replace alert
+      alert("Failed to update saved post. Please try again.");
     }
   };
 
@@ -282,101 +336,103 @@ export default function FeedContent() {
       // Fetch comments for this post
       try {
         const comments = await getPostComments(postId);
-        setPostComments(prev => ({
+        setPostComments((prev) => ({
           ...prev,
-          [postId]: comments
+          [postId]: comments,
         }));
       } catch (error) {
-        console.error('Error fetching comments:', error);
+        console.error("Error fetching comments:", error);
       }
     }
   };
 
-const handleSendComment = async (postId) => {
-  const commentText = commentInputs[postId] || newComment;
-  
-  if (!commentText.trim() || !user?.id) {
-    if (!user?.id) navigate('/login');
-    return;
-  }
-  
-  try {
-    // Add comment to database
-    const comment = await addComment(postId, user.id, commentText.trim());
-    
-    // Update comments for this post
-    setPostComments(prev => ({
-      ...prev,
-      [postId]: [comment, ...(prev[postId] || [])]
-    }));
-    
-    // Clear comment input
-    setCommentInputs(prev => ({
-      ...prev,
-      [postId]: ""
-    }));
-    setNewComment("");
-    
-    // Update post comment count
-    setPosts(prevPosts => 
-      prevPosts.map(post => 
-        post.id === postId 
-          ? { 
-              ...post, 
-              comments_count: (post.comments_count || 0) + 1 
-            } 
-          : post
-      )
-    );
-  } catch (error) {
-    console.error('Error adding comment:', error);
-    // Show a more user-friendly error
-    alert('Failed to add comment. Please try again.');
-  }
-};
+  const handleSendComment = async (postId) => {
+    const commentText = commentInputs[postId] || newComment;
 
-  const handleDeleteComment = async (postId, commentId) => {
-    if (!window.confirm('Are you sure you want to delete this comment?')) {
+    if (!commentText.trim() || !user?.id) {
+      if (!user?.id) navigate("/login");
       return;
     }
-    
+
     try {
-      await deleteComment(commentId, user.id);
-      
-      // Remove comment from state
-      setPostComments(prev => ({
+      // Add comment to database
+      const comment = await addComment(postId, user.id, commentText.trim());
+
+      // Update comments for this post
+      setPostComments((prev) => ({
         ...prev,
-        [postId]: (prev[postId] || []).filter(comment => comment.id !== commentId)
+        [postId]: [comment, ...(prev[postId] || [])],
       }));
-      
+
+      // Clear comment input
+      setCommentInputs((prev) => ({
+        ...prev,
+        [postId]: "",
+      }));
+      setNewComment("");
+
       // Update post comment count
-      setPosts(prevPosts => 
-        prevPosts.map(post => 
-          post.id === postId 
-            ? { 
-                ...post, 
-                comments_count: Math.max(0, (post.comments_count || 0) - 1)
-              } 
-            : post
-        )
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                comments_count: (post.comments_count || 0) + 1,
+              }
+            : post,
+        ),
       );
     } catch (error) {
-      console.error('Error deleting comment:', error);
-      alert('Failed to delete comment. Please try again.');
+      console.error("Error adding comment:", error);
+      // Show a more user-friendly error
+      alert("Failed to add comment. Please try again.");
+    }
+  };
+
+  const handleDeleteComment = async (postId, commentId) => {
+    if (!window.confirm("Are you sure you want to delete this comment?")) {
+      return;
+    }
+
+    try {
+      await deleteComment(commentId, user.id);
+
+      // Remove comment from state
+      setPostComments((prev) => ({
+        ...prev,
+        [postId]: (prev[postId] || []).filter(
+          (comment) => comment.id !== commentId,
+        ),
+      }));
+
+      // Update post comment count
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                comments_count: Math.max(0, (post.comments_count || 0) - 1),
+              }
+            : post,
+        ),
+      );
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      alert("Failed to delete comment. Please try again.");
     }
   };
 
   const handleCommentLike = async (postId, commentId) => {
     if (!user?.id) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
-    
+
     try {
       const { liked } = await toggleCommentLike(commentId, user.id);
-      
+
       // Update liked comments state
-      setLikedComments(prev => {
+      setLikedComments((prev) => {
         const newSet = new Set(prev);
         if (liked) {
           newSet.add(commentId);
@@ -385,22 +441,24 @@ const handleSendComment = async (postId) => {
         }
         return newSet;
       });
-      
+
       // Update comment in state
-      setPostComments(prev => ({
+      setPostComments((prev) => ({
         ...prev,
-        [postId]: (prev[postId] || []).map(comment => {
+        [postId]: (prev[postId] || []).map((comment) => {
           if (comment.id === commentId) {
             return {
               ...comment,
-              likes_count: liked ? (comment.likes_count || 0) + 1 : Math.max(0, (comment.likes_count || 0) - 1)
+              likes_count: liked
+                ? (comment.likes_count || 0) + 1
+                : Math.max(0, (comment.likes_count || 0) - 1),
             };
           }
           return comment;
-        })
+        }),
       }));
     } catch (error) {
-      console.error('Error toggling comment like:', error);
+      console.error("Error toggling comment like:", error);
     }
   };
 
@@ -412,9 +470,17 @@ const handleSendComment = async (postId) => {
 
   const tabs = [
     { id: "forYou", label: "For You", icon: <Sparkles className="w-4 h-4" /> },
-    { id: "following", label: "Following", icon: <UsersIcon className="w-4 h-4" /> },
+    {
+      id: "following",
+      label: "Following",
+      icon: <UsersIcon className="w-4 h-4" />,
+    },
     { id: "latest", label: "Latest", icon: <Zap className="w-4 h-4" /> },
-    { id: "trending", label: "Trending", icon: <TrendingUp className="w-4 h-4" /> },
+    {
+      id: "trending",
+      label: "Trending",
+      icon: <TrendingUp className="w-4 h-4" />,
+    },
   ];
 
   // ========== OTHER FUNCTIONS ==========
@@ -426,12 +492,12 @@ const handleSendComment = async (postId) => {
     }
   };
 
-  const copyLink = (postId) => {
-    const link = `${window.location.origin}/post/${postId}`;
-    navigator.clipboard.writeText(link);
-    alert("Link copied to clipboard!");
-    setActiveMenuPost(null);
-  };
+  // const copyLink = (postId) => {
+  //   const link = `${window.location.origin}/post/${postId}`;
+  //   navigator.clipboard.writeText(link);
+  //   alert("Link copied to clipboard!");
+  //   setActiveMenuPost(null);
+  // };
 
   const toggleFollow = (username) => {
     setFollowedUsers((prev) => {
@@ -446,10 +512,10 @@ const handleSendComment = async (postId) => {
     setActiveMenuPost(null);
   };
 
-  const hidePost = (postId) => {
-    setHiddenPosts((prev) => new Set([...prev, postId]));
-    setActiveMenuPost(null);
-  };
+  // const hidePost = (postId) => {
+  //   setHiddenPosts((prev) => new Set([...prev, postId]));
+  //   setActiveMenuPost(null);
+  // };
 
   const toggleRepost = (postId) => {
     setRepostedPosts((prev) => {
@@ -466,12 +532,12 @@ const handleSendComment = async (postId) => {
 
   // Helper function to format date
   const formatDate = (dateString) => {
-    if (!dateString) return 'Recently';
-    
+    if (!dateString) return "Recently";
+
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = (now - date) / (1000 * 60 * 60);
-    
+
     if (diffInHours < 1) {
       return `${Math.floor(diffInHours * 60)} minutes ago`;
     } else if (diffInHours < 24) {
@@ -479,7 +545,10 @@ const handleSendComment = async (postId) => {
     } else if (diffInHours < 168) {
       return `${Math.floor(diffInHours / 24)} days ago`;
     } else {
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
     }
   };
 
@@ -489,79 +558,87 @@ const handleSendComment = async (postId) => {
 
     const parts = text.split(/(@[\w.]+)/g);
 
-    const renderedParts = await Promise.all(parts.map(async (part, index) => {
-      if (part.startsWith("@")) {
-        const username = part.substring(1);
+    const renderedParts = await Promise.all(
+      parts.map(async (part, index) => {
+        if (part.startsWith("@")) {
+          const username = part.substring(1);
 
-        if (!username) {
-          return part;
-        }
+          if (!username) {
+            return part;
+          }
 
-        // Check cache first
-        if (userProfileCache.current[username]) {
-          return (
-            <a
-              key={index}
-              href={`/profile/${userProfileCache.current[username]}`}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                navigate(`/profile/${userProfileCache.current[username]}`);
-              }}
-              className="text-blue-600 dark:text-blue-400 hover:underline font-medium inline-flex items-center"
-            >
-              {part}
-            </a>
-          );
-        }
-
-        // Fetch user data if not cached
-        try {
-          const userProfile = await getUserByUsername(username);
-          if (userProfile && userProfile.id) {
-            // Cache the user ID
-            userProfileCache.current[username] = userProfile.id;
+          // Check cache first
+          if (userProfileCache.current[username]) {
             return (
               <a
                 key={index}
-                href={`/profile/${userProfile.id}`}
+                href={`/profile/${userProfileCache.current[username]}`}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  navigate(`/profile/${userProfile.id}`);
+                  navigate(`/profile/${userProfileCache.current[username]}`);
                 }}
                 className="text-blue-600 dark:text-blue-400 hover:underline font-medium inline-flex items-center"
               >
                 {part}
               </a>
             );
-          } else {
-            // User not found, keep original username link as fallback
+          }
+
+          // Fetch user data if not cached
+          try {
+            const userProfile = await getUserByUsername(username);
+            if (userProfile && userProfile.id) {
+              // Cache the user ID
+              userProfileCache.current[username] = userProfile.id;
+              return (
+                <a
+                  key={index}
+                  href={`/profile/${userProfile.id}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigate(`/profile/${userProfile.id}`);
+                  }}
+                  className="text-blue-600 dark:text-blue-400 hover:underline font-medium inline-flex items-center"
+                >
+                  {part}
+                </a>
+              );
+            } else {
+              // User not found, keep original username link as fallback
+              return (
+                <span
+                  key={index}
+                  className="text-gray-500 inline-flex items-center"
+                >
+                  {part}
+                </span>
+              );
+            }
+          } catch (error) {
+            console.error(`Error fetching user ID for ${username}:`, error);
+            // Fallback to original behavior if API fails
             return (
-              <span key={index} className="text-gray-500 inline-flex items-center">
+              <span
+                key={index}
+                className="text-gray-500 inline-flex items-center"
+              >
                 {part}
               </span>
             );
           }
-        } catch (error) {
-          console.error(`Error fetching user ID for ${username}:`, error);
-          // Fallback to original behavior if API fails
-          return (
-            <span key={index} className="text-gray-500 inline-flex items-center">
-              {part}
-            </span>
-          );
         }
-      }
-      return part;
-    }));
+        return part;
+      }),
+    );
 
     return renderedParts;
   };
 
   // Format comment date
   const formatCommentDate = (dateString) => {
-    if (!dateString) return '';
+    if (!dateString) return "";
     return formatDate(dateString);
   };
 
@@ -587,12 +664,18 @@ const handleSendComment = async (postId) => {
 
   if (loading && posts.length === 0) {
     return (
-      <div className={`min-h-screen ${theme === 'light' ? 'bg-gray-50' : 'bg-slate-900'} pt-16 md:pt-20`}>
+      <div
+        className={`min-h-screen ${theme === "light" ? "bg-gray-50" : "bg-slate-900"} pt-16 md:pt-20`}
+      >
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className={`mt-4 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>Loading posts...</p>
+              <p
+                className={`mt-4 ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}
+              >
+                Loading posts...
+              </p>
             </div>
           </div>
         </div>
@@ -602,11 +685,17 @@ const handleSendComment = async (postId) => {
 
   if (error) {
     return (
-      <div className={`min-h-screen ${theme === 'light' ? 'bg-gray-50' : 'bg-slate-900'} pt-16 md:pt-20`}>
+      <div
+        className={`min-h-screen ${theme === "light" ? "bg-gray-50" : "bg-slate-900"} pt-16 md:pt-20`}
+      >
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="text-center py-12">
-            <p className={`${theme === 'light' ? 'text-red-500' : 'text-red-400'}`}>{error}</p>
-            <button 
+            <p
+              className={`${theme === "light" ? "text-red-500" : "text-red-400"}`}
+            >
+              {error}
+            </p>
+            <button
               onClick={() => fetchPosts()}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
@@ -619,7 +708,9 @@ const handleSendComment = async (postId) => {
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-b ${theme === 'light' ? 'from-gray-50 via-white to-white' : 'from-slate-900 via-slate-900 to-slate-950'} pt-10 md:pt-16`}>
+    <div
+      className={`min-h-screen bg-gradient-to-b ${theme === "light" ? "from-gray-50 via-white to-white" : "from-slate-900 via-slate-900 to-slate-950"} pt-10 md:pt-16`}
+    >
       <div className="max-w-7xl mx-auto px-4 py-8 pb-28 md:pb-28 lg:pb-32">
         <div className="flex flex-col lg:grid lg:grid-cols-4 gap-8">
           {/* Main Feed */}
@@ -628,51 +719,93 @@ const handleSendComment = async (postId) => {
             <div className="lg:hidden mb-4">
               <button
                 onClick={() => setShowFeedHeader(!showFeedHeader)}
-                className={`w-full flex items-center justify-between px-4 py-3 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} rounded-xl shadow-sm transition-all duration-300`}
+                className={`w-full flex items-center justify-between px-4 py-3 ${theme === "light" ? "bg-white" : "bg-slate-800"} border ${theme === "light" ? "border-gray-200" : "border-slate-700"} rounded-xl shadow-sm transition-all duration-300`}
               >
                 <div className="flex items-center gap-2">
-                  <div className={`p-1.5 rounded-lg ${showFeedHeader ? 'bg-blue-500/10' : theme === 'light' ? 'bg-gray-100' : 'bg-slate-700'}`}>
+                  <div
+                    className={`p-1.5 rounded-lg ${showFeedHeader ? "bg-blue-500/10" : theme === "light" ? "bg-gray-100" : "bg-slate-700"}`}
+                  >
                     {showFeedHeader ? (
-                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      <svg
+                        className="w-5 h-5 text-blue-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 15l7-7 7 7"
+                        />
                       </svg>
                     ) : (
-                      <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      <svg
+                        className="w-5 h-5 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     )}
                   </div>
                   <div>
-                    <h3 className={`text-sm font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                    <h3
+                      className={`text-sm font-semibold ${theme === "light" ? "text-gray-900" : "text-white"}`}
+                    >
                       Feed Options
                     </h3>
-                    <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                      {showFeedHeader ? 'Hide filters and tabs' : 'Show filters and tabs'}
+                    <p
+                      className={`text-xs ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}
+                    >
+                      {showFeedHeader
+                        ? "Hide filters and tabs"
+                        : "Show filters and tabs"}
                     </p>
                   </div>
                 </div>
-                <span className={`px-3 py-1 rounded-lg text-xs font-medium ${theme === 'light' ? 'bg-blue-50 text-blue-600' : 'bg-blue-900/30 text-blue-400'}`}>
-                  {activeTab === 'forYou' ? 'For You' : 
-                   activeTab === 'following' ? 'Following' :
-                   activeTab === 'latest' ? 'Latest' : 'Trending'}
+                <span
+                  className={`px-3 py-1 rounded-lg text-xs font-medium ${theme === "light" ? "bg-blue-50 text-blue-600" : "bg-blue-900/30 text-blue-400"}`}
+                >
+                  {activeTab === "forYou"
+                    ? "For You"
+                    : activeTab === "following"
+                      ? "Following"
+                      : activeTab === "latest"
+                        ? "Latest"
+                        : "Trending"}
                 </span>
               </button>
             </div>
 
             {/* Header - Hidden on mobile by default, togglable */}
-            <div className={`${showFeedHeader ? 'block' : 'hidden'} lg:block relative ${theme === 'light' ? 'bg-white/95' : 'bg-slate-800/95'} backdrop-blur-lg border ${theme === 'light' ? 'border-gray-200/50' : 'border-slate-700/50'} rounded-2xl p-4 mb-8 shadow-sm transition-all duration-300`}>
+            <div
+              className={`${showFeedHeader ? "block" : "hidden"} lg:block relative ${theme === "light" ? "bg-white/95" : "bg-slate-800/95"} backdrop-blur-lg border ${theme === "light" ? "border-gray-200/50" : "border-slate-700/50"} rounded-2xl p-4 mb-8 shadow-sm transition-all duration-300`}
+            >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h1 className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${theme === 'light' ? 'from-blue-600 to-purple-600' : 'from-blue-500 to-purple-500'} bg-clip-text text-transparent`}>
+                  <h1
+                    className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${theme === "light" ? "from-blue-600 to-purple-600" : "from-blue-500 to-purple-500"} bg-clip-text text-transparent`}
+                  >
                     Your Feed
                   </h1>
-                  <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-sm mt-1`}>
+                  <p
+                    className={`${theme === "light" ? "text-gray-600" : "text-gray-400"} text-sm mt-1`}
+                  >
                     {pagination.total} stories available
                   </p>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <button className={`flex items-center gap-2 px-4 py-2.5 ${theme === 'light' ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-slate-800 text-gray-300 hover:bg-slate-700'} rounded-xl transition-all`}>
+                  <button
+                    className={`flex items-center gap-2 px-4 py-2.5 ${theme === "light" ? "bg-gray-100 text-gray-700 hover:bg-gray-200" : "bg-slate-800 text-gray-300 hover:bg-slate-700"} rounded-xl transition-all`}
+                  >
                     <Filter className="w-4 h-4" />
                     <span className="font-medium">Filters</span>
                   </button>
@@ -702,21 +835,21 @@ const handleSendComment = async (postId) => {
                         ? tab.id === "forYou"
                           ? "bg-green-500 text-white shadow-lg"
                           : tab.id === "following"
-                          ? "bg-red-500 text-white shadow-lg"
-                          : tab.id === "latest"
-                          ? "bg-blue-500 text-white shadow-lg"
-                          : tab.id === "trending"
-                          ? "bg-yellow-500 text-white shadow-lg"
-                          : ""
+                            ? "bg-red-500 text-white shadow-lg"
+                            : tab.id === "latest"
+                              ? "bg-blue-500 text-white shadow-lg"
+                              : tab.id === "trending"
+                                ? "bg-yellow-500 text-white shadow-lg"
+                                : ""
                         : tab.id === "forYou"
-                        ? `${theme === 'light' ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-green-900/30 text-green-300 hover:bg-green-900/40'}`
-                        : tab.id === "following"
-                        ? `${theme === 'light' ? 'bg-red-100 text-red-800 hover:bg-red-200' : 'bg-red-900/30 text-red-300 hover:bg-red-900/40'}`
-                        : tab.id === "latest"
-                        ? `${theme === 'light' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' : 'bg-blue-900/30 text-blue-300 hover:bg-blue-900/40'}`
-                        : tab.id === "trending"
-                        ? `${theme === 'light' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' : 'bg-yellow-900/30 text-yellow-300 hover:bg-yellow-900/40'}`
-                        : `${theme === 'light' ? 'text-gray-700 hover:bg-gray-100 hover:text-gray-900' : 'text-gray-300 hover:bg-slate-700 hover:text-white'}`
+                          ? `${theme === "light" ? "bg-green-100 text-green-800 hover:bg-green-200" : "bg-green-900/30 text-green-300 hover:bg-green-900/40"}`
+                          : tab.id === "following"
+                            ? `${theme === "light" ? "bg-red-100 text-red-800 hover:bg-red-200" : "bg-red-900/30 text-red-300 hover:bg-red-900/40"}`
+                            : tab.id === "latest"
+                              ? `${theme === "light" ? "bg-blue-100 text-blue-800 hover:bg-blue-200" : "bg-blue-900/30 text-blue-300 hover:bg-blue-900/40"}`
+                              : tab.id === "trending"
+                                ? `${theme === "light" ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200" : "bg-yellow-900/30 text-yellow-300 hover:bg-yellow-900/40"}`
+                                : `${theme === "light" ? "text-gray-700 hover:bg-gray-100 hover:text-gray-900" : "text-gray-300 hover:bg-slate-700 hover:text-white"}`
                     }`}
                   >
                     {tab.icon}
@@ -729,9 +862,15 @@ const handleSendComment = async (postId) => {
             {/* Posts Feed */}
             <div className="space-y-6">
               {visiblePosts.length === 0 ? (
-                <div className={`text-center py-12 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
-                  <p className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'} text-lg`}>No posts found.</p>
-                  <button 
+                <div
+                  className={`text-center py-12 ${theme === "light" ? "bg-white" : "bg-slate-800"} rounded-2xl border ${theme === "light" ? "border-gray-200" : "border-slate-700"}`}
+                >
+                  <p
+                    className={`${theme === "light" ? "text-gray-600" : "text-gray-400"} text-lg`}
+                  >
+                    No posts found.
+                  </p>
+                  <button
                     onClick={() => navigate("/create")}
                     className="mt-4 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700"
                   >
@@ -753,43 +892,67 @@ const handleSendComment = async (postId) => {
                   return (
                     <article
                       key={post.id}
-                      className={`group relative ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden`}
+                      className={`group relative ${theme === "light" ? "bg-white" : "bg-slate-800"} rounded-2xl border ${theme === "light" ? "border-gray-200" : "border-slate-700"} shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden`}
                     >
                       {/* Post Header */}
-                      <div 
+                      <div
                         className="p-4 sm:p-6 pb-4 cursor-pointer"
                         onClick={(e) => {
-                          if (!e.target.closest('button') && !e.target.closest('a')) {
+                          if (
+                            !e.target.closest("button") &&
+                            !e.target.closest("a")
+                          ) {
                             navigate(`/post/${post.id}`);
                           }
                         }}
                       >
                         <div className="flex items-start justify-between mb-4 gap-3">
                           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                            <Link to={`/profile/${post.author?.id}`} onClick={(e) => e.stopPropagation()} className="relative flex-shrink-0">
+                            <Link
+                              to={`/profile/${post.author?.id}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="relative flex-shrink-0"
+                            >
                               <img
-                                src={post.author?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.author?.username || 'anonymous'}`}
-                                alt={post.author?.full_name || 'Anonymous'}
-                                className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} shadow-sm`}
+                                src={
+                                  post.author?.avatar_url ||
+                                  `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.author?.username || "anonymous"}`
+                                }
+                                alt={post.author?.full_name || "Anonymous"}
+                                className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl border-2 ${theme === "light" ? "border-white" : "border-slate-800"} shadow-sm`}
                               />
                             </Link>
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                                <Link to={`/profile/${post.author?.id}`} onClick={(e) => e.stopPropagation()}>
-                                  <h3 className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm sm:text-base truncate`}>
-                                    {post.author?.full_name || 'Anonymous'}
+                                <Link
+                                  to={`/profile/${post.author?.id}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <h3
+                                    className={`font-bold ${theme === "light" ? "text-gray-900" : "text-white"} text-sm sm:text-base truncate`}
+                                  >
+                                    {post.author?.full_name || "Anonymous"}
                                   </h3>
                                 </Link>
-                                <span className={`text-xs ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'} hidden sm:inline`}>
+                                <span
+                                  className={`text-xs ${theme === "light" ? "text-gray-400" : "text-gray-500"} hidden sm:inline`}
+                                >
                                   •
                                 </span>
-                                <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} whitespace-nowrap`}>
+                                <span
+                                  className={`text-xs ${theme === "light" ? "text-gray-500" : "text-gray-400"} whitespace-nowrap`}
+                                >
                                   {formatDate(post.createdat)}
                                 </span>
                               </div>
-                              <Link to={`/profile/${post.author?.id}`} onClick={(e) => e.stopPropagation()}>
-                                <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} truncate`}>
-                                  @{post.author?.username || 'anonymous'}
+                              <Link
+                                to={`/profile/${post.author?.id}`}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <p
+                                  className={`text-xs ${theme === "light" ? "text-gray-500" : "text-gray-400"} truncate`}
+                                >
+                                  @{post.author?.username || "anonymous"}
                                 </p>
                               </Link>
                             </div>
@@ -804,7 +967,7 @@ const handleSendComment = async (postId) => {
                               }}
                               className={`flex-shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                                 isFollowing
-                                  ? `${theme === 'light' ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`
+                                  ? `${theme === "light" ? "bg-gray-200 text-gray-700 hover:bg-gray-300" : "bg-slate-700 text-gray-300 hover:bg-slate-600"}`
                                   : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-sm"
                               }`}
                             >
@@ -814,20 +977,24 @@ const handleSendComment = async (postId) => {
                         </div>
 
                         {/* Post Title */}
-                        <h2 
+                        <h2
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate(`/post/${post.id}`);
                           }}
-                          className={`text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold ${theme === 'light' ? 'text-gray-900 hover:text-blue-600' : 'text-white hover:text-blue-500'} mb-3 transition-colors cursor-pointer leading-tight`}
+                          className={`text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold ${theme === "light" ? "text-gray-900 hover:text-blue-600" : "text-white hover:text-blue-500"} mb-3 transition-colors cursor-pointer leading-tight`}
                         >
                           {post.title}
                         </h2>
 
                         {/* Post Content */}
                         {expandedPostId === post.id ? (
-                          <div className={`prose ${theme === 'dark' ? 'dark:prose-invert' : ''} max-w-none`}>
-                            <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-sm sm:text-base mb-4 leading-relaxed whitespace-pre-line`}>
+                          <div
+                            className={`prose ${theme === "dark" ? "dark:prose-invert" : ""} max-w-none`}
+                          >
+                            <p
+                              className={`${theme === "light" ? "text-gray-700" : "text-gray-300"} text-sm sm:text-base mb-4 leading-relaxed whitespace-pre-line`}
+                            >
                               {renderedContent[post.id] || post.content}
                             </p>
                             <button
@@ -835,7 +1002,7 @@ const handleSendComment = async (postId) => {
                                 e.stopPropagation();
                                 setExpandedPostId(null);
                               }}
-                              className={`${theme === 'light' ? 'text-blue-600' : 'text-blue-500'} hover:underline font-medium text-sm`}
+                              className={`${theme === "light" ? "text-blue-600" : "text-blue-500"} hover:underline font-medium text-sm`}
                             >
                               Show less
                             </button>
@@ -843,17 +1010,21 @@ const handleSendComment = async (postId) => {
                         ) : (
                           <div className="relative">
                             <div className="relative mb-3">
-                              <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-sm sm:text-base line-clamp-2 leading-relaxed pr-4 whitespace-pre-line`}>
+                              <p
+                                className={`${theme === "light" ? "text-gray-700" : "text-gray-300"} text-sm sm:text-base line-clamp-2 leading-relaxed pr-4 whitespace-pre-line`}
+                              >
                                 {renderedContent[post.id] || post.content}
                               </p>
                               {post.content && post.content.length > 150 && (
-                                <div className={`absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t ${theme === 'light' ? 'from-white' : 'from-slate-800'} to-transparent flex items-end justify-center`}>
+                                <div
+                                  className={`absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t ${theme === "light" ? "from-white" : "from-slate-800"} to-transparent flex items-end justify-center`}
+                                >
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setExpandedPostId(post.id);
                                     }}
-                                    className={`relative -bottom-2 px-4 py-1.5 ${theme === 'light' ? 'bg-white border-gray-200 text-blue-600 hover:text-blue-700 hover:bg-gray-50' : 'bg-slate-800 border-slate-700 text-blue-500 hover:text-blue-400 hover:bg-slate-700'} border font-medium text-sm rounded-full shadow-sm transition-colors`}
+                                    className={`relative -bottom-2 px-4 py-1.5 ${theme === "light" ? "bg-white border-gray-200 text-blue-600 hover:text-blue-700 hover:bg-gray-50" : "bg-slate-800 border-slate-700 text-blue-500 hover:text-blue-400 hover:bg-slate-700"} border font-medium text-sm rounded-full shadow-sm transition-colors`}
                                   >
                                     Read full story
                                   </button>
@@ -866,11 +1037,11 @@ const handleSendComment = async (postId) => {
 
                       {/* Featured Image */}
                       {post.featured_image && (
-                        <div 
+                        <div
                           className="w-full h-48 sm:h-64 md:h-72 lg:h-80 overflow-hidden cursor-pointer"
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/post/${post.id}`);
+                            setImageModalPost(post); // ← open modal with this post
                           }}
                         >
                           <img
@@ -889,7 +1060,7 @@ const handleSendComment = async (postId) => {
                             {post.tags.map((tag, index) => (
                               <span
                                 key={index}
-                                className={`px-3 py-1.5 bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-purple-50 text-blue-700 hover:from-blue-100 hover:to-purple-100' : 'from-blue-900/20 to-purple-900/20 text-blue-400 hover:from-blue-900/30 hover:to-purple-900/30'} text-xs font-medium rounded-full transition-all cursor-pointer`}
+                                className={`px-3 py-1.5 bg-gradient-to-r ${theme === "light" ? "from-blue-50 to-purple-50 text-blue-700 hover:from-blue-100 hover:to-purple-100" : "from-blue-900/20 to-purple-900/20 text-blue-400 hover:from-blue-900/30 hover:to-purple-900/30"} text-xs font-medium rounded-full transition-all cursor-pointer`}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   // You could add tag filtering here
@@ -902,9 +1073,13 @@ const handleSendComment = async (postId) => {
                         )}
 
                         {/* Stats & Actions */}
-                        <div className={`flex items-center justify-between flex-wrap gap-3 pt-4 border-t ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'}`}>
+                        <div
+                          className={`flex items-center justify-between flex-wrap gap-3 pt-4 border-t ${theme === "light" ? "border-gray-200" : "border-slate-700"}`}
+                        >
                           {/* Stats */}
-                          <div className={`flex items-center gap-2 text-xs ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                          <div
+                            className={`flex items-center gap-2 text-xs ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}
+                          >
                             <div className="flex items-center gap-1">
                               <Clock className="w-3.5 h-3.5" />
                               <span>{post.read_time || 5} min</span>
@@ -922,10 +1097,16 @@ const handleSendComment = async (postId) => {
                               disabled={!user?.id}
                               className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-all duration-300 text-xs sm:text-sm ${
                                 isLiked
-                                  ? `bg-gradient-to-r ${theme === 'light' ? 'from-red-50 to-pink-50 text-red-600' : 'from-red-900/20 to-pink-900/20 text-red-400'}`
-                                  : `${theme === 'light' ? 'text-gray-600 hover:text-red-500 hover:bg-red-50' : 'text-gray-400 hover:text-red-400 hover:bg-red-900/20'}`
-                              } ${!user?.id ? 'opacity-50 cursor-not-allowed' : ''}`}
-                              title={!user?.id ? "Login to like posts" : isLiked ? "Unlike post" : "Like post"}
+                                  ? `bg-gradient-to-r ${theme === "light" ? "from-red-50 to-pink-50 text-red-600" : "from-red-900/20 to-pink-900/20 text-red-400"}`
+                                  : `${theme === "light" ? "text-gray-600 hover:text-red-500 hover:bg-red-50" : "text-gray-400 hover:text-red-400 hover:bg-red-900/20"}`
+                              } ${!user?.id ? "opacity-50 cursor-not-allowed" : ""}`}
+                              title={
+                                !user?.id
+                                  ? "Login to like posts"
+                                  : isLiked
+                                    ? "Unlike post"
+                                    : "Like post"
+                              }
                             >
                               <Heart
                                 className={`w-4 h-4 ${
@@ -945,8 +1126,8 @@ const handleSendComment = async (postId) => {
                               }}
                               className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-all duration-300 text-xs sm:text-sm ${
                                 isCommentsOpen
-                                  ? `bg-gradient-to-r ${theme === 'light' ? 'from-blue-50 to-cyan-50 text-blue-600' : 'from-blue-900/20 to-cyan-900/20 text-blue-400'}`
-                                  : `${theme === 'light' ? 'text-gray-600 hover:text-blue-500 hover:bg-blue-50' : 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/20'}`
+                                  ? `bg-gradient-to-r ${theme === "light" ? "from-blue-50 to-cyan-50 text-blue-600" : "from-blue-900/20 to-cyan-900/20 text-blue-400"}`
+                                  : `${theme === "light" ? "text-gray-600 hover:text-blue-500 hover:bg-blue-50" : "text-gray-400 hover:text-blue-400 hover:bg-blue-900/20"}`
                               }`}
                             >
                               <MessageCircle className="w-4 h-4" />
@@ -964,10 +1145,16 @@ const handleSendComment = async (postId) => {
                               disabled={!user?.id}
                               className={`p-1.5 sm:p-2 rounded-lg transition-all duration-300 ${
                                 isSaved
-                                  ? `bg-gradient-to-r ${theme === 'light' ? 'from-yellow-50 to-amber-50 text-yellow-600' : 'from-yellow-900/20 to-amber-900/20 text-yellow-400'}`
-                                  : `${theme === 'light' ? 'text-gray-600 hover:text-yellow-500 hover:bg-yellow-50' : 'text-gray-400 hover:text-yellow-400 hover:bg-yellow-900/20'}`
-                              } ${!user?.id ? 'opacity-50 cursor-not-allowed' : ''}`}
-                              title={!user?.id ? "Login to save posts" : isSaved ? "Remove from saved" : "Save post"}
+                                  ? `bg-gradient-to-r ${theme === "light" ? "from-yellow-50 to-amber-50 text-yellow-600" : "from-yellow-900/20 to-amber-900/20 text-yellow-400"}`
+                                  : `${theme === "light" ? "text-gray-600 hover:text-yellow-500 hover:bg-yellow-50" : "text-gray-400 hover:text-yellow-400 hover:bg-yellow-900/20"}`
+                              } ${!user?.id ? "opacity-50 cursor-not-allowed" : ""}`}
+                              title={
+                                !user?.id
+                                  ? "Login to save posts"
+                                  : isSaved
+                                    ? "Remove from saved"
+                                    : "Save post"
+                              }
                             >
                               <Bookmark
                                 className={`w-4 h-4 ${
@@ -981,46 +1168,74 @@ const handleSendComment = async (postId) => {
 
                       {/* ========== COMMENTS SECTION ========== */}
                       {isCommentsOpen && (
-                        <div 
-                          className={`border-t ${theme === 'light' ? 'border-gray-200 bg-gray-50/50' : 'border-slate-700 bg-slate-900/30'}`}
+                        <div
+                          className={`border-t ${theme === "light" ? "border-gray-200 bg-gray-50/50" : "border-slate-700 bg-slate-900/30"}`}
                           onClick={(e) => e.stopPropagation()}
                         >
                           <div className="p-3 sm:p-6 space-y-4 max-h-96 overflow-y-auto">
                             {/* Existing Comments */}
                             {comments.length > 0 ? (
                               comments.map((comment) => (
-                                <div key={comment.id} className="flex gap-2 sm:gap-3">
+                                <div
+                                  key={comment.id}
+                                  className="flex gap-2 sm:gap-3"
+                                >
                                   <img
-                                    src={comment.author?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.author?.username || 'anonymous'}`}
-                                    alt={comment.author?.full_name || 'Anonymous'}
-                                    className={`w-7 h-7 sm:w-10 sm:h-10 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} flex-shrink-0`}
+                                    src={
+                                      comment.author?.avatar_url ||
+                                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.author?.username || "anonymous"}`
+                                    }
+                                    alt={
+                                      comment.author?.full_name || "Anonymous"
+                                    }
+                                    className={`w-7 h-7 sm:w-10 sm:h-10 rounded-full border-2 ${theme === "light" ? "border-white" : "border-slate-800"} flex-shrink-0`}
                                   />
                                   <div className="flex-1 min-w-0">
-                                    <div className={`${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-xl p-3 sm:p-4`}>
+                                    <div
+                                      className={`${theme === "light" ? "bg-white" : "bg-slate-800"} rounded-xl p-3 sm:p-4`}
+                                    >
                                       <div className="flex items-start justify-between gap-2 mb-2">
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0 flex-1">
-                                          <span className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-xs sm:text-sm truncate`}>
-                                            {comment.author?.full_name || 'Anonymous'}
+                                          <span
+                                            className={`font-semibold ${theme === "light" ? "text-gray-900" : "text-white"} text-xs sm:text-sm truncate`}
+                                          >
+                                            {comment.author?.full_name ||
+                                              "Anonymous"}
                                           </span>
-                                          <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} truncate`}>
-                                            @{comment.author?.username || 'anonymous'}
+                                          <span
+                                            className={`text-xs ${theme === "light" ? "text-gray-500" : "text-gray-400"} truncate`}
+                                          >
+                                            @
+                                            {comment.author?.username ||
+                                              "anonymous"}
                                           </span>
                                         </div>
                                         <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                                          <span className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} whitespace-nowrap hidden sm:inline`}>
-                                            {formatCommentDate(comment.created_at)}
+                                          <span
+                                            className={`text-xs ${theme === "light" ? "text-gray-500" : "text-gray-400"} whitespace-nowrap hidden sm:inline`}
+                                          >
+                                            {formatCommentDate(
+                                              comment.created_at,
+                                            )}
                                           </span>
                                           <button
-                                            onClick={() => handleCommentLike(post.id, comment.id)}
+                                            onClick={() =>
+                                              handleCommentLike(
+                                                post.id,
+                                                comment.id,
+                                              )
+                                            }
                                             className={`flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded-lg transition-colors ${
                                               likedComments.has(comment.id)
-                                                ? `${theme === 'light' ? 'text-red-600 bg-red-50' : 'text-red-400 bg-red-900/20'}`
-                                                : `${theme === 'light' ? 'text-gray-500 hover:text-red-500 hover:bg-gray-100' : 'text-gray-400 hover:text-red-400 hover:bg-slate-700'}`
+                                                ? `${theme === "light" ? "text-red-600 bg-red-50" : "text-red-400 bg-red-900/20"}`
+                                                : `${theme === "light" ? "text-gray-500 hover:text-red-500 hover:bg-gray-100" : "text-gray-400 hover:text-red-400 hover:bg-slate-700"}`
                                             }`}
                                           >
                                             <Heart
                                               className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${
-                                                likedComments.has(comment.id) ? "fill-current" : ""
+                                                likedComments.has(comment.id)
+                                                  ? "fill-current"
+                                                  : ""
                                               }`}
                                             />
                                             <span className="text-xs font-medium">
@@ -1029,8 +1244,13 @@ const handleSendComment = async (postId) => {
                                           </button>
                                           {user?.id === comment.user_id && (
                                             <button
-                                              onClick={() => handleDeleteComment(post.id, comment.id)}
-                                              className={`p-1 ${theme === 'light' ? 'text-gray-400 hover:text-red-500 hover:bg-red-50' : 'text-gray-400 hover:text-red-400 hover:bg-red-900/20'} rounded-lg transition-colors`}
+                                              onClick={() =>
+                                                handleDeleteComment(
+                                                  post.id,
+                                                  comment.id,
+                                                )
+                                              }
+                                              className={`p-1 ${theme === "light" ? "text-gray-400 hover:text-red-500 hover:bg-red-50" : "text-gray-400 hover:text-red-400 hover:bg-red-900/20"} rounded-lg transition-colors`}
                                               title="Delete comment"
                                             >
                                               <Trash2 className="w-3.5 h-3.5" />
@@ -1038,10 +1258,14 @@ const handleSendComment = async (postId) => {
                                           )}
                                         </div>
                                       </div>
-                                      <p className={`${theme === 'light' ? 'text-gray-700' : 'text-gray-300'} text-xs sm:text-sm leading-relaxed break-words`}>
+                                      <p
+                                        className={`${theme === "light" ? "text-gray-700" : "text-gray-300"} text-xs sm:text-sm leading-relaxed break-words`}
+                                      >
                                         {comment.content}
                                       </p>
-                                      <span className={`text-xs ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'} mt-1 block sm:hidden`}>
+                                      <span
+                                        className={`text-xs ${theme === "light" ? "text-gray-400" : "text-gray-500"} mt-1 block sm:hidden`}
+                                      >
                                         {formatCommentDate(comment.created_at)}
                                       </span>
                                     </div>
@@ -1049,28 +1273,37 @@ const handleSendComment = async (postId) => {
                                 </div>
                               ))
                             ) : (
-                              <div className={`text-center py-6 ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} text-sm`}>
+                              <div
+                                className={`text-center py-6 ${theme === "light" ? "text-gray-500" : "text-gray-400"} text-sm`}
+                              >
                                 No comments yet. Be the first to comment!
                               </div>
                             )}
 
                             {/* New Comment Input */}
-                            <div className={`sticky bottom-0 ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-3 sm:p-4`}>
+                            <div
+                              className={`sticky bottom-0 ${theme === "light" ? "bg-white" : "bg-slate-800"} rounded-xl border ${theme === "light" ? "border-gray-200" : "border-slate-700"} p-3 sm:p-4`}
+                            >
                               <div className="flex items-start gap-2 sm:gap-3">
                                 <img
-                                  src={user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'user'}`}
+                                  src={
+                                    user?.avatar_url ||
+                                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || "user"}`
+                                  }
                                   alt="You"
-                                  className={`w-7 h-7 sm:w-10 sm:h-10 rounded-full border-2 ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} flex-shrink-0`}
+                                  className={`w-7 h-7 sm:w-10 sm:h-10 rounded-full border-2 ${theme === "light" ? "border-gray-200" : "border-slate-700"} flex-shrink-0`}
                                 />
                                 <div className="flex-1 min-w-0">
                                   <textarea
                                     value={commentText}
-                                    onChange={(e) => setCommentInputs(prev => ({
-                                      ...prev,
-                                      [post.id]: e.target.value
-                                    }))}
+                                    onChange={(e) =>
+                                      setCommentInputs((prev) => ({
+                                        ...prev,
+                                        [post.id]: e.target.value,
+                                      }))
+                                    }
                                     placeholder="Share your thoughts..."
-                                    className={`w-full px-3 py-2 ${theme === 'light' ? 'bg-gray-50 text-gray-900 placeholder:text-gray-400' : 'bg-slate-700 text-white placeholder:text-slate-500'} rounded-lg resize-none focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500' : 'focus:ring-blue-400'} text-sm`}
+                                    className={`w-full px-3 py-2 ${theme === "light" ? "bg-gray-50 text-gray-900 placeholder:text-gray-400" : "bg-slate-700 text-white placeholder:text-slate-500"} rounded-lg resize-none focus:outline-none focus:ring-2 ${theme === "light" ? "focus:ring-blue-500" : "focus:ring-blue-400"} text-sm`}
                                     rows="2"
                                     onClick={(e) => e.stopPropagation()}
                                   />
@@ -1081,7 +1314,7 @@ const handleSendComment = async (postId) => {
                                       className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium transition-all text-xs sm:text-sm ${
                                         commentText.trim()
                                           ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
-                                          : `${theme === 'light' ? 'bg-gray-200 text-gray-400' : 'bg-slate-700 text-slate-500'} cursor-not-allowed`
+                                          : `${theme === "light" ? "bg-gray-200 text-gray-400" : "bg-slate-700 text-slate-500"} cursor-not-allowed`
                                       }`}
                                     >
                                       Post
@@ -1102,17 +1335,27 @@ const handleSendComment = async (postId) => {
             {/* Load More */}
             {pagination.hasMore && (
               <div className="flex justify-center mt-8">
-                <button 
+                <button
                   onClick={handleLoadMore}
                   disabled={loading}
                   className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
-                  {loading ? 'Loading...' : 'Load More Stories'}
+                  {loading ? "Loading..." : "Load More Stories"}
                 </button>
               </div>
             )}
           </div>
+
+          <PostImageModal
+            isOpen={!!imageModalPost}
+            onClose={() => setImageModalPost(null)}
+            image={imageModalPost?.featured_image}
+            post={imageModalPost}
+            theme={theme}
+            isLiked={imageModalPost ? likedPosts.has(imageModalPost.id) : false}
+            isSaved={imageModalPost ? savedPosts.has(imageModalPost.id) : false}
+          />
 
           {/* Right Sidebar */}
           <div
@@ -1121,22 +1364,30 @@ const handleSendComment = async (postId) => {
             } lg:block`}
           >
             {/* Trending Topics - Simplified */}
-            <div className={`relative ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-5 shadow-lg transition-all duration-300`}>
+            <div
+              className={`relative ${theme === "light" ? "bg-white" : "bg-slate-800"} rounded-2xl border ${theme === "light" ? "border-gray-200" : "border-slate-700"} p-5 shadow-lg transition-all duration-300`}
+            >
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-lg">
                     <TrendingUp className="w-5 h-5 text-orange-500" />
                   </div>
                   <div>
-                    <h3 className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-base`}>
+                    <h3
+                      className={`font-bold ${theme === "light" ? "text-gray-900" : "text-white"} text-base`}
+                    >
                       Trending Topics
                     </h3>
-                    <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                    <p
+                      className={`text-xs ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}
+                    >
                       What's hot now
                     </p>
                   </div>
                 </div>
-                <button className={`text-sm ${theme === 'light' ? 'text-blue-600 hover:text-blue-700' : 'text-blue-400 hover:text-blue-300'} font-medium`}>
+                <button
+                  className={`text-sm ${theme === "light" ? "text-blue-600 hover:text-blue-700" : "text-blue-400 hover:text-blue-300"} font-medium`}
+                >
                   See all →
                 </button>
               </div>
@@ -1145,7 +1396,7 @@ const handleSendComment = async (postId) => {
                 {trendingTopics.map((topic, index) => (
                   <button
                     key={index}
-                    className={`w-full flex items-center justify-between p-2.5 rounded-lg ${theme === 'light' ? 'hover:bg-gray-50' : 'hover:bg-slate-700/50'} transition-colors group`}
+                    className={`w-full flex items-center justify-between p-2.5 rounded-lg ${theme === "light" ? "hover:bg-gray-50" : "hover:bg-slate-700/50"} transition-colors group`}
                   >
                     <div className="flex items-center gap-2.5 flex-1 min-w-0">
                       <div className="relative">
@@ -1153,20 +1404,28 @@ const handleSendComment = async (postId) => {
                           <Hash className="w-3.5 h-3.5 text-blue-500" />
                         </div>
                         {topic.trending && (
-                          <div className={`absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border ${theme === 'light' ? 'border-white' : 'border-slate-800'}`} />
+                          <div
+                            className={`absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border ${theme === "light" ? "border-white" : "border-slate-800"}`}
+                          />
                         )}
                       </div>
                       <div className="text-left flex-1 min-w-0">
-                        <p className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm truncate`}>
+                        <p
+                          className={`font-semibold ${theme === "light" ? "text-gray-900" : "text-white"} text-sm truncate`}
+                        >
                           {topic.tag}
                         </p>
-                        <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                        <p
+                          className={`text-xs ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}
+                        >
                           {topic.posts} posts
                         </p>
                       </div>
                     </div>
                     {topic.trending && (
-                      <span className={`px-2 py-0.5 bg-gradient-to-r from-red-500/10 to-pink-500/10 text-red-600 ${theme === 'dark' ? 'dark:text-red-400' : ''} text-xs font-medium rounded-full`}>
+                      <span
+                        className={`px-2 py-0.5 bg-gradient-to-r from-red-500/10 to-pink-500/10 text-red-600 ${theme === "dark" ? "dark:text-red-400" : ""} text-xs font-medium rounded-full`}
+                      >
                         🔥
                       </span>
                     )}
@@ -1176,16 +1435,22 @@ const handleSendComment = async (postId) => {
             </div>
 
             {/* Recommended Authors - Stacked layout */}
-            <div className={`relative ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} rounded-2xl border ${theme === 'light' ? 'border-gray-200' : 'border-slate-700'} p-5 shadow-lg transition-all duration-300`}>
+            <div
+              className={`relative ${theme === "light" ? "bg-white" : "bg-slate-800"} rounded-2xl border ${theme === "light" ? "border-gray-200" : "border-slate-700"} p-5 shadow-lg transition-all duration-300`}
+            >
               <div className="flex items-center gap-3 mb-5">
                 <div className="p-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg">
                   <UsersIcon className="w-5 h-5 text-blue-500" />
                 </div>
                 <div>
-                  <h3 className={`font-bold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-base`}>
+                  <h3
+                    className={`font-bold ${theme === "light" ? "text-gray-900" : "text-white"} text-base`}
+                  >
                     Top Authors
                   </h3>
-                  <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                  <p
+                    className={`text-xs ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}
+                  >
                     Recommended for you
                   </p>
                 </div>
@@ -1195,24 +1460,34 @@ const handleSendComment = async (postId) => {
                 {recommendedAuthors.map((author, index) => (
                   <div
                     key={index}
-                    className={`flex flex-col p-3 rounded-lg ${theme === 'light' ? 'hover:bg-gray-50' : 'hover:bg-slate-700/50'} transition-colors`}
+                    className={`flex flex-col p-3 rounded-lg ${theme === "light" ? "hover:bg-gray-50" : "hover:bg-slate-700/50"} transition-colors`}
                   >
                     <div className="flex items-center gap-3 mb-2">
                       <div className="relative">
-                        <div className={`w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 p-0.5`}>
-                          <div className={`w-full h-full rounded-full ${theme === 'light' ? 'bg-white' : 'bg-slate-800'} flex items-center justify-center`}>
+                        <div
+                          className={`w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 p-0.5`}
+                        >
+                          <div
+                            className={`w-full h-full rounded-full ${theme === "light" ? "bg-white" : "bg-slate-800"} flex items-center justify-center`}
+                          >
                             <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500 text-sm">
                               {author.name.charAt(0)}
                             </span>
                           </div>
                         </div>
-                        <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border ${theme === 'light' ? 'border-white' : 'border-slate-800'}`} />
+                        <div
+                          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border ${theme === "light" ? "border-white" : "border-slate-800"}`}
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={`font-semibold ${theme === 'light' ? 'text-gray-900' : 'text-white'} text-sm truncate`}>
+                        <p
+                          className={`font-semibold ${theme === "light" ? "text-gray-900" : "text-white"} text-sm truncate`}
+                        >
                           {author.name}
                         </p>
-                        <p className={`text-xs ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
+                        <p
+                          className={`text-xs ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}
+                        >
                           {author.followers} followers
                         </p>
                       </div>
@@ -1224,8 +1499,12 @@ const handleSendComment = async (postId) => {
                 ))}
               </div>
 
-              <div className={`mt-5 pt-4 border-t ${theme === 'light' ? 'border-gray-100' : 'border-slate-700/50'}`}>
-                <button className={`w-full text-sm ${theme === 'light' ? 'text-blue-600 hover:text-blue-700' : 'text-blue-400 hover:text-blue-300'} font-medium text-center`}>
+              <div
+                className={`mt-5 pt-4 border-t ${theme === "light" ? "border-gray-100" : "border-slate-700/50"}`}
+              >
+                <button
+                  className={`w-full text-sm ${theme === "light" ? "text-blue-600 hover:text-blue-700" : "text-blue-400 hover:text-blue-300"} font-medium text-center`}
+                >
                   View all recommendations →
                 </button>
               </div>
@@ -1295,7 +1574,10 @@ const handleSendComment = async (postId) => {
                   </div>
                 </div>
 
-                <button onClick={() => navigate("/dashboard")} className="w-full mt-5 px-4 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-medium rounded-lg transition-colors text-sm">
+                <button
+                  onClick={() => navigate("/dashboard")}
+                  className="w-full mt-5 px-4 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-medium rounded-lg transition-colors text-sm"
+                >
                   View Dashboard
                 </button>
               </div>

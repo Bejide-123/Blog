@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   X,
   FileText,
@@ -558,7 +558,7 @@ export default function DraftsPanel({ theme, onEditDraft }) {
                 Auto-saved while you write
               </p>
               <button
-                onClick={() => { setOpen(false); navigate("/create-post"); }}
+                onClick={() => { setOpen(false); navigate("/create"); }}
                 className={`flex items-center gap-1.5 text-[11px] font-medium transition-colors
                   ${isLight ? "text-blue-500 hover:text-blue-600" : "text-blue-400 hover:text-blue-300"}`}
               >
