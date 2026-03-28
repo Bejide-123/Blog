@@ -1039,14 +1039,14 @@ export default function FeedContent() {
                       {post.featured_image && (
                         <div
                           className="w-full h-48 sm:h-64 md:h-72 lg:h-80 overflow-hidden cursor-pointer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setImageModalPost(post); // ← open modal with this post
-                          }}
                         >
                           <img
                             src={post.featured_image}
                             alt={post.title}
+                            onClick={(e) => {
+                            e.stopPropagation();
+                            setImageModalPost(post); // ← open modal with this post
+                          }}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         </div>
