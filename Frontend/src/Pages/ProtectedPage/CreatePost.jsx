@@ -853,14 +853,13 @@ export default function CreatePostPage() {
                         tags: draft.tags || [],
                         imageUrl: draft.featured_image || null,
                         imageFile: null,
-                        isPublic: true,
-                        allowComments: true,
+                        isPublic: draft.is_public ?? true,
+                        allowComments: draft.allow_comments ?? true,
                       });
                       if (draft.featured_image)
                         setImagePreview(draft.featured_image);
                       setShowPreview(false);
                     }}
-                    userId={userProfile?.id} // Pass the user ID here
                   />
 
                   <button
