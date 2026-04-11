@@ -333,6 +333,7 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [toasts, setToasts] = useState([]);
+  const [isThemeSyncing, setIsThemeSyncing] = useState(true);
 
   // Email comes from Supabase auth, not profiles table
   const [email, setEmail] = useState(user?.email || "");
@@ -359,6 +360,15 @@ export default function SettingsPage() {
   };
   const dismissToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
 
+  // ── Sync theme with preference ──
+  const syncThemeWithPreference = (darkModePref) => {
+    if (darkModePref && theme !== "dark") {
+      toggleTheme(); // Switch to dark mode
+    } else if (!darkModePref && theme !== "light") {
+      toggleTheme(); // Switch to light mode
+    }
+  };
+
   // ── Load profile + preferences on mount ──
   useEffect(() => {
     const init = async () => {
@@ -375,22 +385,34 @@ export default function SettingsPage() {
 
           // Load preferences + privacy settings
           const prefs = await getUserPreferences(user.id);
+          
+          // Get dark mode preference from database
+          const darkModePref = prefs.dark_mode ?? false;
+          
           setPreferences({
-            darkMode: prefs.dark_mode ?? (theme === "dark"),
+            darkMode: darkModePref,
             emailNotifications: prefs.email_notifications ?? true,
             weeklyDigest: prefs.weekly_digest ?? false,
             profilePublic: prefs.profile_public ?? true,
             allowComments: prefs.allow_comments ?? true,
           });
+          
           setPrivacy({
             showFollowers: prefs.show_followers ?? true,
             showFollowing: prefs.show_following ?? true,
             profileSearchable: prefs.profile_searchable ?? true,
           });
+          
+          // IMPORTANT: Sync theme with loaded preference
+          syncThemeWithPreference(darkModePref);
+          
+          // Give theme time to update
+          setTimeout(() => setIsThemeSyncing(false), 100);
         }
       } catch (err) {
         console.error("Error loading preferences:", err);
         showToast("Failed to load preferences", "error");
+        setIsThemeSyncing(false);
       } finally {
         setIsPageLoading(false);
       }
@@ -399,8 +421,14 @@ export default function SettingsPage() {
   }, [user?.id]);
 
   const togglePreference = (key) => {
-    setPreferences((prev) => ({ ...prev, [key]: !prev[key] }));
-    if (key === "darkMode") toggleTheme();
+    const newValue = !preferences[key];
+    
+    setPreferences((prev) => ({ ...prev, [key]: newValue }));
+    
+    if (key === "darkMode") {
+      // Sync theme immediately when toggling
+      syncThemeWithPreference(newValue);
+    }
   };
 
   const togglePrivacy = (key) => {
@@ -470,7 +498,7 @@ export default function SettingsPage() {
     }
   };
 
-  if (isPageLoading) return <PageLoader />;
+  if (isPageLoading || isThemeSyncing) return <PageLoader />;
 
   const inputClass = `w-full py-2.5 text-sm rounded-xl border focus:outline-none focus:ring-2 transition-all
     ${isLight

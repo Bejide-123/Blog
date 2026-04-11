@@ -15,8 +15,6 @@ import {
   TrendingUp,
   BookOpen,
   Hash,
-  Sun,
-  Moon,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router";
 import NotificationDropdown from "./Notification";
@@ -280,7 +278,7 @@ export default function NavbarPrivate() {
             {/* Right: Actions */}
             <div className="flex items-center gap-2">
               {/* Dark Mode Toggle */}
-              <button
+              {/* <button
                 onClick={toggleTheme}
                 className={`p-2 rounded-lg ${theme === 'light' ? 'text-gray-600 hover:text-blue-600 hover:bg-gray-100' : 'text-gray-400 hover:text-blue-400 hover:bg-slate-700/50'} transition-colors relative group`}
                 title={theme === 'dark' ? "Switch to light mode" : "Switch to dark mode"}
@@ -293,7 +291,7 @@ export default function NavbarPrivate() {
                 <div className={`absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 ${theme === 'light' ? 'bg-gray-900 text-white' : 'bg-slate-700 text-slate-200'} text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none`}>
                   {theme === 'dark' ? "Light mode" : "Dark mode"}
                 </div>
-              </button>
+              </button> */}
 
               {/* Create Post Button */}
               <button
