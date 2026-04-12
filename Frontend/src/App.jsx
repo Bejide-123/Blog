@@ -12,7 +12,7 @@ import DashboardPage from "./Pages/ProtectedPage/Dashboard";
 import SettingsPage from "./Pages/ProtectedPage/Settings";
 import Notifications from "./Pages/ProtectedPage/Notifications";
 import { useTheme } from "./Context/themeContext";
-import Toast from "./Components/Public/toast/Toast";
+import { ToastProvider } from "./Components/Public/toast/useToast.jsx";
 import PostDetailsPage from "./Pages/PublicPage/PostDetails";
 import SearchResults from "./Pages/ProtectedPage/SearchPage";
 import OnboardingPage from "./Pages/PublicPage/OnBoardingPage";
@@ -26,28 +26,29 @@ const App = () => {
         theme === "light" ? "bg-white text-black" : "bg-gray-900 text-white"
       }
     >
-      <UserProvider>
-        <Toast />
-        <Routes>
-          {/* Landing page with sections + navbar */}
-          <Route path="/" element={<LandingPage />} />
+      <ToastProvider>
+        <UserProvider>
+          <Routes>
+            {/* Landing page with sections + navbar */}
+            <Route path="/" element={<LandingPage />} />
 
-          {/* Auth page */}
-          <Route path="/login" element={<Auth />} />
-          <Route path="/home" element={<FullPostPage />} />
-          <Route path="/saved" element={<SavedPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/profile/:userId" element={<PublicProfilePage />} />
-          <Route path="/create" element={<CreatePostPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/post/:id" element={<PostDetailsPage />} />
-          <Route path="/search" element={<SearchResults />} />
-          <Route path="/onboarding" element={<OnboardingPage />} />
-          <Route path="/messages" element={<MessagesPage />} />
-        </Routes>
-      </UserProvider>
+            {/* Auth page */}
+            <Route path="/login" element={<Auth />} />
+            <Route path="/home" element={<FullPostPage />} />
+            <Route path="/saved" element={<SavedPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/:userId" element={<PublicProfilePage />} />
+            <Route path="/create" element={<CreatePostPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/post/:id" element={<PostDetailsPage />} />
+            <Route path="/search" element={<SearchResults />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route path="/messages" element={<MessagesPage />} />
+          </Routes>
+        </UserProvider>
+      </ToastProvider>
     </div>
   );
 };

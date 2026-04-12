@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useCallback } from "react";
 import {
   Mail, User, Lock, Trash2, Save, Shield, Bell,
   Eye, EyeOff, Moon, Sun, Key, AlertCircle,
@@ -9,6 +9,7 @@ import NavbarPrivate from "../../Components/Private/Navbarprivate";
 import { UserContext } from "../../Context/userContext";
 import { PageLoader } from "../../Components/Private/Loader";
 import { useTheme } from "../../Context/themeContext";
+import { useToastContext } from "../../Components/Public/toast/useToast.jsx";
 import {
   getUserPreferences,
   upsertUserPreferences,
@@ -19,63 +20,7 @@ import {
   getUserProfile,
   ensurePreferencesExist,
 } from "../../Services/Settings";
-
-// ─── Toast ────────────────────────────────────────────────────────────────────
-function ToastItem({ id, message, type = "success", onDismiss }) {
-  const [visible, setVisible] = useState(false);
-  const [leaving, setLeaving] = useState(false);
-
-  useEffect(() => {
-    requestAnimationFrame(() => setVisible(true));
-    const t = setTimeout(() => dismiss(), 3500);
-    return () => clearTimeout(t);
-  }, []);
-
-  const dismiss = () => {
-    setLeaving(true);
-    setTimeout(() => onDismiss(id), 300);
-  };
-
-  const configs = {
-    success: { icon: <CheckCircle2 className="w-4 h-4 flex-shrink-0" />, bg: "from-emerald-500 to-green-500" },
-    error:   { icon: <XCircle className="w-4 h-4 flex-shrink-0" />,      bg: "from-red-500 to-rose-500" },
-    warning: { icon: <AlertTriangle className="w-4 h-4 flex-shrink-0" />, bg: "from-amber-500 to-orange-500" },
-    info:    { icon: <Info className="w-4 h-4 flex-shrink-0" />,          bg: "from-blue-500 to-indigo-500" },
-  };
-  const { icon, bg } = configs[type] || configs.success;
-
-  return (
-    <div
-      onClick={dismiss}
-      className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-white text-sm font-medium shadow-xl
-        bg-gradient-to-r ${bg} min-w-[240px] max-w-[360px] cursor-pointer select-none
-        transition-all duration-300
-        ${visible && !leaving ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-3 scale-95"}`}
-    >
-      {icon}
-      <span className="flex-1 leading-snug">{message}</span>
-      <button
-        onClick={(e) => { e.stopPropagation(); dismiss(); }}
-        className="ml-1 p-0.5 rounded-lg hover:bg-white/20 transition-colors flex-shrink-0"
-      >
-        <X className="w-3.5 h-3.5" />
-      </button>
-    </div>
-  );
-}
-
-function ToastContainer({ toasts, onDismiss }) {
-  if (!toasts.length) return null;
-  return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2.5 pointer-events-none">
-      {toasts.map((t) => (
-        <div key={t.id} className="pointer-events-auto">
-          <ToastItem {...t} onDismiss={onDismiss} />
-        </div>
-      ))}
-    </div>
-  );
-}
+import { useConfirm } from '../../Components/Public/ConfirmModal';
 
 // ─── Toggle Row ───────────────────────────────────────────────────────────────
 function ToggleRow({ label, description, value, onChange, theme, icon }) {
@@ -326,13 +271,14 @@ function PasswordModal({ theme, userEmail, onClose, onToast }) {
 export default function SettingsPage() {
   const { theme, toggleTheme } = useTheme();
   const { user } = useContext(UserContext);
+  const { toast } = useToastContext();
+  const { confirm, ConfirmModal } = useConfirm();
   const isLight = theme === "light";
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
-  const [toasts, setToasts] = useState([]);
   const [isThemeSyncing, setIsThemeSyncing] = useState(true);
 
   // Email comes from Supabase auth, not profiles table
@@ -353,21 +299,14 @@ export default function SettingsPage() {
     profileSearchable: true,
   });
 
-  // ── Toast helpers ──
-  const showToast = (message, type = "success") => {
-    const id = `toast-${Date.now()}-${Math.random()}`;
-    setToasts((prev) => [...prev, { id, message, type }]);
-  };
-  const dismissToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
-
   // ── Sync theme with preference ──
-  const syncThemeWithPreference = (darkModePref) => {
+  const syncThemeWithPreference = useCallback((darkModePref) => {
     if (darkModePref && theme !== "dark") {
       toggleTheme(); // Switch to dark mode
     } else if (!darkModePref && theme !== "light") {
       toggleTheme(); // Switch to light mode
     }
-  };
+  }, [theme, toggleTheme]);
 
   // ── Load profile + preferences on mount ──
   useEffect(() => {
@@ -406,19 +345,22 @@ export default function SettingsPage() {
           // IMPORTANT: Sync theme with loaded preference
           syncThemeWithPreference(darkModePref);
           
+          // Ensure localStorage is set for persistence
+          localStorage.setItem('theme', darkModePref ? 'dark' : 'light');
+          
           // Give theme time to update
           setTimeout(() => setIsThemeSyncing(false), 100);
         }
       } catch (err) {
         console.error("Error loading preferences:", err);
-        showToast("Failed to load preferences", "error");
+        toast("Failed to load preferences", "error");
         setIsThemeSyncing(false);
       } finally {
         setIsPageLoading(false);
       }
     };
     init();
-  }, [user?.id]);
+  }, [user?.id, syncThemeWithPreference, toast]);
 
   const togglePreference = (key) => {
     const newValue = !preferences[key];
@@ -450,7 +392,7 @@ export default function SettingsPage() {
       // Update email via Supabase Auth only if it changed
       if (email !== user?.email) {
         await updateEmail(email);
-        showToast("Confirmation email sent — check your inbox", "info");
+        toast("Confirmation email sent — check your inbox", "info");
       }
 
       // Save all preferences + privacy to user_preferences table
@@ -465,34 +407,42 @@ export default function SettingsPage() {
         profile_searchable: privacy.profileSearchable,
       });
 
-      showToast("Settings saved successfully", "success");
+      // Ensure localStorage is updated for immediate persistence
+      localStorage.setItem('theme', preferences.darkMode ? 'dark' : 'light');
+
+      toast("Settings saved successfully", "success");
     } catch (err) {
       console.error("Error saving settings:", err);
-      showToast(err.message || "Failed to save settings", "error");
+      toast(err.message || "Failed to save settings", "error");
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDeleteAccount = async () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete your account? This cannot be undone."
+    const confirmed = await confirm(
+      "Are you sure you want to delete your account? This action cannot be undone.",
+      { variant: "danger", confirmText: "Delete Account" }
     );
-    if (!confirmed) return;
+    if (!confirmed) {
+      toast("Account deletion cancelled", "warning");
+      return;
+    }
+    if (!user?.id) return;
 
     const typed = window.prompt('Type "DELETE" to confirm:');
     if (typed !== "DELETE") {
-      showToast("Account deletion cancelled", "warning");
+      toast("Account deletion cancelled", "warning");
       return;
     }
 
     setIsDeletingAccount(true);
     try {
       await deleteUserAccount(user.id);
-      showToast("Account deleted. Goodbye!", "success");
+      toast("Account deleted. Goodbye!", "success");
       setTimeout(() => { window.location.href = "/"; }, 2000);
     } catch (err) {
-      showToast(err.message || "Failed to delete account", "error");
+      toast(err.message || "Failed to delete account", "error");
     } finally {
       setIsDeletingAccount(false);
     }
@@ -515,7 +465,6 @@ export default function SettingsPage() {
         }
       `}</style>
 
-      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       <NavbarPrivate />
 
       <div className={`min-h-screen bg-gradient-to-b pt-16 md:pt-20
@@ -744,9 +693,10 @@ export default function SettingsPage() {
           theme={theme}
           userEmail={user?.email}
           onClose={() => setShowPasswordModal(false)}
-          onToast={showToast}
+          onToast={toast}
         />
       )}
+      <ConfirmModal theme={theme} />
     </>
   );
 }
