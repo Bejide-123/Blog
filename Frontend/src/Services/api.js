@@ -27,23 +27,6 @@ export const signUp = async ({ email, password, username, fullName }) => {
 
   if (error) throw error;
 
-  // Ensure user exists before inserting profile
-  const userId = data?.user?.id;
-  if (!userId) throw new Error("Signup failed: No user returned");
-
-  // Step 2: Insert into profiles table
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .insert([
-      {
-        id: userId,
-        username,
-        full_name: fullName,
-      },
-    ])
-
-  if (profileError) throw profileError;
-
   return data;
 };
 

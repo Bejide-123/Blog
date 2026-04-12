@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   FiMail,
@@ -29,6 +29,7 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const signInHandled = useRef(false);
   const [formData, setFormData] = useState({
     name: "",
     username: "",
@@ -44,8 +45,9 @@ const Auth = () => {
   }, [mode]);
 
   useEffect(() => {
-    const handleOAuthRedirect = async () => {
-      // Check if this is a redirect from OAuth
+    const handleSignIn = async () => {
+      if (signInHandled.current) return;
+      // Check if this is a sign in
       const { data: { session }, error } = await supabase.auth.getSession();
       
       if (error) {
@@ -67,12 +69,14 @@ const Auth = () => {
             .maybeSingle();
 
           if (!profileData) {
-            // Profile doesn't exist - create one for Google user
-            console.log("Creating profile for Google user:", user);
+            // Profile doesn't exist - create one
+            console.log("Creating profile for user:", user);
             
-            // Generate username from email or name
-            let username = user.email?.split('@')[0] || '';
+            // Get username and full_name from user_metadata
+            let username = user.user_metadata?.username || user.email?.split('@')[0] || '';
             username = username.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+            
+            let fullName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || "User";
             
             // Check if username exists and make it unique if needed
             const { data: existingUser } = await supabase
@@ -93,10 +97,7 @@ const Auth = () => {
                 {
                   id: user.id,
                   username: username,
-                  full_name: user.user_metadata?.full_name || 
-                            user.user_metadata?.name || 
-                            user.email?.split('@')[0] || 
-                            "Google User",
+                  full_name: fullName,
                   avatar_url: user.user_metadata?.avatar_url || 
                              user.user_metadata?.picture || 
                              null,
@@ -149,13 +150,13 @@ const Auth = () => {
             toastService.dismiss(loadingToast);
             toastService.success("Welcome to Scribe! Let's set up your profile.");
             
-            // Redirect new Google users to onboarding
+            // Redirect new users to onboarding
             setTimeout(() => {
               nav("/onboarding");
             }, 1000);
             
           } else {
-            // Profile exists - existing Google user
+            // Profile exists - existing user
             console.log("Existing profile found:", profileData);
             
             setUser({
@@ -182,23 +183,24 @@ const Auth = () => {
               }, 1000);
             }
           }
+          signInHandled.current = true;
         } catch (err) {
           toastService.dismiss(loadingToast);
           toastService.error("Error completing sign in");
-          console.error("OAuth callback error:", err);
+          console.error("Sign in error:", err);
         }
       }
     };
 
-    // Check if there's a session on component mount (for OAuth redirect)
-    handleOAuthRedirect();
+    // Check if there's a session on component mount (for sign in)
+    handleSignIn();
 
     // Also listen for auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
-          // Handle sign in events that might not be caught by the initial check
-          handleOAuthRedirect();
+          // Handle sign in events
+          handleSignIn();
         }
       }
     );
@@ -296,36 +298,7 @@ const Auth = () => {
         loggedInUser = authResponse.user;
 
         toastService.dismiss(loadingToast);
-        toastService.success(`Welcome back! Redirecting...`);
-
-        // Fetch profile to check onboarding status
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", loggedInUser.id)
-          .single();
-
-        // Set user in context
-        setUser({
-          id: loggedInUser.id,
-          name: profileData?.full_name || "",
-          email: loggedInUser.email,
-          username: profileData?.username || "",
-          avatar: profileData?.avatar_url,
-          bio: profileData?.bio,
-          onboarding_completed: profileData?.onboarding_completed || false,
-        });
-
-        // Check if user needs onboarding
-        if (!profileData?.onboarding_completed) {
-          setTimeout(() => {
-            nav("/onboarding");
-          }, 1000);
-        } else {
-          setTimeout(() => {
-            nav("/home");
-          }, 1000);
-        }
+        // Toast and navigation handled by handleSignIn
       } else {
         // Sign up new user
         authResponse = await signUp({
@@ -342,42 +315,7 @@ const Auth = () => {
         loggedInUser = authResponse.user;
 
         toastService.dismiss(loadingToast);
-        toastService.success(
-          `Welcome to Scribe, ${formData.name}! Let's set up your profile.`,
-        );
-
-        // Create user profile in profiles table
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .insert([
-            {
-              id: loggedInUser.id,
-              username: formData.username,
-              full_name: formData.name,
-              onboarding_completed: false,
-              created_at: new Date().toISOString(),
-            },
-          ])
-          .select()
-          .single();
-
-        if (profileError) {
-          console.error("Error creating profile:", profileError);
-        }
-
-        // Set user in context
-        setUser({
-          id: loggedInUser.id,
-          name: formData.name,
-          email: loggedInUser.email,
-          username: formData.username,
-          onboarding_completed: false,
-        });
-
-        // Always redirect new users to onboarding
-        setTimeout(() => {
-          nav("/onboarding");
-        }, 1500);
+        // Toast and profile creation handled by handleSignIn
       }
     } catch (err) {
       toastService.dismiss(loadingToast);
