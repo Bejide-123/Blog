@@ -46,9 +46,12 @@ import {
 import DraftsPanel from "../../Components/Private/DraftPanel";
 import { saveToDraft } from "../../Services/post"; // Corrected import path
 import { useNavigate } from "react-router-dom";
+import { useToastContext } from "../../Components/Public/toast/useToast.jsx";
+import { useConfirm } from '../../Components/Public/ConfirmModal';
 
 export default function CreatePostPage() {
   const { theme } = useTheme();
+  const { toast } = useToastContext()
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: "",
@@ -73,6 +76,8 @@ export default function CreatePostPage() {
   const [readTime, setReadTime] = useState(0);
   const [titleScore, setTitleScore] = useState(0);
   const [lastSaved, setLastSaved] = useState(null);
+
+  const { confirm, ConfirmModal } = useConfirm();
 
   // Mention states
   const [showMentions, setShowMentions] = useState(false);
@@ -606,6 +611,7 @@ export default function CreatePostPage() {
   const handleSaveDraft = async () => {
     // This is the new function for the button
     setIsLoading(true);
+    toast("Saving draft...", "info")
     try {
       if (!formData.title.trim() || !formData.content.trim()) {
         alert("Title and content are required for draft");
@@ -624,7 +630,7 @@ export default function CreatePostPage() {
       });
 
       if (result.success) {
-        alert("Draft saved successfully to drafts table!");
+        toast("Draft saved successfully!", "success");
         localStorage.removeItem("postDraft"); // Clear local storage draft
         setLastSaved(null);
         // --- ADD THESE LINES TO CLEAR THE FORM ---
@@ -642,12 +648,13 @@ export default function CreatePostPage() {
         // --- END ADDED LINES ---
       } else {
         // Handle the error returned from saveToDraft
-        alert(result.error || "Failed to save draft to drafts table");
+        toast(result.error || "Failed to save draft to drafts table", "error");
       }
     } catch (error) {
       console.error("Error saving draft to drafts table:", error);
-      alert(
+      toast(
         error.message || "An unexpected error occurred while saving draft.",
+        "error"
       );
     } finally {
       setIsLoading(false);
@@ -657,9 +664,10 @@ export default function CreatePostPage() {
   const handlePublish = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    toast("Publishing post...", "info");
 
     if (!formData.title.trim() || !formData.content.trim()) {
-      alert("Title and content are required");
+      toast("Title and content are required to publish", "error");
       setIsLoading(false);
       return;
     }
@@ -676,15 +684,14 @@ export default function CreatePostPage() {
       });
 
       if (result.success) {
-        alert("Post published successfully!");
+        toast("Post published successfully!", "success");
         localStorage.removeItem("postDraft");
         navigate("/home");
       } else {
-        alert(result.error || "Failed to publish post");
+        toast(result.error || "Failed to publish post", "error");
       }
     } catch (error) {
-      console.error("Error publishing post:", error);
-      alert(error.message || "Network error. Please try again.");
+      toast(result.error || "Network error. Please try again.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -694,12 +701,14 @@ export default function CreatePostPage() {
     formData.content.split(/\s+/).filter(Boolean).length / 200,
   );
 
-  const clearDraft = () => {
-    if (
-      window.confirm(
-        "Are you sure you want to clear this draft? This action cannot be undone.",
-      )
-    ) {
+  const clearDraft = async () => {
+    const ok = await confirm({
+      title: "Clear Draft?",
+      message: "This will remove all your unsaved changes. This action cannot be undone.",
+      confirmText: "Clear",
+      variant: "danger",
+    });
+    if (ok) {
       setFormData({
         title: "",
         content: "",
@@ -709,12 +718,15 @@ export default function CreatePostPage() {
         isPublic: true,
         allowComments: true,
       });
-      setImagePreview(null);
       setTagInput("");
-      localStorage.removeItem("postDraft");
+      setImagePreview(null);
+      setCharCount({ title: 0, content: 0 });
+      setWordCount(0);
+      setReadTime(0);
+      setTitleScore(0);
       setLastSaved(null);
-      setShowMentions(false);
-      setMentionQuery("");
+      localStorage.removeItem("postDraft");
+      toast.success("Draft cleared successfully!");
     }
   };
 
@@ -1661,6 +1673,7 @@ export default function CreatePostPage() {
               )}
             </div>
           )}
+          <ConfirmModal theme={theme} />
         </>
       )}
     </>

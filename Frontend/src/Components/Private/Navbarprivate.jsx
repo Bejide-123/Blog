@@ -15,6 +15,7 @@ import {
   TrendingUp,
   BookOpen,
   Hash,
+  MessageSquare,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router";
 import NotificationDropdown from "./Notification";
@@ -34,6 +35,7 @@ export default function NavbarPrivate() {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [notificationCount, setNotificationCount] = useState(0);
+  const [messagesCount, setMessagesCount] = useState(0); // Placeholder for unread messages count
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const nav = useNavigate();
@@ -160,6 +162,7 @@ export default function NavbarPrivate() {
   const desktopNavItems = [
     { path: "/home", label: "Feed", active: currentPath === "/home" },
     { path: "/saved", label: "Saved", active: currentPath === "/saved" },
+    { path: "/messages", label: "Messages", active: currentPath === "/messages" },
   ];
 
   // Mobile navigation items
@@ -167,13 +170,13 @@ export default function NavbarPrivate() {
     { path: "/home", icon: Home, label: "Home" },
     { path: "/saved", icon: Bookmark, label: "Saved" },
     { path: "/create", icon: PlusCircle, label: "Create", isCenter: true },
+    { path: "/messages", icon: MessageSquare, label: "Messages", badge: messagesCount },
     {
       icon: Bell,
       label: "Notifications",
       badge: notificationCount,
       isNotification: true,
-    },
-    { path: "/profile", icon: User, label: "Profile" },
+    }
   ];
 
   return (

@@ -39,12 +39,15 @@ import {
 import { useTheme } from "../../Context/themeContext";
 import { getUserFollowing } from "../../Services/user";
 import { getUserByUsername } from "../../Services/api";
+import { useToastContext } from "../../Components/Public/toast/useToast.jsx";
 
 export default function FeedContent() {
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState("forYou");
   const navigate = useNavigate();
   const { user } = useUser();
+  const { toast } = useToastContext();
+
 
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [savedPosts, setSavedPosts] = useState(new Set());
@@ -302,14 +305,9 @@ export default function FeedContent() {
     try {
       // 🔥 Call API after UI update
       await toggleSavePost(postId, user.id);
-
-      console.log(
-        isCurrentlySaved
-          ? "Post removed from saved"
-          : "Post saved successfully",
-      );
+      toast("Post " + (isCurrentlySaved ? "removed from" : "added to") + " saved posts", "success");
     } catch (error) {
-      console.error("Error toggling save:", error);
+      toast( error, "Failed to update saved posts. Please try again.", "error", 5000);
 
       // 🔥 ROLLBACK if failed
       setSavedPosts((prev) => {
@@ -323,7 +321,7 @@ export default function FeedContent() {
       });
 
       // ❌ Replace alert
-      alert("Failed to update saved post. Please try again.");
+      toast("Failed to update saved posts. Please try again.", "error");
     }
   };
 
@@ -383,9 +381,7 @@ export default function FeedContent() {
         ),
       );
     } catch (error) {
-      console.error("Error adding comment:", error);
-      // Show a more user-friendly error
-      alert("Failed to add comment. Please try again.");
+      toast("Failed to add comment. Please try again.", "error", error.message || "An error occurred.", 5000);
     }
   };
 
@@ -500,15 +496,22 @@ export default function FeedContent() {
   // };
 
   const toggleFollow = (username) => {
+    const isCurrentlyFollowing = followedUsers.has(username);
+
     setFollowedUsers((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(username)) {
+      if (isCurrentlyFollowing) {
         newSet.delete(username);
       } else {
         newSet.add(username);
       }
       return newSet;
     });
+
+    toast(
+      `${isCurrentlyFollowing ? "Unfollowed" : "Now following"} ${username}`,
+      "success",
+    );
     setActiveMenuPost(null);
   };
 

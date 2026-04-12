@@ -1,4 +1,11 @@
-import { useState, useEffect, useCallback, createContext, useContext } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  createContext,
+  useContext,
+} from "react";
 import {
   CheckCircle2,
   XCircle,
@@ -7,93 +14,235 @@ import {
   X,
 } from "lucide-react";
 
-// ─── Single Toast item ────────────────────────────────────────────────────────
-function ToastItem({ id, message, type = "success", duration = 3500, onDismiss }) {
-  const [visible, setVisible] = useState(false);
-  const [leaving, setLeaving] = useState(false);
+// ─── Config per type ──────────────────────────────────────────────────────────
+const CONFIGS = {
+  success: {
+    label: "Success",
+    Icon: CheckCircle2,
+    bg: "linear-gradient(135deg, #059669, #047857)",
+    bar: "rgba(255,255,255,0.45)",
+  },
+  error: {
+    label: "Error",
+    Icon: XCircle,
+    bg: "linear-gradient(135deg, #dc2626, #b91c1c)",
+    bar: "rgba(255,255,255,0.45)",
+  },
+  warning: {
+    label: "Warning",
+    Icon: AlertTriangle,
+    bg: "linear-gradient(135deg, #d97706, #b45309)",
+    bar: "rgba(255,255,255,0.45)",
+  },
+  info: {
+    label: "Info",
+    Icon: Info,
+    bg: "linear-gradient(135deg, #2563eb, #4f46e5)",
+    bar: "rgba(255,255,255,0.45)",
+  },
+};
+
+// ─── Single Toast Item ────────────────────────────────────────────────────────
+function ToastItem({ id, message, type = "success", duration = 4000, onDismiss }) {
+  const [phase, setPhase] = useState("entering"); // entering | visible | leaving
+  const [barWidth, setBarWidth] = useState(100);
+
+  const timerRef    = useRef(null);
+  const rafRef      = useRef(null);
+  const remainingRef = useRef(duration);
+  const startRef    = useRef(null);
+  const pausedRef   = useRef(false);
+
+  const cfg = CONFIGS[type] || CONFIGS.success;
+  const { Icon } = cfg;
+
+  const dismiss = useCallback(() => {
+    if (phase === "leaving") return;
+    setPhase("leaving");
+    cancelAnimationFrame(rafRef.current);
+    clearTimeout(timerRef.current);
+    setTimeout(() => onDismiss(id), 300);
+  }, [id, onDismiss, phase]);
+
+  // Animate progress bar
+  const tick = useCallback((ts) => {
+    if (!startRef.current) startRef.current = ts;
+    const elapsed = ts - startRef.current;
+    const pct = Math.max(0, 100 - (elapsed / remainingRef.current) * 100);
+    setBarWidth(pct);
+    if (elapsed < remainingRef.current) {
+      rafRef.current = requestAnimationFrame(tick);
+    } else {
+      dismiss();
+    }
+  }, [dismiss]);
+
+  const startTimer = useCallback(() => {
+    startRef.current = null;
+    rafRef.current = requestAnimationFrame(tick);
+  }, [tick]);
+
+  const pauseTimer = () => {
+    if (pausedRef.current) return;
+    pausedRef.current = true;
+    cancelAnimationFrame(rafRef.current);
+    if (startRef.current) {
+      remainingRef.current -= performance.now() - startRef.current;
+      startRef.current = null;
+    }
+  };
+
+  const resumeTimer = () => {
+    if (!pausedRef.current) return;
+    pausedRef.current = false;
+    startTimer();
+  };
 
   useEffect(() => {
-    // Animate in
-    requestAnimationFrame(() => setVisible(true));
+    requestAnimationFrame(() => setPhase("visible"));
+    startTimer();
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      clearTimeout(timerRef.current);
+    };
+  }, [startTimer]);
 
-    // Auto-dismiss
-    const t = setTimeout(() => dismiss(), duration);
-    return () => clearTimeout(t);
-  }, []);
+  const phaseStyle = {
+    entering: { opacity: 0, transform: "translateY(12px) scale(0.94)" },
+    visible:  { opacity: 1, transform: "translateY(0) scale(1)" },
+    leaving:  { opacity: 0, transform: "translateY(6px) scale(0.96)" },
+  }[phase];
 
-  const dismiss = () => {
-    setLeaving(true);
-    setTimeout(() => onDismiss(id), 300);
-  };
-
-  const configs = {
-    success: {
-      icon: <CheckCircle2 className="w-4 h-4 flex-shrink-0" />,
-      bg: "from-emerald-500 to-green-500",
-      shadow: "shadow-emerald-500/25",
-    },
-    error: {
-      icon: <XCircle className="w-4 h-4 flex-shrink-0" />,
-      bg: "from-red-500 to-rose-500",
-      shadow: "shadow-red-500/25",
-    },
-    warning: {
-      icon: <AlertTriangle className="w-4 h-4 flex-shrink-0" />,
-      bg: "from-amber-500 to-orange-500",
-      shadow: "shadow-amber-500/25",
-    },
-    info: {
-      icon: <Info className="w-4 h-4 flex-shrink-0" />,
-      bg: "from-blue-500 to-indigo-500",
-      shadow: "shadow-blue-500/25",
-    },
-  };
-
-  const { icon, bg, shadow } = configs[type] || configs.success;
+  const transition = phase === "visible"
+    ? "opacity 0.32s cubic-bezier(0.34,1.3,0.64,1), transform 0.32s cubic-bezier(0.34,1.3,0.64,1)"
+    : "opacity 0.22s ease, transform 0.22s ease";
 
   return (
     <div
-      className={`
-        flex items-center gap-3 px-4 py-3 rounded-2xl text-white text-sm font-medium
-        shadow-xl ${shadow} bg-gradient-to-r ${bg}
-        min-w-[240px] max-w-[360px] cursor-pointer select-none
-        transition-all duration-300
-        ${visible && !leaving
-          ? "opacity-100 translate-y-0 scale-100"
-          : "opacity-0 translate-y-3 scale-95"
-        }
-      `}
-      onClick={dismiss}
       role="alert"
+      aria-live="assertive"
+      onMouseEnter={pauseTimer}
+      onMouseLeave={resumeTimer}
+      onClick={dismiss}
+      style={{
+        ...phaseStyle,
+        transition,
+        background: cfg.bg,
+        borderRadius: 14,
+        width: "100%",
+        maxWidth: "100%",
+        overflow: "hidden",
+        cursor: "pointer",
+        userSelect: "none",
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "0 24px",
+        boxSizing: "border-box",
+        position: "relative",
+      }}
     >
-      {icon}
-      <span className="flex-1 leading-snug">{message}</span>
+      {/* Icon pill */}
+      <div style={{
+        width: 36,
+        height: 36,
+        borderRadius: 9,
+        background: "rgba(255,255,255,0.18)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }}>
+        <Icon size={16} color="white" strokeWidth={2.2} />
+      </div>
+
+      {/* Body */}
+      <div style={{ flex: 1, minWidth: 0, padding: "13px 0" }}>
+        <p style={{
+          margin: 0,
+          fontSize: 11,
+          fontWeight: 500,
+          letterSpacing: "0.06em",
+          textTransform: "uppercase",
+          color: "rgba(255,255,255,0.72)",
+          lineHeight: 1,
+          marginBottom: 3,
+        }}>
+          {cfg.label}
+        </p>
+        <p style={{
+          margin: 0,
+          fontSize: 13.5,
+          fontWeight: 500,
+          color: "white",
+          lineHeight: 1.4,
+        }}>
+          {message}
+        </p>
+      </div>
+
+      {/* Close button */}
       <button
         onClick={(e) => { e.stopPropagation(); dismiss(); }}
-        className="ml-1 p-0.5 rounded-lg hover:bg-white/20 transition-colors flex-shrink-0"
+        style={{
+          flexShrink: 0,
+          width: 26,
+          height: 26,
+          borderRadius: 7,
+          background: "rgba(255,255,255,0.15)",
+          border: "none",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "white",
+          transition: "background 0.15s",
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.3)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.15)"; }}
       >
-        <X className="w-3.5 h-3.5" />
+        <X size={13} color="white" />
       </button>
+
+      {/* Progress bar */}
+      <div style={{
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        height: 3,
+        width: `${barWidth}%`,
+        background: cfg.bar,
+        borderRadius: "0 0 0 14px",
+        transition: "none",
+      }} />
     </div>
   );
 }
 
 // ─── Toast Container ──────────────────────────────────────────────────────────
-// Renders all active toasts, stacked above each other
-function ToastContainer({ toasts, onDismiss }) {
-  if (toasts.length === 0) return null;
-
+export function ToastContainer({ toasts, onDismiss }) {
+  if (!toasts.length) return null;
   return (
     <div
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2.5 pointer-events-none"
       aria-live="polite"
+      style={{
+        position: "fixed",
+        bottom: "max(24px, env(safe-area-inset-bottom, 0px) + 16px)",
+        left: "50%",
+        transform: "translateX(-50%)",
+        zIndex: 9999,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 10,
+        pointerEvents: "none",
+        width: "800px", // For debugging
+        maxWidth: "800px", // For debugging
+      }}
     >
       {toasts.map((t) => (
-        <div key={t.id} className="pointer-events-auto">
-          <ToastItem
-            {...t}
-            onDismiss={onDismiss}
-          />
+        <div key={t.id} style={{ pointerEvents: "auto" }}>
+          <ToastItem {...t} onDismiss={onDismiss} />
         </div>
       ))}
     </div>
@@ -102,20 +251,22 @@ function ToastContainer({ toasts, onDismiss }) {
 
 // ─── useToast hook ────────────────────────────────────────────────────────────
 /**
- * The simplest way to use toasts — call this hook in any component.
- * Returns { toast, ToastContainer }
+ * Usage inside a single component:
  *
- * Usage:
  *   const { toast, ToastContainer } = useToast();
  *
- *   toast("Saved!")                          // success by default
- *   toast("Something went wrong", "error")
- *   toast("Watch out", "warning")
- *   toast("FYI: ...", "info")
- *   toast("Long message", "success", 6000)   // custom duration in ms
+ *   toast("Saved!")                           // success
+ *   toast("Something broke", "error")
+ *   toast("Heads up", "warning")
+ *   toast("FYI", "info")
+ *   toast("Custom duration", "info", 6000)    // ms
  *
- *   // In JSX, render anywhere inside the component:
- *   <ToastContainer />
+ *   return (
+ *     <>
+ *       ...
+ *       <ToastContainer />
+ *     </>
+ *   );
  */
 export function useToast() {
   const [toasts, setToasts] = useState([]);
@@ -124,8 +275,8 @@ export function useToast() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const toast = useCallback((message, type = "success", duration = 3500) => {
-    const id = `toast-${Date.now()}-${Math.random()}`;
+  const toast = useCallback((message, type = "success", duration = 4000) => {
+    const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     setToasts((prev) => [...prev, { id, message, type, duration }]);
   }, []);
 
@@ -137,19 +288,18 @@ export function useToast() {
   return { toast, ToastContainer: Container };
 }
 
-// ─── Context-based provider (optional, for app-wide toasts) ──────────────────
+// ─── Context provider (app-wide) ──────────────────────────────────────────────
 /**
- * Optional: wrap your app (or a subtree) with <ToastProvider> and then
- * call useToastContext() anywhere inside — no need to pass props down.
+ * Wrap your app once:
  *
- * In App.jsx / main layout:
- *   <ToastProvider>
- *     <App />
- *   </ToastProvider>
+ *   import { ToastProvider } from "../../Components/Toast";
+ *   <ToastProvider><App /></ToastProvider>
  *
- * In any child component:
+ * Then anywhere inside:
+ *
+ *   import { useToastContext } from "../../Components/Toast";
  *   const { toast } = useToastContext();
- *   toast("Done!", "success");
+ *   toast("Draft deleted", "success");
  */
 const ToastCtx = createContext(null);
 
@@ -169,16 +319,4 @@ export function useToastContext() {
   return ctx;
 }
 
-// ─── Default export: the raw ToastItem if you want full control ───────────────
-export default useToast;
-
-// import { ToastProvider } from "../../Components/Toast";
-
-// <ToastProvider>
-//   <App />
-// </ToastProvider>
-
-// import { useToastContext } from "../../Components/Toast";
-
-// const { toast } = useToastContext();
-// toast("Draft deleted", "success");
+export default ToastItem;

@@ -5,7 +5,7 @@ import {
   ChevronDown, Check, CheckCheck, Edit2,
   MessageSquarePlus, X, Loader2,
 } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import NavbarPrivate from "../../Components/Private/Navbarprivate";
 import { UserContext } from "../../Context/userContext";
 import { useTheme } from "../../Context/themeContext";
@@ -200,6 +200,7 @@ export default function MessagesPage() {
   const { theme } = useTheme();
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const isLight = theme === "light";
 
   const [conversations, setConversations] = useState(MOCK_CONVERSATIONS);
@@ -214,6 +215,30 @@ export default function MessagesPage() {
   const inputRef = useRef(null);
 
   const activeConv = conversations.find((c) => c.id === activeId);
+
+  // Handle user query parameter to start conversation
+  useEffect(() => {
+    const userId = searchParams.get('user');
+    if (userId) {
+      // Check if conversation already exists
+      const existingConv = conversations.find((c) => c.user.id === userId);
+      if (existingConv) {
+        setActiveId(existingConv.id);
+      } else {
+        // In a real app, you'd fetch user data here
+        // For now, we'll create a mock conversation
+        const newConv = {
+          id: `conv_${userId}`,
+          user: { id: userId, full_name: "New User", username: `user${userId}`, avatar_url: null, online: false },
+          last_message: { text: "Start a conversation...", time: "now", unread: 0, mine: false },
+        };
+        setConversations((prev) => [...prev, newConv]);
+        setActiveId(newConv.id);
+      }
+      // Clear the query parameter
+      navigate('/messages', { replace: true });
+    }
+  }, [searchParams, conversations, navigate]);
 
   // Filter conversations by search
   const filtered = conversations.filter((c) =>
@@ -304,16 +329,14 @@ export default function MessagesPage() {
 
       <NavbarPrivate />
 
-      <div className={`h-screen pt-16 md:pt-20 flex flex-col
+      <div className={`min-h-screen pt-20 md:pt-24 flex flex-col items-center justify-center px-3 md:px-6 lg:px-8
         ${isLight ? "bg-gray-50" : "bg-slate-900"}`}
       >
-        {/* Full width container - removed max-w-6xl */}
-        <div className={`flex-1 w-full flex overflow-hidden
-          ${isLight ? "bg-white" : "bg-slate-800"}
-        `}>
-          {/* No max-height constraint on desktop */}
+        {/* Main container with max-width and border radius */}
+        <div className={`w-full max-w-7xl h-[calc(100vh-7rem)] rounded-2xl overflow-hidden shadow-2xl
+          ${isLight ? "bg-white border border-gray-200" : "bg-slate-800 border border-slate-700"}`}
+        >
           <div className="flex w-full h-full">
-
             {/* ── Sidebar ── */}
             <div
               className={`
