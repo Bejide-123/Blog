@@ -36,7 +36,7 @@ export default function Message({ type = "info", message = "" }) {
 
   return (
     <div
-      className={`flex items-center gap-3 p-4 rounded-lg border-l-4 ${
+      className={`flex items-center gap-3 p-4 pb-40 mb-60 rounded-lg border-l-4 ${
         theme === "light" ? styles.bg.split(" ")[0] : styles.bg.split(" ")[1]
       } ${
         theme === "light"
