@@ -164,7 +164,7 @@ function MessageBubble({ msg, isLight, prevMine, currentUserId, otherUser, onDel
 
   // The avatar to show: mine = current user, theirs = otherUser
   const msgAvatar = isMine
-    ? ( user?.avatar_url || null) 
+    ? ( user?.avatar || null) 
     : avatar(otherUser);
 
   const handleReact = (em) => {
