@@ -48,7 +48,6 @@ export default function FeedContent() {
   const { user } = useUser();
   const { toast } = useToastContext();
 
-
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [savedPosts, setSavedPosts] = useState(new Set());
   const [likeProcessingPosts, setLikeProcessingPosts] = useState(new Set());
@@ -305,9 +304,19 @@ export default function FeedContent() {
     try {
       // 🔥 Call API after UI update
       await toggleSavePost(postId, user.id);
-      toast("Post " + (isCurrentlySaved ? "removed from" : "added to") + " saved posts", "success");
+      toast(
+        "Post " +
+          (isCurrentlySaved ? "removed from" : "added to") +
+          " saved posts",
+        "success",
+      );
     } catch (error) {
-      toast( error, "Failed to update saved posts. Please try again.", "error", 5000);
+      toast(
+        error,
+        "Failed to update saved posts. Please try again.",
+        "error",
+        5000,
+      );
 
       // 🔥 ROLLBACK if failed
       setSavedPosts((prev) => {
@@ -381,7 +390,12 @@ export default function FeedContent() {
         ),
       );
     } catch (error) {
-      toast("Failed to add comment. Please try again.", "error", error.message || "An error occurred.", 5000);
+      toast(
+        "Failed to add comment. Please try again.",
+        "error",
+        error.message || "An error occurred.",
+        5000,
+      );
     }
   };
 
@@ -921,6 +935,8 @@ export default function FeedContent() {
                                   post.author?.avatar_url ||
                                   `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.author?.username || "anonymous"}`
                                 }
+                                loading="lazy"
+                                srcSet={post.author?.avatar_url}
                                 alt={post.author?.full_name || "Anonymous"}
                                 className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl border-2 ${theme === "light" ? "border-white" : "border-slate-800"} shadow-sm`}
                               />
@@ -1040,16 +1056,17 @@ export default function FeedContent() {
 
                       {/* Featured Image */}
                       {post.featured_image && (
-                        <div
-                          className="w-full h-48 sm:h-64 md:h-72 lg:h-80 overflow-hidden cursor-pointer"
-                        >
+                        <div className="w-full h-48 sm:h-64 md:h-72 lg:h-80 overflow-hidden cursor-pointer">
                           <img
                             src={post.featured_image}
+                            loading="lazy"
+                            sizes="(max-width: 640px) 48px, 64px"
+                            srcSet={`${post.featured_image}?w=48 48w, ${post.featured_image}?w=64 64w`}
                             alt={post.title}
                             onClick={(e) => {
-                            e.stopPropagation();
-                            setImageModalPost(post); // ← open modal with this post
-                          }}
+                              e.stopPropagation();
+                              setImageModalPost(post); // ← open modal with this post
+                            }}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         </div>
@@ -1184,6 +1201,8 @@ export default function FeedContent() {
                                   className="flex gap-2 sm:gap-3"
                                 >
                                   <img
+                                    loading='lazy'
+                                    srcSet={comment.author?.avatar_url}
                                     src={
                                       comment.author?.avatar_url ||
                                       `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.author?.username || "anonymous"}`
@@ -1293,6 +1312,8 @@ export default function FeedContent() {
                                     user?.avatar_url ||
                                     `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || "user"}`
                                   }
+                                  loading='lazy'
+                                  scrSet={user?.avatar_url}
                                   alt="You"
                                   className={`w-7 h-7 sm:w-10 sm:h-10 rounded-full border-2 ${theme === "light" ? "border-gray-200" : "border-slate-700"} flex-shrink-0`}
                                 />

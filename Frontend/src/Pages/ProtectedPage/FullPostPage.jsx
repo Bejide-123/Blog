@@ -29,4 +29,4 @@ const FullPostPage = () => {
   )
 }
 
-export default FullPostPage
+export default React.memo(FullPostPage)

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FileText,
   Edit,
@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { PageLoader } from "../../Components/Private/Loader";
 import { useTheme } from "../../Context/themeContext";
 
-export default function EditPostsPage() {
+const EditPostsPage = () => {
   const { theme } = useTheme();
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [posts, setPosts] = useState([]);
@@ -197,3 +197,4 @@ export default function EditPostsPage() {
     </>
   );
 }
+export default React.memo(EditPostsPage);

@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import {
   MapPin,
@@ -46,7 +46,7 @@ import {
   getUserCommentLikes,
 } from "../../Services/post";
 
-export default function ProfilePage() {
+const ProfilePage = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
   const { user: currentUser } = useContext(UserContext);
@@ -92,7 +92,7 @@ export default function ProfilePage() {
     if (activeTab === "followers" && followers.length === 0) {
       fetchFollowers();
     }
-  }, [activeTab, followers.length]);
+  }, [activeTab, followers.length,]);
 
   useEffect(() => {
     if (activeTab === "following" && following.length === 0) {
@@ -533,6 +533,8 @@ export default function ProfilePage() {
                       alt={profileUser.full_name || profileUser.username}
                       className="w-full h-full rounded-xl object-cover cursor-pointer"
                       onClick={() => setImageModalOpen(true)} // ← add this
+                      loading='lazy'
+                      srcSet={getAvatarUrl()}
                     />
                   </div>
                 </div>
@@ -775,6 +777,8 @@ export default function ProfilePage() {
                                     profileUser.full_name ||
                                     profileUser.username
                                   }
+                                  loading='lazy'
+                                  srcSet={getAvatarUrl()}
                                   className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl border-2 ${theme === "light" ? "border-white" : "border-slate-800"} shadow-sm`}
                                 />
                               </Link>
@@ -899,6 +903,8 @@ export default function ProfilePage() {
                             <img
                               src={post.featured_image}
                               alt={post.title}
+                              loading='lazy'
+                              srcSet={post.featured_image}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
                           </div>
@@ -1009,6 +1015,8 @@ export default function ProfilePage() {
                                   <img
                                     src={comment.author.avatar}
                                     alt={comment.author.name}
+                                    loading='lazy'
+                                    srcSet={comment.author.avatar}
                                     className={`w-7 h-7 sm:w-10 sm:h-10 rounded-full border-2 ${theme === "light" ? "border-white" : "border-slate-800"} flex-shrink-0`}
                                   />
                                   <div className="flex-1 min-w-0">
@@ -1078,6 +1086,8 @@ export default function ProfilePage() {
                                     currentUser?.avatar_url ||
                                     "https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser"
                                   }
+                                  loading='lazy'
+                                  srcSet={currentUser?.avatar_url}
                                   alt="You"
                                   className={`w-7 h-7 sm:w-10 sm:h-10 rounded-full border-2 ${theme === "light" ? "border-gray-200" : "border-slate-700"} flex-shrink-0`}
                                 />
@@ -1255,6 +1265,8 @@ export default function ProfilePage() {
                               follower.avatar_url ||
                               `https://api.dicebear.com/7.x/avataaars/svg?seed=${follower.username}`
                             }
+                            loading='lazy'
+                            srcSet={follower.avatar_url}
                             alt={follower.full_name}
                             className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0"
                           />
@@ -1311,6 +1323,8 @@ export default function ProfilePage() {
                               followingUser.avatar_url ||
                               `https://api.dicebear.com/7.x/avataaars/svg?seed=${followingUser.username}`
                             }
+                            loading='lazy'
+                            srcSet={followingUser.avatar_url}
                             alt={followingUser.full_name}
                             className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0"
                           />
@@ -1366,8 +1380,11 @@ export default function ProfilePage() {
           alt={profileUser.full_name || profileUser.username}
           name={profileUser.full_name}
           username={profileUser.username}
+          loading='lazy'
+          srcSet={getAvatarUrl()}
         />
       </div>
     </>
   );
 }
+export default React.memo(ProfilePage)

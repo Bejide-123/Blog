@@ -1,5 +1,5 @@
 import { useTheme } from "../../Context/themeContext";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   X,
   ImagePlus,
@@ -49,7 +49,7 @@ import { useNavigate } from "react-router-dom";
 import { useToastContext } from "../../Components/Public/toast/useToast.jsx";
 import { useConfirm } from '../../Components/Public/ConfirmModal';
 
-export default function CreatePostPage() {
+const CreatePostPage = () => {
   const { theme } = useTheme();
   const { toast } = useToastContext()
   const navigate = useNavigate();
@@ -558,55 +558,6 @@ export default function CreatePostPage() {
     }));
   };
 
-  // const preuploadImage = async () => {
-  //   if (!formData.imageFile) return null;
-
-  //   try {
-  //     setImageUploading(true);
-  //     const url = await uploadImage(formData.imageFile);
-  //     return url;
-  //   } catch (err) {
-  //     console.error("Image upload failed:", err);
-  //     alert("Image upload failed. Continuing without image.");
-  //     return null;
-  //   } finally {
-  //     setImageUploading(false);
-  //   }
-  // };
-
-  // const handleSavePostAsBackendDraft = async () => {
-  //   setIsLoading(true);
-  //   try {
-  //     if (!formData.title.trim() || !formData.content.trim()) {
-  //       alert("Title and content are required for draft");
-  //       setIsLoading(false);
-  //       return;
-  //     }
-
-  //     const result = await createPost({
-  //       title: formData.title,
-  //       content: formData.content,
-  //       tags: formData.tags,
-  //       status: "draft",
-  //       isPublic: formData.isPublic,
-  //       allowComments: formData.allowComments,
-  //       featured_image: formData.imageUrl, // Use formData.imageUrl directly
-  //     });
-
-  //     if (result.success) {
-  //       alert("Draft saved successfully to backend!");
-  //       localStorage.removeItem("postDraft");
-  //       setLastSaved(null);
-  //     } else {
-  //       alert(result.error || "Failed to save draft to backend");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error saving draft to backend:", error);
-  //     alert(error.message || "Network error. Please try again.");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
   const handleSaveDraft = async () => {
     // This is the new function for the button
@@ -1099,6 +1050,8 @@ export default function CreatePostPage() {
                             src={imagePreview}
                             alt="Preview"
                             className="w-full h-48 object-cover rounded-xl"
+                            loading='lazy'
+                            srcSet={imagePreview}
                           />
 
                           {imageUploading && (
@@ -1472,6 +1425,8 @@ export default function CreatePostPage() {
                             userProfile?.avatar_url ||
                             "https://api.dicebear.com/7.x/avataaars/svg?seed=author"
                           }
+                          loading='lazy'
+                          srcSet={userProfile?.avatar_url}
                           alt="Author"
                           className={`w-12 h-12 rounded-xl border-2 ${theme === "light" ? "border-white" : "border-slate-800"} shadow-sm`}
                         />
@@ -1635,6 +1590,8 @@ export default function CreatePostPage() {
                           user.avatar_url ||
                           `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`
                         }
+                        loading='lazy'
+                        srcSet={user.avatar_url}
                         className="w-10 h-10 rounded-full flex-shrink-0"
                         alt={user.username}
                       />
@@ -1679,3 +1636,5 @@ export default function CreatePostPage() {
     </>
   );
 }
+
+export default React.memo(CreatePostPage)

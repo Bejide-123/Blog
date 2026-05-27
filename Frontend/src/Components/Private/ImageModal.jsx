@@ -12,10 +12,17 @@ import { X, ZoomIn, ZoomOut, Download } from "lucide-react";
  *   isOpen     {boolean}  — controls visibility (required)
  *   onClose    {function} — called when modal should close (required)
  */
-export default function ImageModal({ src, alt = "Image", name, username, isOpen, onClose }) {
+export default function ImageModal({
+  src,
+  alt = "Image",
+  name,
+  username,
+  isOpen,
+  onClose,
+}) {
   const [zoomed, setZoomed] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [visible, setVisible] = useState(false);        // drives CSS enter/exit
+  const [visible, setVisible] = useState(false); // drives CSS enter/exit
   const overlayRef = useRef(null);
 
   // Sync open → visible with a tiny delay so CSS transition plays
@@ -85,8 +92,11 @@ export default function ImageModal({ src, alt = "Image", name, username, isOpen,
         className="relative flex flex-col items-center max-w-[92vw] max-h-[92vh]"
         style={{
           opacity: visible ? 1 : 0,
-          transform: visible ? "scale(1) translateY(0)" : "scale(0.92) translateY(16px)",
-          transition: "opacity 0.3s cubic-bezier(0.34,1.56,0.64,1), transform 0.3s cubic-bezier(0.34,1.56,0.64,1)",
+          transform: visible
+            ? "scale(1) translateY(0)"
+            : "scale(0.92) translateY(16px)",
+          transition:
+            "opacity 0.3s cubic-bezier(0.34,1.56,0.64,1), transform 0.3s cubic-bezier(0.34,1.56,0.64,1)",
         }}
       >
         {/* ── Top controls ── */}
@@ -111,10 +121,11 @@ export default function ImageModal({ src, alt = "Image", name, username, isOpen,
               title={zoomed ? "Zoom out (−)" : "Zoom in (+)"}
               className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors"
             >
-              {zoomed
-                ? <ZoomOut className="w-4 h-4" />
-                : <ZoomIn className="w-4 h-4" />
-              }
+              {zoomed ? (
+                <ZoomOut className="w-4 h-4" />
+              ) : (
+                <ZoomIn className="w-4 h-4" />
+              )}
             </button>
 
             {/* Download */}
@@ -142,7 +153,8 @@ export default function ImageModal({ src, alt = "Image", name, username, isOpen,
           className="relative overflow-hidden"
           style={{
             borderRadius: "1.25rem",
-            boxShadow: "0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)",
+            boxShadow:
+              "0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)",
           }}
         >
           {/* Shimmer while loading */}
@@ -150,7 +162,8 @@ export default function ImageModal({ src, alt = "Image", name, username, isOpen,
             <div
               className="absolute inset-0 z-10 rounded-[1.25rem]"
               style={{
-                background: "linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%)",
+                background:
+                  "linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%)",
                 backgroundSize: "200% 100%",
                 animation: "shimmer 1.4s infinite",
                 minWidth: 240,
@@ -164,6 +177,9 @@ export default function ImageModal({ src, alt = "Image", name, username, isOpen,
             alt={alt}
             onLoad={() => setLoaded(true)}
             onClick={() => setZoomed((z) => !z)}
+            loading="lazy"
+            sizes="(max-width: 640px) 48px, 64px"
+            srcSet={`${src}?w=48 48w, ${src}?w=64 64w`}
             style={{
               maxWidth: zoomed ? "min(90vw, 1000px)" : "min(70vw, 640px)",
               maxHeight: zoomed ? "85vh" : "70vh",
@@ -172,7 +188,8 @@ export default function ImageModal({ src, alt = "Image", name, username, isOpen,
               objectFit: "contain",
               display: "block",
               cursor: zoomed ? "zoom-out" : "zoom-in",
-              transition: "max-width 0.35s cubic-bezier(0.34,1.2,0.64,1), max-height 0.35s cubic-bezier(0.34,1.2,0.64,1)",
+              transition:
+                "max-width 0.35s cubic-bezier(0.34,1.2,0.64,1), max-height 0.35s cubic-bezier(0.34,1.2,0.64,1)",
               opacity: loaded ? 1 : 0,
               borderRadius: "1.25rem",
             }}
@@ -187,7 +204,9 @@ export default function ImageModal({ src, alt = "Image", name, username, isOpen,
             transition: "opacity 0.3s ease 0.2s",
           }}
         >
-          {zoomed ? "Click image or press − to zoom out" : "Click image or press + to zoom in"}
+          {zoomed
+            ? "Click image or press − to zoom out"
+            : "Click image or press + to zoom in"}
         </p>
       </div>
 
@@ -200,4 +219,3 @@ export default function ImageModal({ src, alt = "Image", name, username, isOpen,
     </div>
   );
 }
-
