@@ -819,6 +819,8 @@ const formatTimeAgo = (timestamp) => {
                                           src={notification.user.avatar}
                                           alt={notification.user.name}
                                           className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 ${theme === 'light' ? 'border-white' : 'border-slate-800'} flex-shrink-0`}
+                                          loadinf='lazy'
+                                          srcSet={notification.user.avatar}
                                         />
                                         <div className="min-w-0">
                                           <div className="flex items-center gap-1 flex-wrap">
@@ -1019,4 +1021,4 @@ const formatTimeAgo = (timestamp) => {
   )
 }
 
-export default Notifications
+export default React.memo(Notifications)

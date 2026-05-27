@@ -736,7 +736,7 @@ export default function MessagesPage() {
 
                   {/* Messages */}
                   <div ref={containerRef} onScroll={handleScroll}
-                    className={`flex-1 overflow-y-auto msgs-scroll px-3 sm:px-6 py-3 sm:py-4 pb-28 md:pb-8 lg:pb-4
+                    className={`flex-1 overflow-y-auto msgs-scroll px-3 sm:px-6 py-3 sm:py-4 pb-4 md:pb-8 lg:pb-4
                       ${isLight ? "bg-gray-50/60" : "bg-slate-950/60"}`}
                   >
                     {messages.length === 0 ? (
@@ -901,10 +901,10 @@ export default function MessagesPage() {
                           </button>
                         </div>
 
-                        <p className={`text-center text-[10px] mt-1.5 select-none
+                        {/* <p className={`text-center text-[10px] mt-1.5 select-none
                           ${isLight ? "text-gray-300" : "text-slate-600"}`}>
                           {editingMsg ? "Enter to save · Esc to cancel" : "Enter to send · Shift+Enter for new line"}
-                        </p>
+                        </p> */}
                       </div>
                     )}
                   </div>

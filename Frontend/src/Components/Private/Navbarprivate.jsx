@@ -24,7 +24,8 @@ import { useUser } from "../../Context/userContext";
 import { signOut } from "../../Services/api";
 import { useTheme } from "../../Context/themeContext";
 import { getUnreadNotificationCount, subscribeToNotifications, unsubscribeFromNotifications } from "../../Services/notification";
-import { supabase } from "../../lib/supabase";
+import { useDebounce } from "../../hooks/useDebounce";
+
 
 export default function NavbarPrivate() {
   const { user, logout } = useUser();
@@ -39,6 +40,7 @@ export default function NavbarPrivate() {
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const nav = useNavigate();
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   useEffect(() => { setCurrentPath(location.pathname); }, [location.pathname]);
 
@@ -107,11 +109,11 @@ export default function NavbarPrivate() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
+    if (debouncedSearchQuery.trim()) {
       let searchType = 'posts';
-      if (searchQuery.trim().startsWith('@')) searchType = 'users';
-      else if (searchQuery.trim().startsWith('#')) searchType = 'tags';
-      nav(`/search?q=${encodeURIComponent(searchQuery)}&type=${searchType}&sort=relevance`);
+      if (debouncedSearchQuery.trim().startsWith('@')) searchType = 'users';
+      else if (debouncedSearchQuery.trim().startsWith('#')) searchType = 'tags';
+      nav(`/search?q=${encodeURIComponent(debouncedSearchQuery)}&type=${searchType}&sort=relevance`);
       setShowSearchModal(false);
       setShowSearchSuggestions(false);
       setSearchQuery("");
@@ -253,7 +255,7 @@ export default function NavbarPrivate() {
                 <button onClick={() => setShowAvatarMenu(!showAvatarMenu)}
                   className={`w-10 h-10 rounded-full border-2 border-transparent overflow-hidden transition-all duration-200 hover:scale-105 active:scale-95
                     ${isLight ? 'hover:border-blue-500' : 'hover:border-blue-400'}`}>
-                  <img src={getAvatarUrl()} alt={getDisplayUsername()} className="w-full h-full object-cover" />
+                  <img loading="lazy" src={getAvatarUrl()} alt={getDisplayUsername()} className="w-full h-full object-cover" />
                 </button>
                 {showAvatarMenu && (
                   <>
@@ -314,7 +316,7 @@ export default function NavbarPrivate() {
             </button>
             <button onClick={() => setShowAvatarMenu(!showAvatarMenu)}
               className={`w-8 h-8 rounded-full border-2 border-transparent overflow-hidden transition-colors ${isLight ? 'hover:border-blue-500' : 'hover:border-blue-400'}`}>
-              <img src={getAvatarUrl()} alt={getDisplayUsername()} className="w-full h-full object-cover" />
+              <img loading="lazy" src={getAvatarUrl()} alt={getDisplayUsername()} className="w-full h-full object-cover" />
             </button>
           </div>
         </div>

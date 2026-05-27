@@ -1,10 +1,10 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { X, Camera, Upload, Image, User, MapPin } from 'lucide-react';
 import { useTheme } from '../../Context/themeContext';
 import { updateUserProfile } from '../../Services/user';
 import { uploadImage } from '../../Services/api';
 
-export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
+const EditProfileModal = ({ isOpen, onClose, currentProfile }) => {
   const { theme } = useTheme();
   const [formData, setFormData] = useState({
     full_name: currentProfile?.full_name || '',
@@ -159,6 +159,8 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
                     src={coverPreview}
                     alt="Cover preview"
                     className="w-full h-full object-cover"
+                    loading='lazy'
+                    srcSet={coverPreview}
                   />
                 )}
                 <label className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer backdrop-blur-sm">
@@ -196,6 +198,8 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
                       src={avatarPreview || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}
                       alt="Avatar preview"
                       className="w-full h-full rounded-xl object-cover"
+                      loading='lazy'
+                      srcSet={avatarPreview || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}
                     />
                   </div>
                   <label className="absolute inset-0 bg-black/60 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer">
@@ -333,3 +337,4 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile }) {
     </div>
   );
 }
+export default React.memo(EditProfileModal);

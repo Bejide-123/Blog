@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useUser } from "../../Context/userContext";
 import { useTheme } from "../../Context/themeContext";
@@ -34,7 +34,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 
-export default function PublicProfilePage() {
+const PublicProfilePage = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
   const { user: currentUser } = useUser();
@@ -349,6 +349,8 @@ export default function PublicProfilePage() {
                         profileUser.avatar_url ||
                         `https://api.dicebear.com/7.x/avataaars/svg?seed=${profileUser.username}`
                       }
+                      loading='lazy'
+                      srcSet={profileUser.avatar_url}
                       alt={profileUser.full_name}
                       className="w-full h-full rounded-xl object-cover"
                     />
@@ -599,6 +601,8 @@ export default function PublicProfilePage() {
                                     postAuthor.avatar_url ||
                                     `https://api.dicebear.com/7.x/avataaars/svg?seed=${postAuthor.username}`
                                   }
+                                  loading='lazy'
+                                  srcSet={postAuthor.avatar_url}
                                   alt={postAuthor.full_name}
                                   className={`w-12 h-12 rounded-xl border-2 ${theme === "light" ? "border-white" : "border-slate-800"} shadow-sm cursor-pointer hover:opacity-90 transition-opacity`}
                                 />
@@ -716,6 +720,8 @@ export default function PublicProfilePage() {
                               <img
                                 src={post.featured_image}
                                 alt={post.title}
+                                loading="lazy"
+                                srcSet={post.featured_image}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
                               />
                             </div>
@@ -825,6 +831,8 @@ export default function PublicProfilePage() {
                                   <img
                                     src={comment.author.avatar}
                                     alt={comment.author.name}
+                                    loading='lazy'
+                                    srcSet={comment.author.avatar}
                                     className={`w-10 h-10 rounded-full border-2 ${theme === "light" ? "border-white" : "border-slate-800"} flex-shrink-0`}
                                   />
                                   <div className="flex-1">
@@ -889,6 +897,8 @@ export default function PublicProfilePage() {
                                       currentUser?.avatar_url ||
                                       "https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser"
                                     }
+                                    loading='lazy'
+                                    srcSet={currentUser?.avatar_url}
                                     alt="You"
                                     className={`w-10 h-10 rounded-full border-2 ${theme === "light" ? "border-gray-200" : "border-slate-700"} flex-shrink-0`}
                                   />
@@ -1058,6 +1068,8 @@ export default function PublicProfilePage() {
           profileUser.avatar_url ||
           `https://api.dicebear.com/7.x/avataaars/svg?seed=${profileUser.username}`
         }
+        loading='lazy'
+        srcSet={profileUser.avatar_url}
         alt={profileUser.full_name || profileUser.username}
         name={profileUser.full_name}
         username={profileUser.username}
@@ -1065,3 +1077,4 @@ export default function PublicProfilePage() {
     </>
   );
 }
+export default React.memo(PublicProfilePage)

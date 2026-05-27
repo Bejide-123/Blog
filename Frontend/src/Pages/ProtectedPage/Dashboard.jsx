@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FileText,
   Heart,
@@ -26,7 +26,7 @@ import { useUser } from "../../Context/userContext"; // Import useUser
 import { getUserPosts, deletePost } from "../../Services/post"; // Import post services
 import { getUserStats } from "../../Services/user"; // Import user services
 
-export default function DashboardPage() {
+const DashboardPage =() => {
   const { theme } = useTheme();
   const { user } = useUser();
   const [isPageLoading, setIsPageLoading] = useState(true);
@@ -42,7 +42,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       if (!user?.id) {
-        navigate('/login'); // Redirect if no user
+        navigate('/login'); 
         return;
       }
 
@@ -438,6 +438,8 @@ export default function DashboardPage() {
                     >
                       <img
                         src={activity.avatar}
+                        loading='lazy'
+                        srcSet={activity.avatar}
                         alt={activity.user}
                         className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-800 shadow-sm"
                       />
@@ -706,3 +708,4 @@ export default function DashboardPage() {
     </>
   );
 }
+export default React.memo(DashboardPage);

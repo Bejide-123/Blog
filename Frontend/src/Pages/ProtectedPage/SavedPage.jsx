@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Heart,
   MessageCircle,
@@ -39,7 +39,7 @@ import { useUser } from "../../Context/userContext";
 import { useTheme } from "../../Context/themeContext";
 import PostImageModal from "../../Components/Private/PostImageModal";
 
-export default function SavedPage() {
+const SavedPage = () => {
   const { theme } = useTheme();
   const [savedPosts, setSavedPosts] = useState([]);
   const [likedPosts, setLikedPosts] = useState(new Set());
@@ -841,6 +841,8 @@ export default function SavedPage() {
                                     post.author?.avatar_url ||
                                     `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.author?.username || "anonymous"}`
                                   }
+                                  loading='lazy'
+                                  srcSet={post.author?.avatar_url}
                                   alt={post.author?.full_name || "Anonymous"}
                                   className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl border-2 ${theme === "light" ? "border-white" : "border-slate-800"} shadow-sm`}
                                 />
@@ -1042,9 +1044,11 @@ export default function SavedPage() {
                             <img
                               src={post.featured_image}
                               alt={post.title}
+                              loading='lazy'
+                              srcSet={post.featured_image}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setImageModalPost(post); // ← open modal with this post
+                                setImageModalPost(post); 
                               }}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
@@ -1134,7 +1138,6 @@ export default function SavedPage() {
                                 </span>
                               </button>
 
-                              {/* Save Button - Always saved in SavedPage */}
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -1150,14 +1153,12 @@ export default function SavedPage() {
                           </div>
                         </div>
 
-                        {/* ========== COMMENTS SECTION ========== */}
                         {isCommentsOpen && (
                           <div
                             className={`border-t ${theme === "light" ? "border-gray-200 bg-gray-50/50" : "border-slate-700 bg-slate-900/30"}`}
                             onClick={(e) => e.stopPropagation()}
                           >
                             <div className="p-3 sm:p-6 space-y-4 max-h-96 overflow-y-auto">
-                              {/* Existing Comments */}
                               {comments.length > 0 ? (
                                 comments.map((comment) => (
                                   <div
@@ -1169,6 +1170,8 @@ export default function SavedPage() {
                                         comment.author?.avatar_url ||
                                         `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.author?.username || "anonymous"}`
                                       }
+                                      loading='lazy'
+                                      srcSet={comment.author?.avatar_url}
                                       alt={
                                         comment.author?.full_name || "Anonymous"
                                       }
@@ -1579,3 +1582,4 @@ export default function SavedPage() {
     </>
   );
 }
+export default React.memo(SavedPage)
