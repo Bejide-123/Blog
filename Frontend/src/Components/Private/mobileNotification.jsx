@@ -47,7 +47,7 @@ export default function MobileNotificationModal({ isOpen, onClose }) {
       const { notifications: realNotifications } = await getNotifications(
         user.id,
         {
-          limit: 10,
+          limit: 3,
           offset: 0,
           unreadOnly: false,
         },
