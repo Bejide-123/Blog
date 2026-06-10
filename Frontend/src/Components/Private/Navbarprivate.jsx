@@ -30,7 +30,7 @@ import { useDebounce } from "../../hooks/useDebounce";
 export default function NavbarPrivate() {
   const { user, logout } = useUser();
   const location = useLocation();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   const [currentPath, setCurrentPath] = useState(location.pathname);
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);

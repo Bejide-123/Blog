@@ -157,7 +157,7 @@ const Auth = () => {
             
           } else {
             // Profile exists - existing user
-            console.log("Existing profile found:", profileData);
+            // console.log("Existing profile found:", profileData);
             
             setUser({
               id: user.id,
@@ -281,7 +281,7 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      let loggedInUser;
+      // let loggedInUser;
       let authResponse;
 
       if (isLogin) {
@@ -295,7 +295,7 @@ const Auth = () => {
           throw new Error("Login failed: Invalid email or password");
         }
 
-        loggedInUser = authResponse.user;
+        // loggedInUser = authResponse.user;
 
         toastService.dismiss(loadingToast);
         // Toast and navigation handled by handleSignIn
@@ -312,7 +312,7 @@ const Auth = () => {
           throw new Error("Signup failed: Email might already be in use");
         }
 
-        loggedInUser = authResponse.user;
+        // loggedInUser = authResponse.user;
 
         toastService.dismiss(loadingToast);
         // Toast and profile creation handled by handleSignIn
