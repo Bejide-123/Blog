@@ -642,7 +642,7 @@ const CreatePostPage = () => {
         toast(result.error || "Failed to publish post", "error");
       }
     } catch (error) {
-      toast(result.error || "Network error. Please try again.", "error");
+      toast(error || "Network error. Please try again.", "error");
     } finally {
       setIsLoading(false);
     }
