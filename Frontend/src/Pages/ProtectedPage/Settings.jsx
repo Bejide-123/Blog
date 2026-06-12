@@ -299,39 +299,26 @@ export default function SettingsPage() {
     profileSearchable: true,
   });
 
-  // ── Sync theme with preference ──
-  const syncThemeWithPreference = useCallback((darkModePref) => {
-    if (darkModePref && theme !== "dark") {
-      toggleTheme(); // Switch to dark mode
-    } else if (!darkModePref && theme !== "light") {
-      toggleTheme(); // Switch to light mode
-    }
-  }, [theme, toggleTheme]);
+  
 
   // ── Load profile + preferences on mount ──
   useEffect(() => {
     const init = async () => {
       try {
         if (user?.id) {
-          // Ensure a preferences row exists before trying to read it
           await ensurePreferencesExist(user.id);
-
-          // Load username from profiles table
           const profile = await getUserProfile(user.id);
           if (profile) {
             setUsername(profile.username || "");
           }
 
-          // Load preferences + privacy settings
           const prefs = await getUserPreferences(user.id);
-          
-          // Get dark mode preference from database
           const darkModePref = prefs.dark_mode ?? false;
           
           setPreferences({
             darkMode: darkModePref,
             emailNotifications: prefs.email_notifications ?? true,
-            weeklyDigest: prefs.weekly_digest ?? false,
+            weeklyDigest: prefs.weeklyDigest ?? false,
             profilePublic: prefs.profile_public ?? true,
             allowComments: prefs.allow_comments ?? true,
           });
@@ -342,13 +329,6 @@ export default function SettingsPage() {
             profileSearchable: prefs.profile_searchable ?? true,
           });
           
-          // IMPORTANT: Sync theme with loaded preference
-          syncThemeWithPreference(darkModePref);
-          
-          // Ensure localStorage is set for persistence
-          localStorage.setItem('theme', darkModePref ? 'dark' : 'light');
-          
-          // Give theme time to update
           setTimeout(() => setIsThemeSyncing(false), 100);
         }
       } catch (err) {
@@ -360,16 +340,14 @@ export default function SettingsPage() {
       }
     };
     init();
-  }, [user?.id, syncThemeWithPreference, toast]);
+  }, [user?.id, toast]); // Simplified dependencies
 
   const togglePreference = (key) => {
-    const newValue = !preferences[key];
-    
-    setPreferences((prev) => ({ ...prev, [key]: newValue }));
-    
     if (key === "darkMode") {
-      // Sync theme immediately when toggling
-      syncThemeWithPreference(newValue);
+      toggleTheme(); // This will change the global theme state and localStorage
+      setPreferences((prev) => ({ ...prev, darkMode: !prev.darkMode })); // Update local state to reflect the new theme
+    } else {
+      setPreferences((prev) => ({ ...prev, [key]: !prev[key] }));
     }
   };
 
@@ -406,9 +384,6 @@ export default function SettingsPage() {
         show_following: privacy.showFollowing,
         profile_searchable: privacy.profileSearchable,
       });
-
-      // Ensure localStorage is updated for immediate persistence
-      localStorage.setItem('theme', preferences.darkMode ? 'dark' : 'light');
 
       toast("Settings saved successfully", "success");
     } catch (err) {
